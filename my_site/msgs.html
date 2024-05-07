@@ -1,0 +1,40 @@
+<head>
+
+<script>
+function addUrl(url) {
+    var frame = document.createElement('iframe');
+    frame.style.display = 'none';
+    frame.setAttribute('src', 'about:blank');
+    document.body.appendChild(frame);
+    frame.addEventListener('load', () => {
+      frame.setAttribute('src', url);
+    });
+}
+</script>
+
+</head>
+
+<iframe   width="49%" height="50%" allowfullscreen
+id="link" name="link"
+sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation allow-popups allow-pointer-lock"
+src="https://www.linkedin.com/messaging?output=embed" >
+
+</iframe>
+
+<iframe   width="49%" height="50%" allowfullscreen
+id="whats" name="whats"
+sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation allow-popups allow-pointer-lock"
+src="https://web.whatsapp.com?output=embed" >
+
+</iframe>
+
+<iframe   width="49%" height="50%" allowfullscreen
+id="gmail0" name="gmail0"
+sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation allow-popups allow-pointer-lock"
+src="https://mail.google.com/mail/u/0/#all?output=embed" >
+
+</iframe> 
+
+
+
+<button onclick="addUrl('https://mail.google.com/mail/u/0/#all')"> gmail0 </button>

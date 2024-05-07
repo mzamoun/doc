@@ -1,0 +1,59 @@
+
+<!-- USAGE:
+		<iframe src="horloge.html" style="height: 50px; width: 220px;" id="horloge" name="horloge" 
+		scrolling="no" frameborder="0" allowtransparency="true"></iframe>
+ -->
+
+<style>
+.horloge {
+	height: 20px;
+	width: 200px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding-top: 2%; padding-bottom : 2%;
+	position: relative;
+	border: 3px solid #3A5486;
+	box-shadow: 0 0 20px #8080A0, 0 0 20px 10px #CCCCCC inset;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 17px;
+	font-weight: bold;
+	border-radius: 10px;
+}
+</style>
+
+<script>
+function format_00(x) {
+	return (x<10?'0':'')+x;
+}
+ 
+function horloge(el) {
+  if(typeof el=="string") { el = document.getElementById(el); }  
+  
+	function refreshHorloge() {
+		var date = new Date();
+		
+		var jour = format_00(date.getDate());
+		var mois = format_00(date.getMonth() + 1);
+		var annee = date.getFullYear();
+		
+		var hh = format_00(date.getHours());
+		var mn = format_00(date.getMinutes());
+		var ss = format_00(date.getSeconds());
+		
+		var str = jour + '/' + mois + '/' + annee + '_' + hh + ':' + mn + ':' + ss ;
+
+		el.innerHTML = str;
+	}
+	refreshHorloge();
+	window.setInterval(refreshHorloge,1000);
+}
+</script>
+
+<center>
+<div id="div_horloge" class="horloge"></div>
+</center>
+
+<script>
+horloge('div_horloge');
+</script>

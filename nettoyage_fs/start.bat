@@ -1,0 +1,1 @@
+start /b java -jar boottutorial-1.0-SNAPSHOT.jar
