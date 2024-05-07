@@ -1,0 +1,9 @@
+micro-services 
+
+pom parent 
+
+	pom fils 
+	
+chaq service s'occupe de sa propre db 
+
+
