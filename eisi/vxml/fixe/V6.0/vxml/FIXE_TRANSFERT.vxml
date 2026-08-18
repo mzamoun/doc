@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		15/02/2012
+        Page :					Application FIXE - Transfert
+        Modification :
+								MRO	15/03/2018	migration v8
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_TRANSFERT.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <form id="transfert">
+        <script><![CDATA[ formCourant = "transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+			<!--	Vers le Module TRANSFERT -->
+			var nextAPP ="../../../transfert/"+ Version_TRANSFERT + "vxml/TRANSFERT.vxml";
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP ); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>
+
+</vxml>

@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :
+        Page :                  Application ABO  - Menu principal
+        Modification :			CKO		18/02/2014		Modification des noms des flux de transfert : ABO_...
+                                IMA 	12/05/2015		MAJ du traitement MC_MOB
+                                IMA/CZO	11/04/2017		Ajout filtre ORIGINE WCBDIGITAL et MOTIF
+                                IMA/CZO	19/07/2017		Suppression des  traitements des appels en provenance de RDGU,a jout de l'appel au WS FAST
+								MRO		08/03/2018		migration v8
+								IMA/CZO	08/08/2019		reorganisation suite ajout traitement BEB_MOB
+        						IMA/CZO	03/10/2019		MAJ MENU PRINCIPAL + Ajout des positions flahs (refonte flash abo)	
+        						IMA/CZO	06/01/2020		MAJ MENU PRINCIPAL dynamique							
+        						IMA/CZO	14/06/2021		MAJ traitement CHOIX_FLASH_TECH
+        						IMA/CZO	10/03/2023		Refonte abo lot1: MAJ choix MENU_PRINCIPAL + maj balises
+        						IMA/CZO	28/06/2023		Ajout traitement AB_TEST
+    -->
+    <script><![CDATA[
+	applicationName = "ABO"; appSvi = applicationName;
+	var pageCourante = "ABO_MENU_PRINCIPAL.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+	<script><![CDATA[    
+	    <!--	Initialisation tableau dynamique-->
+		var tabMenu = new Array ();
+		var compteur = 0;
+		var SELFCARE = 'false';
+		var TECHNIQUE = 'false';
+		var AUTRE = 'false';
+		var choix_4 = 'false';	    		
+	]]></script>
+	    
+    <var name="errorCounter" expr="0"/>
+    
+        
+    <form id="FiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30000_WCB_AUTRE');	
+					POSITION_ARBO = 2;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);	
+					ChoixClient = 'AUTRE';
+					log_debug_assignment(pageCourante,'ChoixClient', ChoixClient);									
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <elseif cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '02'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '02'"); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_TECHNIQUE');
+					POSITION_ARBO = 1;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					ChoixClient = 'TECH';
+					log_debug_assignment(pageCourante,'ChoixClient', ChoixClient);					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_PRINCIPAL"); ]]></script>
+                <goto next="#VERS_MENU_PRINCIPAL"/>
+            </if>
+        </block>
+    </form>
+
+
+    <form id="VERS_MENU_PRINCIPAL">
+    	<script><![CDATA[ formCourant = "VERS_MENU_PRINCIPAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.AB_TEST_MENU != 'false'  "); ]]></script>	
+            <if cond="CUSTOMER_IHM.AB_TEST_MENU != 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.AB_TEST_MENU != 'false' "); ]]></script>	
+                <script><![CDATA[
+					POSITION_ARBO = 135;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);									
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+                
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "initMenuPrincipal"); ]]></script>
+                <goto next="#initMenuPrincipal"/>
+            </if>
+        </block>
+    </form>
+    
+  <!-- ==================================== //-->
+  <!-- INIT Menu principal dynamique        //-->
+  <!-- ==================================== //-->          
+    <form id="initMenuPrincipal">
+    	<script><![CDATA[ formCourant = "initMenuPrincipal"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_SELFCARE =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.ABO_MENU_PRINCIPAL_SELFCARE =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_SELFCARE =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.ABO_MENU_PRINCIPAL_SELFCARE_AUDIO;
+						compteur++;
+						SELFCARE = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'SELFCARE',SELFCARE); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_TECHNIQUE =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.ABO_MENU_PRINCIPAL_TECHNIQUE =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_TECHNIQUE =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.ABO_MENU_PRINCIPAL_TECHNIQUE_AUDIO;
+						compteur++;
+						TECHNIQUE = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'TECHNIQUE',TECHNIQUE); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_AUTRE =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.ABO_MENU_PRINCIPAL_AUTRE =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_AUTRE =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.ABO_MENU_PRINCIPAL_AUTRE_AUDIO;
+						compteur++;
+						AUTRE = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'AUTRE',AUTRE); ]]></script>
+            </if>
+           
+            <script><![CDATA[ log_debug_assignment(pageCourante,'compteur',compteur); ]]></script>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_CHOIX_4 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.ABO_MENU_PRINCIPAL_CHOIX_4 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ABO_MENU_PRINCIPAL_CHOIX_4 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.ABO_MENU_PRINCIPAL_CHOIX_4_AUDIO;
+						compteur++;
+						choix_4 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_4',choix_4); ]]></script>
+            </if>
+           
+            <script><![CDATA[ log_debug_assignment(pageCourante,'compteur',compteur); ]]></script>
+                        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>	
+            <if cond="compteur == 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30001_CHOIX_FLASH_FCT_OK');				
+	            ]]></script>            	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_PRINCIPAL"); ]]></script>
+            <goto next="#MENU_PRINCIPAL"/>
+        </block>
+    </form>
+        
+        
+    <menu id="MENU_PRINCIPAL">
+    	<script><![CDATA[ formCourant = "MENU_PRINCIPAL"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+		
+        <prompt bargein="true">
+            <foreach item="itemMenu" array="tabMenu">
+                <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(itemMenu)">
+                </audio>
+            </foreach>
+        </prompt>
+        		
+        <catch event="noinput nomatch">           
+            <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+            <goto next="#nomatch"/>
+        </catch>
+        
+        <choice dtmf="1" next="#SELFCARE"/>       
+        <choice dtmf="2" next="#VERS_TECHNIQUE"/>
+        <choice dtmf="3" next="#VERS_AUTRE"/>
+        <choice dtmf="4" next="#VERS_CHOIX4"/>        
+    </menu>
+
+  
+    <!-- ==================================== //-->
+    <!-- NOMATCH				//-->
+    <!-- ==================================== //-->   
+          
+    <form id="nomatch">
+    	<script><![CDATA[ formCourant = "nomatch"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<script><![CDATA[ track_dtmfList ("MENU_PRINCIPAL","NMNI"); ]]></script>        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter &lt; 1"); ]]></script>	
+            <if cond="document.errorCounter &lt; 1">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 1"); ]]></script>	
+	        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+	        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI1"); ]]></script>
+	            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+	            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName +'_'+ '90001_NMNI');  
+	            ]]></script>
+	            <prompt>
+	                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+	            </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_PRINCIPAL"); ]]></script>
+                <goto next="#MENU_PRINCIPAL"/>
+                
+                
+                
+                <!-- cas d erreur 2-->
+            <elseif cond="document.errorCounter &lt; 2"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>
+	        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+	        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+	            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+	            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName +'_'+ '90002_NMNI_X2');    
+	            ]]></script>
+	            <prompt>
+	                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+	            </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_PRINCIPAL"); ]]></script>
+                <goto next="#MENU_PRINCIPAL"/>
+                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+	        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+	            <goto next="#NMNI"/>
+            </if>
+        </block>
+    </form>
+        
+    <!-- ==================================== //-->
+    <!-- Choix 1 - SELFCARE					//-->
+    <!-- ==================================== //-->    
+        
+    <form id="SELFCARE">
+    	<script><![CDATA[ formCourant = "SELFCARE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "SELFCARE == 'false'"); ]]></script>	
+            <if cond="SELFCARE == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "SELFCARE == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+                    
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10000_SELFCARE');
+				POSITION_ARBO = 5;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+    
+        
+    <!-- ==================================== //-->
+    <!-- Choix 2 - TECHNIQUE					//-->
+    <!-- ==================================== //-->
+    <form id="VERS_TECHNIQUE">
+    	<script><![CDATA[ formCourant = "VERS_TECHNIQUE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "TECHNIQUE == 'false'"); ]]></script>	
+            <if cond="TECHNIQUE == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "TECHNIQUE == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if> 
+                   
+            <script><![CDATA[ log_debug_next_form(pageCourante, "TECHNIQUE"); ]]></script>
+            <goto next="#TECHNIQUE"/>
+        </block>
+    </form>
+    
+    <form id="TECHNIQUE">
+    	<script><![CDATA[ formCourant = "TECHNIQUE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_TECHNIQUE');
+					POSITION_ARBO = 1;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					ChoixClient = 'TECH';
+					log_debug_assignment(pageCourante,'ChoixClient', ChoixClient);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+    
+   <!--###########################################
+               CTRL HOHNO TECH
+        ########################################### -->    
+    <form id="CTRL_HOHNO_TECH">
+    	<script><![CDATA[ formCourant = "CTRL_HOHNO_TECH"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            
+            <!--	SOUS APPLI ABO_TECH HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_TECH_HO');
+	            	POSITION_ARBO = 6;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <!--	ABO_TECH HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_TECH_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_TECH.vxml"); ]]></script>
+                <goto next="./ABO_HNO_TECH.vxml"/>
+
+            </if>             
+        </block>
+    </form>
+        
+
+    <!--###########################################
+                CTRL CHOIX FLASH TECH
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH_TECH">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_TECH != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH_TECH != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_TECH != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20001_CHOIX_FLASH_TECH');
+					POSITION_ARBO = 69;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_TECH"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH2_TECH"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH_TECH_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH_TECH_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20001_CHOIX_FLASH_TECH_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_TECH"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH2_TECH"/>   
+
+        </block>
+    </form>    
+    
+    <!--###########################################
+                CTRL CHOIX FLASH2 TECH
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH2_TECH">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH2_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_TECH != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH2_TECH != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_TECH != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20002_CHOIX_FLASH2_TECH');
+					POSITION_ARBO = 70;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_TECH"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH3_TECH"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH2_TECH_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH2_TECH_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20002_CHOIX_FLASH2_TECH_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_TECH"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH3_TECH"/>   
+
+        </block>
+    </form>     
+    
+    <!--###########################################
+                CTRL CHOIX FLASH3 TECH
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH3_TECH">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH3_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_TECH != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH3_TECH != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_TECH != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20003_CHOIX_FLASH3_TECH');
+					POSITION_ARBO = 113;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE"); ]]></script>
+                <goto next="#VERS_MENU_TECHNIQUE"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH3_TECH_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH3_TECH_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20003_CHOIX_FLASH3_TECH_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE"); ]]></script>
+            <goto next="#VERS_MENU_TECHNIQUE"/>
+
+        </block>
+    </form>  
+    
+    <form id="VERS_MENU_TECHNIQUE">
+        <script><![CDATA[ formCourant = "VERS_MENU_TECHNIQUE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_MENU_TECHNIQUE.vxml"); ]]></script>
+            <goto next="./ABO_MENU_TECHNIQUE.vxml"/> 
+
+        </block>
+    </form>
+ 
+    <!-- ==================================== //-->
+    <!-- Choix 3 - AUTRE						//-->
+    <!-- ==================================== //-->
+
+    <form id="VERS_AUTRE">
+    	<script><![CDATA[ formCourant = "VERS_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "AUTRE == 'false'"); ]]></script>	
+            <if cond="AUTRE == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "AUTRE == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+                     
+            <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE"); ]]></script>
+            <goto next="#AUTRE"/>
+        </block>
+    </form>
+        
+    <form id="AUTRE">
+    	<script><![CDATA[ formCourant = "AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '30000_AUTRE');
+					POSITION_ARBO = 2;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					ChoixClient = 'AUTRE';
+					log_debug_assignment(pageCourante,'ChoixClient', ChoixClient);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+    
+    <!-- ==================================== //-->
+    <!-- Choix 4 - choix generique						//-->
+    <!-- ==================================== //-->
+
+    <form id="VERS_CHOIX4">
+    	<script><![CDATA[ formCourant = "VERS_CHOIX4"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "4"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "4"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_4 == 'false'"); ]]></script>	
+            <if cond="choix_4 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_4 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+                    
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CHOIX4"); ]]></script>
+            <goto next="#CHOIX4"/>
+        </block>
+    </form>
+        
+    <form id="CHOIX4">
+    	<script><![CDATA[ formCourant = "CHOIX4"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '40000_A_DEFINIR');
+					POSITION_ARBO = 136;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>    
+
+    <!--###########################################
+           NMNI
+    ########################################### -->    
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '90003_NMNI_X3');
+            ]]></script>
+            <prompt bargein="false">
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+            
+        </block>
+    </form>
+
+</vxml>

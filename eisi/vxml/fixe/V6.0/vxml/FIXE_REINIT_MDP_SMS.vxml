@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		09/10/2013
+        Page :                  Application FIXE - FIXE_REINIT_MDP_SMS
+        Modification
+								MRO			15/03/2018		migration v8
+								IMA/CZO		25/11/2020		MAJ NDI d'appel au WS ASC (utilisation ressource principale)	
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_REINIT_MDP_SMS.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    <var name="errorCounter1" expr="1"/>
+
+    <script><![CDATA[
+		ndi = NDI;		
+		var login= LOGIN;
+		var notificationMedia='SMS';
+		var notificationAdresseMedia= TEL_CONTACT ;			        
+    ]]></script>
+
+    <!--###########################################
+        Appel au WS ASC REINIT MDP: SMS
+        ########################################### -->
+    <form id="VERS_WS_ASC">
+        <script><![CDATA[ formCourant = "VERS_WS_ASC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>        
+        	<!-- determination du ndi à utiliser pour l'appel WS ASC : ressource principale si non NDI  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true' "); ]]></script>
+            <if cond="isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true'"); ]]></script>
+                <script><![CDATA[
+					ndi = CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE ;
+                ]]></script>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					ndi = NDI ;
+                ]]></script>
+
+            </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "WS_ASC"); ]]></script>
+            <goto next="#WS_ASC"/>
+
+        </block>
+    </form>
+            
+    <form id="WS_ASC">
+        <script><![CDATA[ formCourant = "WS_ASC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'FIXE_WS_ASC', subdialogWS_ASC_REINIT_MDP , 'ndi=' + ndi +'|login=' + login +'notificationMedia=' + notificationMedia +'|notificationAdresseMedia=' + notificationAdresseMedia ); ]]></script>
+        <subdialog name="FIXE_WS_ASC"
+                   srcexpr="subdialogWS_ASC_REINIT_MDP"
+                   namelist="ndi login notificationMedia notificationAdresseMedia"
+                   method="post"
+                   fetchtimeout="11s"
+                   fetchaudio="../../../audio/Attente.wav">
+        </subdialog>
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12060_ASC_SMS_INJOIGNABLE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'FIXE_WS_ASC', FIXE_WS_ASC ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_ASC.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="FIXE_WS_ASC.APP_STATUS == 'NOK'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_ASC.APP_STATUS == 'NOK'"); ]]></script>
+                <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'FIXE_WS_ASC', subdialogWS_ASC_REINIT_MDP , 'ndi=' + ndi +'|login=' + login +'notificationMedia=' + notificationMedia +'|notificationAdresseMedia=' + notificationAdresseMedia ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12060_ASC_SMS_INJOIGNABLE');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                <!-- Retour OK de la web APP-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <!-- Code Retour OK-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_ASC.REINIT_MPD_SUCCESS == 'true' || isObjectInArray(FIXE_WS_ASC.REINIT_CODE_RETOUR, ['5' , '17' , '18'])"); ]]></script>
+                <if cond="FIXE_WS_ASC.REINIT_MPD_SUCCESS == 'true' || isObjectInArray(FIXE_WS_ASC.REINIT_CODE_RETOUR, ['5' , '17' , '18'])">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_ASC.REINIT_MPD_SUCCESS == 'true' || isObjectInArray(FIXE_WS_ASC.REINIT_CODE_RETOUR, ['5' , '17' , '18'])"); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12060_ASC_SMS_OK_'+FIXE_WS_ASC.REINIT_CODE_RETOUR);
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "REINIT_SMS_SUCCES"); ]]></script>
+                    <goto next="#REINIT_SMS_SUCCES"/>
+
+                    <!-- Code Retour NOK mais nécissitant une deuxième tentative -->
+                <elseif cond=" (FIXE_WS_ASC.REINIT_CODE_RETOUR == '10' || FIXE_WS_ASC.REINIT_CODE_RETOUR == '98') &amp;&amp; errorCounter =='1' "/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " (FIXE_WS_ASC.REINIT_CODE_RETOUR == '10' || FIXE_WS_ASC.REINIT_CODE_RETOUR == '98') &amp;&amp; errorCounter =='1'  "); ]]></script>
+                    <script><![CDATA[
+						errorCounter=errorCounter+1;
+						customNode(applicationName + '_' + '12060_ASC_SMS_2_' + FIXE_WS_ASC.REINIT_CODE_RETOUR);
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_WS_ASC"); ]]></script>
+                    <goto next="#VERS_WS_ASC"/>
+
+                    <!-- Code Retour Time Out -->
+                <elseif cond=" FIXE_WS_ASC.REINIT_CODE_RETOUR == 'TIMEOUT10' "/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_WS_ASC.REINIT_CODE_RETOUR == 'TIMEOUT10' "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12060_ASC_SMS_TIMEOUT');
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                    <!-- Code Retour autre et différent de vide -->
+                <elseif cond=" FIXE_WS_ASC.REINIT_CODE_RETOUR "/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_WS_ASC.REINIT_CODE_RETOUR != '' "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12060_ASC_SMS_KO_' + FIXE_WS_ASC.REINIT_CODE_RETOUR);
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                    <!-- Autres cas d'erreur -->
+                <else/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12060_ASC_SMS_INJOIGNABLE');
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+                </if>
+
+            </if>
+
+        </block>
+    </form>
+
+    <form id="REINIT_SMS_SUCCES">
+        <script><![CDATA[ formCourant = "REINIT_SMS_SUCCES"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <prompt bargein="false">
+                <audio expr="PlayFile('FERMETURE_SMS')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>
+
+</vxml>

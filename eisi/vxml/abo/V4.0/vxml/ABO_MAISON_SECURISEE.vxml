@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	18/04/2023
+        Page :				Application ABO - MAISON_SECURISEE
+        Modification									
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_MAISON_SECURISEE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    
+    <form id="CTRL_FILTRE_ROUTAGE_HOME">
+        <script><![CDATA[ formCourant = "CTRL_FILTRE_ROUTAGE_HOME"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>           
+            <!--	 Routage MAISON_SECURISEE actif		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ROUTAGE_MAISON_SECURISEE != 'false'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.ROUTAGE_MAISON_SECURISEE != 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ROUTAGE_MAISON_SECURISEE != 'false' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00006_MAISON_SECURISEE_ROUTAGE');
+					POSITION_ARBO = 133;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+					ID_FLUX='ABO_MAISON_SECURISEE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                 
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00006_MAISON_SECURISEE_DISSUASION');
+					POSITION_ARBO = 134;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/> 
+
+            </if>
+
+        </block>
+    </form> 
+    
+    <!--#####################################################################################################
+        DISSUASION_MAISON_SECURISEE
+        ##################################################################################################### -->
+    <form id="DISSUASION_MAISON_SECURISEE">
+    	<script><![CDATA[ formCourant = "DISSUASION_MAISON_SECURISEE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_DISSUASION_MAISON_SECURISEE_DISSUASION_MAISON_SECURISEE_AUDIO)"/>
+	        </prompt>            
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>
+  
+
+</vxml>

@@ -1,0 +1,44 @@
+<!-- =============scripts/configuration.js======================= //--> 
+
+var Version_ABO = "V3.9/";
+	
+
+<!--Config CME-->
+
+ABO|Version|Mask|Routage
+  
+	
+--------------------------------------------			
+<!-- =============root======================= //-->  
+--------------------------------------------	
+--ajout variable globale
+
+	<var name="TYPE_BOX_XG"    	 expr="''"   />
+
+
+--maj fonction initCUSTOMER_AEM()
+
+--ajout de la ligne
+
+	CUSTOMER_AEM.flagBox5g  ='';
+
+	
+	
+<!-- =============scripts/mobile.js======================= //--> 
+--ajout nvelle fonction
+
+  /**
+   * Client MOBILE - BOX5G
+   * @returns
+   */
+function isClientMobileBox5G() {
+	var status = false;
+	
+	if ( CUSTOMER_AEM.flagBox5g && CUSTOMER_AEM.flagBox5g =='true') {
+			status = true;
+		}
+	return status;
+
+} 
+ 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

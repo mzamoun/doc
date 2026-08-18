@@ -1,0 +1,49 @@
+<!--CTRL filtre RDGU -->   
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_SUSPENDU"); ]]></script>
+	            <goto next="#Filtre_IMPAYE_SUSPENDU"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="appel_rdgu == 'true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "appel_rdgu == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_OK');
+                ]]></script> 
+                								
+		        <prompt bargein="true">
+		             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_SUSPENSION_RDGU_SUSPENDU_AUDIO)"/>
+		        </prompt> 
+		                         
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSP_RDGU');
+                ]]></script>                 
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+	            <goto next="#Choix_Transfert"/>                  
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_SUSPENDU"); ]]></script>
+	            <goto next="#Filtre_IMPAYE_SUSPENDU"/>                
+            </if>                                   
+                                         
+        </block>
+    </form>    
+	
+	
+	

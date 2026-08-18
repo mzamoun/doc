@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			EISI
+        Date de Creation :	15/01/2019
+        Page :				Application ABO - HNO SOUS APPLI ABO_TECH
+        Modification :	
+        	
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_HNO_TECH.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+
+    <form id="VersFLASH_TECH_HNO">
+    	<script><![CDATA[ formCourant = "VersFLASH_TECH_HNO"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+					POSITION_ARBO = 42;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="Vers_SUITE_TECH_HNO">
+    	<script><![CDATA[ formCourant = "Vers_SUITE_TECH_HNO"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+			<!-- Diffusion du message HNO TECH -->
+			<prompt bargein="false">
+				<audio maxage="30" maxstale="30" expr="PlayFileHNO_MAC2(CUSTOMER_HOHNO.ABO_TECH_MSG_TO_PLAY)"/>
+			</prompt>        
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml"/>
+        </block>
+    </form>  
+
+</vxml>

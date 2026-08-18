@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		30/08/2024
+        Page :                  Application FIXE  - LN_FULL - routage  (langage Naturel - routage vers les branches du menu principal)
+        Modification        	
+								
+														  	                            
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_LN_FULL_ROUTAGE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+
+    
+    <!--#####################################################################################################
+        CTRL TABLE HISTORIQUE LN
+        ##################################################################################################### -->
+    
+    <form id="GET_CONTEXT_APPEL">
+        <script><![CDATA[ formCourant = "GET_CONTEXT_APPEL"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var connId  = CONN_ID;
+			var ln_app  = applicationName;
+			var ln_category  = LN_CATEGORY;
+			var ln_intention  = LN_INTENT;
+			var ln_techno  = LN_TECHNO;			
+        ]]></script>
+     
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'GET_CONTEXT_APPEL', subdialogGetContext , 'connId='+connId +'|ln_app='+ln_app +'|ln_category='+ln_category +'|ln_intention='+ln_intention +'|ln_techno='+ln_techno ); ]]></script>
+        <subdialog name="GET_CONTEXT_APPEL"
+                   srcexpr="subdialogGetContext"
+                   namelist="connId ln_app ln_category ln_intention ln_techno"
+                   method="post"
+                   fetchtimeout="3s"
+                   fetchaudio="../../../audio/Attente.wav">
+            <catch event="error"> <!-- webapp KO -->
+                <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+             
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GET_CONTEXT_APPEL_KO"); ]]></script>
+                <goto next="#GET_CONTEXT_APPEL_KO"/>
+            </catch>
+        </subdialog>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'GET_CONTEXT_APPEL', GET_CONTEXT_APPEL); ]]></script>
+            <!--	traitement KO - HS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "GET_CONTEXT_APPEL.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="GET_CONTEXT_APPEL.APP_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "GET_CONTEXT_APPEL.APP_STATUS == 'NOK' "); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GET_CONTEXT_APPEL_KO"); ]]></script>
+                <goto next="#GET_CONTEXT_APPEL_KO"/>                             
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_CONTEXT_APPEL" expr="GET_CONTEXT_APPEL"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_CONTEXT_APPEL", CUSTOMER_CONTEXT_APPEL); ]]></script>                                                            
+                
+            </if>
+                
+ 	 		<!--	traitement OK -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "GET_CONTEXT_APPEL.APP_STATUS == 'OK'"); ]]></script>
+            <if cond="GET_CONTEXT_APPEL.APP_STATUS == 'OK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "GET_CONTEXT_APPEL.APP_STATUS == 'OK'"); ]]></script>
+		        <script><![CDATA[
+					<!--	donnees du contexte sauvegrade lors du premier appel-->			        
+					NDI = CUSTOMER_CONTEXT_APPEL.ndi;
+					CUSTOMER_DATA = CUSTOMER_CONTEXT_APPEL.customerData;
+					PARCOURS_DATA = CUSTOMER_CONTEXT_APPEL.parcoursData;
+					AUTRE_DATA = CUSTOMER_CONTEXT_APPEL.autreData;
+					TYPE_SORTIE_SVI = CUSTOMER_CONTEXT_APPEL.typeSortieSvi ;
+					MOTIF_SORTIE_SVI = CUSTOMER_CONTEXT_APPEL.motifSortieSvi ;
+					LN_FLUX_ROUTAGE = CUSTOMER_CONTEXT_APPEL.flux_routage_ln ;
+										
+					<!--	donnees stat SVI premier appel -->			
+					STAT_SVI = CUSTOMER_CONTEXT_APPEL.statSvi;
+					<!--	donnees stat LN -->	
+					STAT_SVI_LN = CUSTOMER_CONTEXT_APPEL.statSviLn ;
+					TRACES_SVI_LN = CUSTOMER_CONTEXT_APPEL.tracesSviLn ;
+					DUREE_APPLI_LN = CUSTOMER_CONTEXT_APPEL.dureeAppliLn ;
+					LIST_APPLI_LN = CUSTOMER_CONTEXT_APPEL.listAppliLn ;
+					<!--	Sauvegarde de l'heure de debut appel apres LN - a utiliser dans la duree afnor du deuxieme appel SVI  -->	
+					startTimeAfterLn = startTime;										
+		        ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GET_CONTEXT_APPEL_OK"); ]]></script>
+                <goto next="#GET_CONTEXT_APPEL_OK"/> 
+			
+            <!--	traitement NOK  -->                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GET_CONTEXT_APPEL_KO"); ]]></script>
+                <goto next="#GET_CONTEXT_APPEL_KO"/>              
+            </if>
+                      
+        </block>
+    </form>
+    
+    <form id="GET_CONTEXT_APPEL_OK">
+        <script><![CDATA[ formCourant = "GET_CONTEXT_APPEL_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        	<!--	restauration donnees context appel initial -->
+        	
+            <script><![CDATA[
+				<!--	Recup donnees dexter -->
+				CUSTOMER_DEXTER = returnContextObjLn ('CUSTOMER_DEXTER',CUSTOMER_DATA);
+	
+				<!--	Recup donnees SEARCH -->
+				CUSTOMER_SEARCH = returnContextObjLn ('CUSTOMER_SEARCH',CUSTOMER_DATA);				
+				
+				CUSTOMER_WS_MC_TECH = returnContextObjLn ('CUSTOMER_WS_MC_TECH',CUSTOMER_DATA);
+				<!--	trt donnees mc_tech comme c le cas pour l'appel initial -->
+				if (CUSTOMER_WS_MC_TECH.MC_TECH_FOUND == 'true'){
+					MC_TECH_FOUND = CUSTOMER_WS_MC_TECH.MC_TECH_FOUND;
+					log_debug_assignment(pageCourante, "MC_TECH_FOUND", MC_TECH_FOUND);
+					MC_TECH_POSITION_ASSIGNE_A = CUSTOMER_WS_MC_TECH.MC_TECH_POSITION_ASSIGNE_A;
+					log_debug_assignment(pageCourante, "MC_TECH_POSITION_ASSIGNE_A", MC_TECH_POSITION_ASSIGNE_A);
+					MC_TECH_POSITION_CREATEUR = CUSTOMER_WS_MC_TECH.MC_TECH_POSITION_CREATEUR;
+					log_debug_assignment(pageCourante, "MC_TECH_POSITION_CREATEUR", MC_TECH_POSITION_CREATEUR);
+					MC_TECH_MOTIF = CUSTOMER_WS_MC_TECH.MC_TECH_MOTIF;
+					log_debug_assignment(pageCourante, "MC_TECH_MOTIF", MC_TECH_MOTIF);
+					MC_TECH_SOUS_TRAITANT = CUSTOMER_WS_MC_TECH.MC_TECH_SOUS_TRAITANT;
+					log_debug_assignment(pageCourante, "MC_TECH_SOUS_TRAITANT", MC_TECH_SOUS_TRAITANT);
+					MC_TECH_STATUT = CUSTOMER_WS_MC_TECH.MC_TECH_STATUT;
+					log_debug_assignment(pageCourante, "MC_TECH_STATUT", MC_TECH_STATUT);	
+					MC_TECH_CONCLUSION = CUSTOMER_WS_MC_TECH.MC_TECH_CONCLUSION;
+					log_debug_assignment(pageCourante, "MC_TECH_CONCLUSION", MC_TECH_CONCLUSION);
+					MC_TECH_OPEN = CUSTOMER_WS_MC_TECH.MC_TECH_OPEN;
+					log_debug_assignment(pageCourante, "MC_TECH_OPEN", MC_TECH_OPEN);																																			
+				}                
+		                				                				
+				<!--	Recup donnees BEB_FIXE_FASTR -->
+				CUSTOMER_BEB_FIXE_FASTR = returnContextObjLn ('CUSTOMER_BEB_FIXE_FASTR',CUSTOMER_DATA);								
+				
+				
+				<!--	Recup donnees FILTRE_IHM -->
+				CUSTOMER_IHM = returnContextObjLn ('CUSTOMER_IHM',PARCOURS_DATA);	
+							
+				<!--	Recup donnees HOHNO du parcours FIXE -->
+				CUSTOMER_HOHNO = returnContextObjLn ('CUSTOMER_HOHNO',PARCOURS_DATA);
+											
+				<!--	Recup donnees flash - AB_TEST - DIVERS -->	
+				var FLASH ={};
+				var DIVERS ={};
+				var AB_TEST ={};
+				FLASH = returnContextObjLn ('FLASH',AUTRE_DATA);
+	   			LIST_FLASH = FLASH.LIST_FLASH;
+	   			log_debug_assignment(pageCourante, "LIST_FLASH", LIST_FLASH);
+			    if (!LIST_FLASH){
+		   			LIST_FLASH = ';;;;' ;
+		   			log_debug_assignment(pageCourante, "LIST_FLASH", LIST_FLASH);
+								
+				}	   			
+	   			
+				<!--	Recup donnees TECHNO - test -->	
+	   			DIVERS = returnContextObjLn ('DIVERS',AUTRE_DATA);
+	   			TECHNO = DIVERS.TECHNO;
+	   			log_debug_assignment(pageCourante, "TECHNO", TECHNO);
+	   			log_debug_assignment(pageCourante, "TECHNO_dexter====", isClientFixeFTTB() +"****"+ isClientFixeFTTH());
+   				
+	   			Id_Siebel = DIVERS.ID_SIEBEL;
+	   			log_debug_assignment(pageCourante, "Id_Siebel", Id_Siebel);
+	   		
+	   			IDCSU = DIVERS.IDCSU;
+	   			log_debug_assignment(pageCourante, "IDCSU", IDCSU);	   				
+	   			
+				<!--	Recup donnees AB_TEST -->
+				AB_TEST = returnContextObjLn ('AB_TEST',AUTRE_DATA);
+	   							
+	   			AB_TEST_PARCOURS_ELIG = AB_TEST.AB_TEST_PARCOURS_ELIG;
+	   			log_debug_assignment(pageCourante, "AB_TEST_PARCOURS_ELIG", AB_TEST_PARCOURS_ELIG);
+				MENU_AB_TEST_NIVEAU1_CHOIX = AB_TEST.MENU_AB_TEST_NIVEAU1_CHOIX;
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);
+				MENU_AB_TEST_NIVEAU2_CHOIX = AB_TEST.MENU_AB_TEST_NIVEAU2_CHOIX;
+	   			log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU2_CHOIX", MENU_AB_TEST_NIVEAU2_CHOIX);	   				   			
+	   			
+	   			
+				<!--	Recup donnees incidents -->
+				var INCIDENTS_LN ={};
+				INCIDENTS_LN = returnContextObjLn ('INCIDENTS',AUTRE_DATA);
+	   							
+	   			LIST_INCIDENT = INCIDENTS_LN.LIST_INCIDENT;
+	   			log_debug_assignment(pageCourante, "LIST_INCIDENT", LIST_INCIDENT);
+   			
+				<!--	Recup donnees WCB_DIGITAL -->
+				var WCB_DIGITAL_LN ={};
+				WCB_DIGITAL_LN = returnContextObjLn ('WCB_DIGITAL',AUTRE_DATA);
+	   							
+	   			type_appel_wcb_digital = WCB_DIGITAL_LN.type_appel_wcb_digital;
+	   			log_debug_assignment(pageCourante, "type_appel_wcb_digital", type_appel_wcb_digital);	   			
+	   			wcb_digital_codeMotif = WCB_DIGITAL_LN.wcb_digital_codeMotif;
+	   			log_debug_assignment(pageCourante, "wcb_digital_codeMotif", wcb_digital_codeMotif);				   			
+	   			
+				<!--	Recup donnees marqueurs_c2ol (premium et conv_risque -->
+				var MARQ_C2OL_LN ={};
+				MARQ_C2OL_LN = returnContextObjLn ('MARQ_C2OL',AUTRE_DATA);
+	   							
+	   			FIXE_CELL_PREM_FIDE = MARQ_C2OL_LN.FIXE_CELL_PREM_FIDE;
+	   			log_debug_assignment(pageCourante, "FIXE_CELL_PREM_FIDE", FIXE_CELL_PREM_FIDE);	   			
+	   			FIXE_PACKPRO = MARQ_C2OL_LN.FIXE_PACKPRO;
+	   			log_debug_assignment(pageCourante, "FIXE_PACKPRO", FIXE_PACKPRO);
+	   				 
+	   			FIXE_CONV_RISQUE = MARQ_C2OL_LN.FIXE_CONV_RISQUE;
+	   			log_debug_assignment(pageCourante, "FIXE_CONV_RISQUE", FIXE_CONV_RISQUE);	 
+	   			FIXE_CONV_NON_RISQUE = MARQ_C2OL_LN.FIXE_CONV_NON_RISQUE;
+	   			log_debug_assignment(pageCourante, "FIXE_CONV_NON_RISQUE", FIXE_CONV_NON_RISQUE);	 
+	   			FIXE_NON_CONV_RISQUE = MARQ_C2OL_LN.FIXE_NON_CONV_RISQUE;
+	   			log_debug_assignment(pageCourante, "FIXE_NON_CONV_RISQUE", FIXE_NON_CONV_RISQUE);	 
+	   			FIXE_NON_CONV_NON_RISQUE = MARQ_C2OL_LN.FIXE_NON_CONV_NON_RISQUE;
+	   			log_debug_assignment(pageCourante, "FIXE_NON_CONV_NON_RISQUE", FIXE_NON_CONV_NON_RISQUE);	   							
+						   			
+				<!--	Recup donnees STAT SVI + clickfox -->	
+	   			returnContextSTAT_SVI (STAT_SVI,STAT_SVI_LN,TRACES_SVI_LN,DUREE_APPLI_LN,LIST_APPLI_LN);	
+	   			log_debug_assignment(pageCourante, "newcall", newcall);
+	   			log_debug_assignment(pageCourante, "startTime", startTime);
+	   			log_debug_assignment(pageCourante, "stopTime", stopTime);	   			
+	   			log_debug_assignment(pageCourante, "customRoute", customRoute);
+	   				   				   				   				   				   				   				   				   			   				   			
+				customNode(applicationName + '_' + '43200_FCT_LN_RECUP_CONTEXT_OK');	   									
+            ]]></script>
+                       
+	                        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_FILTRE_CATEGORY_BRANCHE"); ]]></script>
+            <goto next="#VERS_FILTRE_CATEGORY_BRANCHE"/>
+            
+        </block>
+    </form>
+    
+       
+    <form id="GET_CONTEXT_APPEL_KO">
+        <script><![CDATA[ formCourant = "GET_CONTEXT_APPEL_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[								
+				customNode(applicationName + '_' + '43200_FCT_LN_RECUP_CONTEXT_KO');				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_FILTRE_CATEGORY_BRANCHE"); ]]></script>
+            <goto next="#VERS_FILTRE_CATEGORY_BRANCHE"/>
+            
+        </block>
+    </form>        
+    
+          
+
+ 
+	<!--#####################################################################################################
+	    Gestion retour de l appel LN
+	    ##################################################################################################### -->      
+
+
+    <!--###############################################################################################################
+        TRANSFERT vers menu principal branche selon la category - sauf pour les categories eligibles dtmf
+   #################################################################################################################### -->
+       
+    <form id="VERS_FILTRE_CATEGORY_BRANCHE">
+        <script><![CDATA[ formCourant = "VERS_FILTRE_CATEGORY_BRANCHE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10040_LN_FULL_'+ LN_CATEGORY +'_'+ LN_INTENT);
+            ]]></script>         
+		
+            <!-- category eligible DTMF - retour traitement DTMF -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.Intent_elig_dtmf == 'true'"); ]]></script>
+            <if cond="CUSTOMER_CONTEXT_APPEL.Intent_elig_dtmf == 'true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.Intent_elig_dtmf == 'true'"); ]]></script>
+                
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_NON_ELIGIBLE"); ]]></script>
+	            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_NON_ELIGIBLE"/> 
+
+	            
+            <!-- defaut:  category non exclu du traitement LN  - suite traitement LN - traitement branche suivant categorie-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                
+	            <!-- gestion category_branche -->
+	            <!-- TECHNIQUE -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.branche_svi =='TECHNIQUE'"); ]]></script>
+	            <if cond="CUSTOMER_CONTEXT_APPEL.branche_svi =='TECHNIQUE'">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.branche_svi =='TECHNIQUE'"); ]]></script>
+	                
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_TECH"); ]]></script>
+		            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_TECH"/> 
+	
+	            <!-- DEMENAGEMENT -->
+	            <elseif cond="CUSTOMER_CONTEXT_APPEL.branche_svi =='DEMENAGEMENT' "/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.branche_svi =='DEMENAGEMENT'"); ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_DMGT"); ]]></script>
+		            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_DMGT"/> 
+	            	
+	            <!-- COMMERCIAL -->
+	            <elseif cond="CUSTOMER_CONTEXT_APPEL.branche_svi =='COMMERCIAL' "/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.branche_svi =='COMMERCIAL'"); ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_CO"); ]]></script>
+		            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_CO"/> 
+		            	
+	            <!-- RETENTION -->
+	            <elseif cond="CUSTOMER_CONTEXT_APPEL.branche_svi =='RETENTION' "/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_CONTEXT_APPEL.branche_svi =='RETENTION'"); ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_RET"); ]]></script>
+		            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_RET"/> 
+		            		            	            	            
+	            <!-- DEFAUT -->
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_NON_ELIGIBLE"); ]]></script>
+		            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_LN_NON_ELIGIBLE"/> 	                
+
+	            </if>
+
+            </if>
+            
+        </block>
+    </form> 
+    
+    
+
+
+</vxml>

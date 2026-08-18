@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Page :				Application FIXE - REINIT_MDP_ROUTAGE
+        Date de Creation :	08/10/2013
+        Modification :		IMA		14/11/2014		Suppression du traitement BV
+                            IMA		10/02/2016		ajout de l'offre  FTTH
+                            IMA/CZO	15/12/2016		Refonte traitements PRO: MAJ des traitements premium (ancien PRO, JOYA et collab)
+                            MRO		15/03/2018		migration v8
+							IMA/CZO 06/05/2018		Prise en compte des données LDCCSU	
+							IMA/CZO	05/07/2018		Menage des traitements SAFIR - full LDCCSU	
+							IMA/CZO	17/06/2020		Ajout de CTRL HOHNO COM
+							IMA/CZO	14503/2022		Ajout traitement RDGU 
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_REINIT_MDP_ROUTAGE.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <script><![CDATA[
+		ndi = NDI;	        		     		        
+    ]]></script>
+
+    
+     <!--	CTRL HOHNO COM  -->
+    <form id="CtrlHoHnoCom">
+        <script><![CDATA[ formCourant = "CtrlHoHnoCom"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <!--	SOUS APPLI FIXE_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" FIXE_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_COM_IS_OPEN =='true' "); ]]></script>	
+                <script><![CDATA[			               
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_HO_COM');
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+	            <goto next="#Filtre_RDGU"/> 
+
+            <!--	FIXE_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[			               
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_COM.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_COM.vxml"/>
+
+            </if>          
+    
+        </block>
+    </form>
+    
+    
+    <!--###########################################
+                FILTRE RDGU
+        ########################################### -->       
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_RDGU_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPremium"); ]]></script>
+	            <goto next="#CtrlPremium"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="is_provenance_rdgu()"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "is_provenance_rdgu() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_RDGU_OK');				
+            		ID_FLUX='FIXE_FCT_RDGU';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);				
+                ]]></script>            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+	            <goto next="./FIXE_TRANSFERT.vxml"/>                                
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_RDGU_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPremium"); ]]></script>
+	            <goto next="#CtrlPremium"/>                
+            </if>                                   
+                                         
+        </block>
+    </form> 
+            
+
+    <!--###########################################
+                CTRL PREMIUM
+        ########################################### -->    
+    <form id="CtrlPremium">
+        <script><![CDATA[ formCourant = "CtrlPremium"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+ 			<!--################################################################################################################################################################
+				(Premium via les données SEARCH ou autres ) 
+			#################################################################################################################################################################### -->	    					        		
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+                <script><![CDATA[
+					POSITION_ARBO = 22;
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_PREMIUM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12080_ROUTAGE_MDP_GP');
+                ]]></script>
+                
+	            <!-- Traitement specifique AB_TEST pour maj de la balise de stat suivant l ordre du choix COM dans le menu AB_TEST et remettre a vide le deuxieme digit de stat -->
+	          	<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG == '1' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE "); ]]></script>
+	            <if cond="AB_TEST_PARCOURS_ELIG == '1' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG == '1' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true' &amp;&amp; CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE "); ]]></script>
+	                
+		            <script><![CDATA[					
+						<!-- MAJ PREFIXE de la balise de stat avec l ordre du choix COM --> 
+		                MENU_AB_TEST_NIVEAU1_CHOIX = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE;				
+						log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);
+						<!-- MAJ 2 eme digit  de la balise de stat (qui etait avec le choix du SELFCARE): mise à vide --> 
+		                MENU_AB_TEST_NIVEAU2_CHOIX = '';				
+						log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU2_CHOIX", MENU_AB_TEST_NIVEAU2_CHOIX);																							
+					]]></script> 				
+	
+	            </if> 
+	                           
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ADMINISTRATIF.vxml#ENTREE_RTG_MDP"); ]]></script>
+                <goto next="./FIXE_ADMINISTRATIF.vxml#ENTREE_RTG_MDP"/>
+
+            </if>
+
+        </block>
+    </form>
+
+</vxml>

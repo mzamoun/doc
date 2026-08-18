@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Date de Creation :	15/02/2012
+        Page :				Application FIXE - HNO-GP
+        Modification        08/03/2013  IMA		Refonte du parcours FIXE
+                            08/10/2013  IMA		Intégration du choix  Réinit Mot de passe (MDP)
+
+                                    MRO	15/03/2018	migration v8
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_HNO_GP.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+	<script><![CDATA[    
+	    <!--	Initialisation tableau dynamique-->
+		var tabMenu = new Array ();
+		var compteur = 0;
+		var choix_1 = 'false';
+		var choix_2 = 'false';
+		var choix_3 = 'false';	    		
+		var choix_4 = 'false';	
+		var choix_5 = 'false';	
+	]]></script>
+	
+    <var name="errorCounter" expr="1"/>
+    <!--###########################################
+         Label d'entete de menu
+    ########################################### -->
+    <form id="VersMenuHnoGP">
+        <script><![CDATA[ formCourant = "VersMenuHnoGP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '70000_HNO');				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "initMENU_HNO_GP"); ]]></script>
+            <goto next="#initMENU_HNO_GP"/>
+        </block>
+    </form>
+    
+    
+  <!-- ==================================== //-->
+  <!-- INIT MENU_HNO_GP        //-->
+  <!-- ==================================== //-->          
+    <form id="initMENU_HNO_GP">
+    	<script><![CDATA[ formCourant = "initMENU_HNO_GP"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_1 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_1 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_1 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_1_AUDIO;
+						compteur++;
+						choix_1 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_1',choix_1); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_2 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_2 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_2 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_2_AUDIO;
+						compteur++;
+						choix_2 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_2',choix_2); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_3 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_3 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_3 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_3_AUDIO;
+						compteur++;
+						choix_3 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_3',choix_3); ]]></script>
+            </if>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_4 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_4 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_4 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_4_AUDIO;
+						compteur++;
+						choix_4 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_4',choix_4); ]]></script>
+            </if>            
+           
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_5 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_5 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_5 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.FIXE_MENU_HNO_GP_CHOIX_5_AUDIO;
+						compteur++;
+						choix_5 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_5',choix_5); ]]></script>
+            </if>
+                        
+            <script><![CDATA[ log_debug_assignment(pageCourante,'compteur',compteur); ]]></script>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>	
+            <if cond="compteur == 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>         	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "FIXE_MENU_HNO_GP"); ]]></script>
+            <goto next="#FIXE_MENU_HNO_GP"/>
+        </block>
+    </form>
+
+  <!-- ==================================== //-->          
+        
+    <menu id="FIXE_MENU_HNO_GP">
+    	<script><![CDATA[ formCourant = "FIXE_MENU_HNO_GP"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <foreach item="itemMenu" array="tabMenu">
+                <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(itemMenu)">
+                </audio>
+            </foreach>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+           
+            <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+            <goto next="#nomatch"/>
+        </catch>
+        
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+            <goto next="#NMNI"/>
+        </catch>
+        <choice dtmf="1" next="#Vers_CHOIX_SVI_PAIEMENT"/>
+        <choice dtmf="2" next="#VERS_CHOIX_REINIT_MDP"/>
+        <choice dtmf="3" next="#VERS_CHOIX_AUTODIAG"/>
+        <choice dtmf="4" next="#VERS_CHOIX_4"/>
+        <choice dtmf="5" next="#VERS_CHOIX_5"/>                
+    </menu>
+
+    <form id="nomatch">
+    	<script><![CDATA[ formCourant = "nomatch"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP","NMNI"); ]]></script>        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+            <if cond="document.errorCounter &lt; 2">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+                <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '70000_NMNI1');
+	            ]]></script>                 
+                <prompt>
+                    <audio expr="PlayFile('ERREUR_CHOIX_NOUVEAU')"/>
+                </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "FIXE_MENU_HNO_GP"); ]]></script>
+                <goto next="#FIXE_MENU_HNO_GP"/>
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+        </block>
+    </form>
+
+	  <!-- ==================================== //-->
+	  <!-- CHOIX_1:  SVIPaiement						    //-->
+	  <!-- ==================================== //-->    
+    <form id="Vers_CHOIX_SVI_PAIEMENT">
+    	<script><![CDATA[ formCourant = "Vers_CHOIX_SVI_PAIEMENT"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP", "1"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_1 == 'false'"); ]]></script>	
+            <if cond="choix_1 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_1 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '71000_HNO_PAIEMENT');
+				POSITION_ARBO = 8;
+				ID_FLUX='SVI_PAIEMENT';					
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    
+
+ 
+     
+    
+	  <!-- ==================================== //-->
+	  <!-- CHOIX_2: REINIT_MDP 				    //-->
+	  <!-- ==================================== //-->  
+    <form id="VERS_CHOIX_REINIT_MDP">
+    	<script><![CDATA[ formCourant = "VERS_CHOIX_REINIT_MDP"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante,"CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP", "2"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_2 == 'false'"); ]]></script>	
+            <if cond="choix_2 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_2 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '72000_HNO_GP_REINIT_MDP');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP.vxml"/>  
+        </block>
+    </form>
+    
+ 
+        
+	  <!-- ==================================== //-->
+	  <!-- CHOIX 3 - AUTODIAG				    //-->
+	  <!-- ==================================== //-->      
+
+    <form id="VERS_CHOIX_AUTODIAG">
+    	<script><![CDATA[ formCourant = "VERS_CHOIX_AUTODIAG"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP", "3"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_3 == 'false'"); ]]></script>	
+            <if cond="choix_3 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_3 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_HNO_AUTODIAG');
+				POSITION_ARBO = 171;			
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="SUITE_CHOIX_AUTODIAG">
+    	<script><![CDATA[ formCourant = "SUITE_CHOIX_AUTODIAG"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_HNO_AUTODIAG_HNO_AUTODIAG_AUDIO)"/>
+	        </prompt>           
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_AUTODIAG.vxml"); ]]></script>
+            <goto next="./FIXE_HNO_AUTODIAG.vxml"/> 
+	             
+
+        </block>
+    </form>      
+       
+        
+	  <!-- ==================================== //-->
+	  <!-- CHOIX 4				  				//-->
+	  <!-- ==================================== //-->      
+
+    <form id="VERS_CHOIX_4">
+    	<script><![CDATA[ formCourant = "VERS_CHOIX_4"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "4"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP", "4"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_4 == 'false'"); ]]></script>	
+            <if cond="choix_4 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_4 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '74000_HNO_CHOIX_4');
+				POSITION_ARBO = 174;			
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="SUITE_CHOIX_4">
+    	<script><![CDATA[ formCourant = "SUITE_CHOIX_4"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_HNO_CHOIX_4_HNO_CHOIX_4_AUDIO)"/>
+	        </prompt>           
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+	             
+
+        </block>
+    </form>  
+    
+    
+	  <!-- ==================================== //-->
+	  <!-- CHOIX 5				  				//-->
+	  <!-- ==================================== //-->      
+
+    <form id="VERS_CHOIX_5">
+    	<script><![CDATA[ formCourant = "VERS_CHOIX_5"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "5"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_HNO_GP", "5"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_5 == 'false'"); ]]></script>	
+            <if cond="choix_5 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_5 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '75000_HNO_CHOIX_5');
+				POSITION_ARBO = 175;			
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="SUITE_CHOIX_5">
+    	<script><![CDATA[ formCourant = "SUITE_CHOIX_5"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_HNO_CHOIX_5_HNO_CHOIX_5_AUDIO)"/>
+	        </prompt>         
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+	             
+
+        </block>
+    </form> 
+           
+	  <!-- ==================================== //-->
+	  <!-- NMNI  					    //-->
+	  <!-- ==================================== //-->  
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <prompt bargein="true">
+                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+            </prompt>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '70000_QUIT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+            	                    			        	
+        </block>
+    </form>
+    
+    
+       
+
+</vxml>

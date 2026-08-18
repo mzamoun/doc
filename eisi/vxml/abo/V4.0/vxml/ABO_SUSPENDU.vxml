@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Date de Creation :	01/04/2015
+        Page :				Application ABO - Client suspendu
+        Modification		IMA/CZO		11/04/2017		Ajout filtre WCBDIGITAL  && FLASH 35
+                            IMA/CZO 	12/10/2017     	Prise en compte des traitements CONV et RISQUE
+							MRO			07/03/2018		migration v8
+							IMA/CZO		15/01/2019		integration CtrlHoHno sous appli ABO_COM
+							IMA/CZO		17/05/2019		integration des menus dynamiques suspendu + traitement impaye
+							IMA/CZO		11/06/2019		MAJ traitement WCB + MAJ libellé flux suspendu
+							IMA/CZO		03/10/2019		Ajout des positions flahs (refonte flash abo)
+							IMA/CZO		12/11/2020		Menage packpro et traitement BEB_MOB_RET_COM	
+							IMA/CZO		06/09/2021		Integration CTRL HOHNO dans le traitement BEB_MOB
+							IMA/CZO		24/02/2022		Integration du filtre RDGU
+							IMA/CZO		23/05/2023		Ajout des filtres C2OL (CONV/RISQUE)
+							IMA/CZO 	22/01/2024		Integration de l'identification SEARCH
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_SUSPENDU.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+		
+		var Total_UNPAID = 0;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    
+    
+    <!--FILTRE WCB_DIGITAL-->    
+    <form id="FiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>	
+               
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_WCB_SUSPENDU"); ]]></script>
+                <goto next="#Filtre_IMPAYE_WCB_SUSPENDU"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+                <goto next="#Filtre_RDGU"/>
+            </if>
+        </block>
+    </form>
+    
+    <!--CTRL CLIENT WCB IMPAYE-->
+    <form id="Filtre_IMPAYE_WCB_SUSPENDU">
+    	<script><![CDATA[ formCourant = "Filtre_IMPAYE_WCB_SUSPENDU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>       
+			<script><![CDATA[	
+			    if (CUSTOMER_MOBILE_IMPAYE && CUSTOMER_MOBILE_IMPAYE.UNPAID){
+					 Total_UNPAID = parseInt(CUSTOMER_MOBILE_IMPAYE.UNPAID);			    	
+			    }
+			]]></script>        
+              
+            <!--	Client eligible au traitement IMPAYE : Unpaid superieur à 0  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0 "); ]]></script>	
+            <if cond="CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0  "); ]]></script>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE.UNPAID===="+CUSTOMER_MOBILE_IMPAYE.UNPAID +"===="+Total_UNPAID); ]]></script>
+            	            	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_WCB_SUSPENDU');
+					POSITION_ARBO = 35;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+               
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>                                               
+
+                <!--	Client non eligible  au traitement IMPAYE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_SUSP_MONTANT_KO');					
+                ]]></script>            		
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_TransfertWcb"); ]]></script>
+                <goto next="#Choix_TransfertWcb"/>
+
+            </if>
+        </block>
+    </form>
+    
+   	<!--CTRL filtre RDGU -->   
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_SUSPENDU"); ]]></script>
+	            <goto next="#Filtre_IMPAYE_SUSPENDU"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="appel_rdgu == 'true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "appel_rdgu == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_OK');
+                ]]></script> 
+                								
+		        <prompt bargein="true">
+		             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_SUSPENSION_RDGU_SUSPENDU_AUDIO)"/>
+		        </prompt> 
+		                         
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSP_RDGU');
+                ]]></script>                 
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+	            <goto next="#Choix_Transfert"/>                  
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSP_RDGU_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_SUSPENDU"); ]]></script>
+	            <goto next="#Filtre_IMPAYE_SUSPENDU"/>                
+            </if>                                   
+                                         
+        </block>
+    </form>         
+        
+    <!--CTRL CLIENT IMPAYE-->
+    <form id="Filtre_IMPAYE_SUSPENDU">
+    	<script><![CDATA[ formCourant = "Filtre_IMPAYE_SUSPENDU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>        
+			<script><![CDATA[
+			    if (CUSTOMER_MOBILE_IMPAYE && CUSTOMER_MOBILE_IMPAYE.UNPAID){
+					 Total_UNPAID = parseInt(CUSTOMER_MOBILE_IMPAYE.UNPAID);			    	
+			    }
+			]]></script>        
+              
+            <!--	Client eligible au traitement IMPAYE : Unpaid superieur à 0  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0 "); ]]></script>	
+            <if cond="CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE &amp;&amp; CUSTOMER_MOBILE_IMPAYE.COMPTE_FOUND == 'true' &amp;&amp; CUSTOMER_MOBILE_IMPAYE.UNPAID &amp;&amp; Total_UNPAID &gt; 0  "); ]]></script>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_MOBILE_IMPAYE.UNPAID===="+CUSTOMER_MOBILE_IMPAYE.UNPAID +"===="+Total_UNPAID); ]]></script>
+            	       
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_SUSPENDU');
+					POSITION_ARBO = 59;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>    
+
+                <!--	Client non eligible  au traitement IMPAYE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSP_MONTANT_KO');					
+                ]]></script>            		
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+                <goto next="#Choix_Transfert"/>
+
+            </if>
+        </block>
+    </form>     
+
+
+    
+    <!--###########################################
+                Menu SUSPENDU WCB
+        ########################################### -->
+    <menu id="MENU_SUSPENDU_WCB">
+        <script><![CDATA[ formCourant = "MENU_SUSPENDU_WCB"; ]]></script>
+        <script><![CDATA[ menuCourant = "ABO_MENU_SUSPENDU_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_SUSPENSION_WCB_SUSPENDU_AUDIO)"/>
+        </prompt>        
+
+        <catch event="noinput nomatch" >
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00071_WCB_SUSP_PAIEMENT');					
+            ]]></script>            
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "SVIPaiement"); ]]></script>
+            <goto next="#SVIPaiement"/>    
+        </catch>
+
+        <choice dtmf="*" next="#Vers_Choix_TransfertWcb"/>
+    </menu> 
+    
+    <!--###########################################
+        WCB- Choix *: Transfert
+    ########################################### -->
+    <form id="Vers_Choix_TransfertWcb">
+    	<script><![CDATA[ formCourant = "Vers_Choix_TransfertWcb"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, "ABO_MENU_SUSPENDU_WCB" + ":CHOIX", "*"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("ABO_MENU_SUSPENDU_WCB", "*"); ]]></script>
+        <block> 
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00072_WCB_SUSP');					
+            ]]></script>                        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_TransfertWcb"); ]]></script>
+            <goto next="#Choix_TransfertWcb"/>                                                        
+                       
+        </block>
+    </form> 
+    
+    <form id="Choix_TransfertWcb">
+    	<script><![CDATA[ formCourant = "Choix_TransfertWcb"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block> 
+                        
+           <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>		            
+               <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_SUSPENDU_HO_COM');
+					POSITION_ARBO = 61;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>	            
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_SUSPENDU_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+            </if>                                            
+                       
+        </block>
+    </form>  
+    
+        
+
+    <!--###########################################
+                Menu SUSPENDU 
+        ########################################### -->    
+    <menu id="MenuSuspendu">
+    	<script><![CDATA[ formCourant = "MenuSuspendu"; ]]></script>
+    	<script><![CDATA[ menuCourant = "ABO_MENU_SUSPENDU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_SUSPENSION_SUSPENDU_AUDIO)"/>
+        </prompt>        
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, menuCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00079_SUSP_NMNI');				
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (menuCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00079_SUSP_NMNI_X2');
+            ]]></script>
+            <prompt>
+                <audio expr="PlayFile('NMNI_MISE_EN_RELATION')"/>
+            </prompt>            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+            <goto next="#Choix_Transfert"/>   
+
+        </catch>
+
+        <choice dtmf="1" next="#VersSVIPaiement"/>
+        <choice dtmf="2" next="#Vers_Choix_Transfert"/>
+    </menu>
+
+    <!--###########################################
+         Choix 1: SVIPaiement
+    ########################################### -->
+    <form id="VersSVIPaiement">
+    	<script><![CDATA[ formCourant = "VersSVIPaiement"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, "ABO_MENU_SUSPENDU" + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("ABO_MENU_SUSPENDU", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00071_SUSP_PAIEMENT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "SVIPaiement"); ]]></script>
+            <goto next="#SVIPaiement"/>   
+        </block>
+    </form>
+      
+    <!--	appel classique et wcb  -->     
+    <form id="SVIPaiement">
+    	<script><![CDATA[ formCourant = "SVIPaiement"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				Service = 'pcb';
+				POSITION_ARBO = 68;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <!--###########################################
+         Choix 2: Transfert
+    ########################################### -->
+    <form id="Vers_Choix_Transfert">
+    	<script><![CDATA[ formCourant = "Vers_Choix_Transfert"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, "ABO_MENU_SUSPENDU" + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("ABO_MENU_SUSPENDU", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00072_SUSP_TRANSFERT');
+            ]]></script>
+	        <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+	        <goto next="#Choix_Transfert"/>                    
+                       
+        </block>
+    </form>
+    
+    <form id="Choix_Transfert">
+    	<script><![CDATA[ formCourant = "Choix_Transfert"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>		            
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSPENDU_HO_COM');
+					POSITION_ARBO = 60;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/> 	                        
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSPENDU_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>           
+                       
+        </block>
+    </form>
+    
+    <!--###########################################
+         CTRL filtre RDGU - SUSPENDU2
+    ########################################### -->    
+   	<!--CTRL filtre RDGU 2 -->   
+    <form id="Filtre_RDGU_SUSPENDU2">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU_SUSPENDU2"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PREMIUM_RDGU_SUSP_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VersCtrlBeb_Mob"); ]]></script>
+	            <goto next="#VersCtrlBeb_Mob"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="appel_rdgu == 'true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "appel_rdgu == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PREMIUM_RDGU_SUSP_OK');
+					ID_FLUX='ABO_FCT_PREMIUM_RDGU_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+	            <goto next="#Transfert"/>                 
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PREMIUM_RDGU_SUSP_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VersCtrlBeb_Mob"); ]]></script>
+	            <goto next="#VersCtrlBeb_Mob"/>                
+            </if>                                   
+                                         
+        </block>
+    </form>      
+    <!--###########################################
+         CTRL BEB_MOB
+    ########################################### -->
+  
+    <form id="VersCtrlBeb_Mob">
+    	<script><![CDATA[ formCourant = "VersCtrlBeb_Mob"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--FILTRE BEB_MOB_COM actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_COM != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_MOB_COM != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_COM != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_BEB_MOB"); ]]></script>
+	            <goto next="#CTRL_BEB_MOB"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSPENDU_BEB_COM_OFF'); 					
+	            ]]></script>                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+	            <goto next="#BEB_MOB_KO"/>
+	       	</if>
+	       		                                   
+        </block>
+    </form>
+        
+    <form id="CTRL_BEB_MOB">
+        <script><![CDATA[ formCourant = "CTRL_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- CTRL ELIGIBILITE BEB_MOB_COM -->           
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_MOB_COM()  "); ]]></script>
+            <if cond=" isBEB_MOB_COM()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_MOB_COM() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '00072_SUSPENDU_BEB_COM_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité BEB_MOB COM	-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_MOB -->
+	                <script><![CDATA[
+			            BEB_MOB_ORIGINE ='BEB_MOB_CO_SUSP';
+			            customNode(applicationName + '_' + '00072_SUSPENDU_BEB_COM_HO');
+			            POSITION_ARBO = 63;	
+			            log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	                ]]></script>                
+	  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/> 
+	                             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '00072_SUSPENDU_BEB_COM_HNO');
+		            ]]></script>    	                
+		            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+		            <goto next="#BEB_MOB_KO"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSPENDU_BEB_COM_KO');		            										
+           		 ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+	            <goto next="#BEB_MOB_KO"/>             
+   
+            </if>            
+
+        </block>
+    </form> 
+
+	<!--###########################################
+        BEB_MOB COM KO
+    ########################################### -->           
+    <form id="BEB_MOB_KO">
+        <script><![CDATA[ formCourant = "BEB_MOB_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				POSITION_ARBO = 64;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);	
+            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+
+        </block>
+    </form>    
+    
+	<!--###########################################
+         Vers parcours BEB_MOB
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_MOB">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				var nextAPP ="../../../beb_mob/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_MOB -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>        
+    
+    <!--###########################################  -->   
+    <!--FILTRE WCB_DIGITAL avant transfert 			 -->    
+    <!--###########################################  -->    
+    <form id="FiltreWCBDIGITAL_AVANT_TRF">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL_AVANT_TRF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>                
+                <script><![CDATA[
+		            customNode(applicationName + '_' + '00072_WCB_SUSPENDU');
+		            POSITION_ARBO = 65;	
+		            log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>                
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                 
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	                
+            	<script><![CDATA[
+		            customNode(applicationName + '_' + '00072_SUSPENDU');
+		            POSITION_ARBO = 66;
+		            log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);	
+                ]]></script>                
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                  
+            </if>
+        </block>
+    </form> 
+    
+    <!--#####################################################################################################
+        WCB - CTRL Client PREMIUM
+        ##################################################################################################### -->
+    <form id="WCB_SUSPENDU_CTRL_PREMIUM">
+    	<script><![CDATA[ formCourant = "WCB_SUSPENDU_CTRL_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        
+        <block>
+            <!--	 Premium via les données SEARCH oy Marqueur C2OL ou AEM  --> 
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile()  "); ]]></script>	
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() ">				
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_PREMIUM_SUSP');
+	            	POSITION_ARBO = 49;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>                
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "WCB_SUSPENDU_TRF"); ]]></script>
+                <goto next="#WCB_SUSPENDU_TRF"/>
+	            	                         
+            </if>
+         </block>
+    </form>          
+       
+ 	<!--	transfert des appels WCB - PREMIUM  -->    
+    <form id="WCB_SUSPENDU_PREMIUM_TRF">
+    	<script><![CDATA[ formCourant = "WCB_SUSPENDU_PREMIUM_TRF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	PREMIUM PACKPRO -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true'"); ]]></script>	            
+            <if cond="MOBILE_PACKPRO == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_PACKPRO_SUSP');
+					ID_FLUX='ABO_WCB_FCT_PACKPRO_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>  
+                
+           <!--	PREMIUM FIDE  -->
+            <elseif cond="MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_PREM_FIDE_SUSP');
+					ID_FLUX='ABO_WCB_FCT_PREMIUM_FIDE_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                                                 
+
+			<!--	PREMIUM COLLAB -AUTRE  -->                
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_PREM_AUTRE_SUSP');
+					ID_FLUX='ABO_WCB_FCT_PREMIUM_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>  
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>                       
+                                         
+        </block>
+    </form> 
+    
+        
+ 	<!--	transfert des appels WCB - GP  -->    
+    <form id="WCB_SUSPENDU_TRF">
+    	<script><![CDATA[ formCourant = "WCB_SUSPENDU_TRF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block> 
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00072_WCB_FCT_SUSP');
+            	POSITION_ARBO = 45;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				ID_FLUX='ABO_WCB_FCT_SUSP_ABO';
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);					
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+                                         
+        </block>
+    </form>   
+    
+    
+    <!--#####################################################################################################
+         Appel direct: CTRL Client PREMIUM
+        ##################################################################################################### -->
+    <form id="SUSPENDU_CTRL_PREMIUM">
+    	<script><![CDATA[ formCourant = "SUSPENDU_CTRL_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        
+        <block>
+            <!--	 Premium via les données SEARCH ou Marqueur C2OL ou AEM  --> 
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() ">				
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() "); ]]></script>	
+                <script><![CDATA[
+	           		customNode(applicationName + '_' + '00072_FCT_PREMIUM_SUSP');
+                	POSITION_ARBO = 37;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>                
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_SUSP');
+	            	POSITION_ARBO = 41;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>  
+	            	                         
+            </if>
+         </block>
+    </form>          
+       
+ 	<!--	transfert des appels directs - PREMIUM  -->    
+    <form id="SUSPENDU_PREMIUM_TRF">
+    	<script><![CDATA[ formCourant = "SUSPENDU_PREMIUM_TRF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>  
+            <!--	PREMIUM PACKPRO --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true'"); ]]></script>	            
+            <if cond=" MOBILE_PACKPRO == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " MOBILE_PACKPRO == 'true' "); ]]></script>        	            
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PACKPRO_SUSP');
+					ID_FLUX='ABO_FCT_PACKPRO_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                                           
+            
+            <!--	PREMIUM FIDE  autre que PLATINE --> 
+            <elseif cond="MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true' "); ]]></script>            	            
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PREMIUM_FIDE_SUSP');
+					ID_FLUX='ABO_FCT_PREMIUM_FIDE_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+			<!--	PREMIUM -COLLAB ou AUTRE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_PREMIUM_AUTRE_SUSP');
+					ID_FLUX='ABO_FCT_PREMIUM_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if> 
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>                              
+          
+                                         
+        </block>
+    </form> 
+    
+        
+ 	<!--	transfert des appels directs - GP  -->       
+    <form id="SUSPENDU_TRF">
+    	<script><![CDATA[ formCourant = "SUSPENDU_TRF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	CONV RISQUE  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_CONV_R_SUSP');									
+					ID_FLUX='ABO_FCT_CONV_RISQUE_SUSP';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!--	CONV NON RISQUE  -->
+            <elseif cond="CUSTOMER_IHM.C2OL_CONV == 'true' &amp;&amp; MOBILE_CONV_NON_RISQUE =='true' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV == 'true' &amp;&amp; MOBILE_CONV_NON_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_CONV_SUSP');				
+					ID_FLUX='ABO_FCT_CONV_SUSP';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!--	NON_CONV  RISQUE  -->
+            <elseif cond="CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_RISQUE_SUSP');				
+					ID_FLUX='ABO_FCT_RISQUE_SUSP';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_FCT_AUTRE_SUSP');
+					ID_FLUX='ABO_FCT_SUSP';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+            </if>
+        </block>
+    </form>        
+    
+
+    <form id="Transfert">
+    	<script><![CDATA[ formCourant = "Transfert"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form>
+
+</vxml>

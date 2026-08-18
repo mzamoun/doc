@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				MRO
+        Date de Creation :		11/12/2017
+        Page :					Application FIXE - ajout de l'index + gestion de la variable GPV_OUT_DATA
+        Modification			MRO			09/01/2018	migration v8
+        						IMA/CZO		20/07/2022	MAJ_PILOTE_LN
+    -->
+
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_INDEX.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+
+    <!--###########################################
+        Aiguillage appel suivant provenance
+        ########################################### -->
+    <form id="Aiguillage_APPEL">
+    	<script><![CDATA[ formCourant = "Aiguillage_APPEL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Client provenace LANGAGE_NAT-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "APP_ORIGINE=='LN'"); ]]></script>	
+            <if cond="APP_ORIGINE=='LN'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "APP_ORIGINE=='LN'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "main_ln"); ]]></script>
+                <goto next="#main_ln"/>
+
+                <!--	tout autre provenance-->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "main"); ]]></script>
+                <goto next="#main"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <form id="main">
+        <script><![CDATA[ formCourant = "main"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+		    <script><![CDATA[
+				<!--	Parametres ClickFOX-->
+			    CLICKFOX_SVI_ELIG= 'true';
+			    customListApp=customListApp + applicationName +',';
+				customNode(applicationName + '_' + '00001_F_DECROCHE');    
+			    
+			    var followingPage ="./FIXE_CTRL_HOHNO.vxml";
+				log_debug_index_main(followingPage) ;
+		    ]]></script>        
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingPage); ]]></script>
+            <goto expr="followingPage"/>
+        </block>
+    </form>
+
+    <form id="main_ln">
+        <script><![CDATA[ formCourant = "main_ln"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	    	<script><![CDATA[	    
+				//on active click_fox, et on ne rajoute pas la balise decoche. Car elle est rajoutée plus bas.
+				var res = start_index_interne('true', '', -1);
+				
+				var callerNumber = res.caller_number;
+			    var calledNumber = res.called_number;
+			    ndi = NDI;		
+			    var followingPage ="";
+				log_debug_index_main(followingPage) ;
+		    ]]></script> 
+		    
+            <!--	Client provenace LANGAGE_NAT - LN_COM-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "LN_MOTIF == 'LANGNAT_02'"); ]]></script>	
+            <if cond="LN_MOTIF == 'LANGNAT_02'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "LN_MOTIF == 'LANGNAT_02'"); ]]></script>
+		    	<script><![CDATA[	
+				    followingPage ="./FIXE_LN_ROUTAGE_CO.vxml";
+					log_debug_index_main(followingPage) ;
+			    ]]></script>            		
+
+
+            <!--	LN_FULL (LANGNAT_03)  ou tout autre provenance - par defaut-->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+		    	<script><![CDATA[	
+				    followingPage ="./FIXE_LN_FULL_ROUTAGE.vxml";
+					log_debug_index_main(followingPage) ;
+			    ]]></script> 
+
+            </if>
+            
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingPage); ]]></script>
+            <goto expr="followingPage"/>            
+            		           
+
+        </block>
+    </form>
+        
+</vxml>

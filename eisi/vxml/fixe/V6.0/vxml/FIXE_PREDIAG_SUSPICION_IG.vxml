@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		19/12/2022
+        Page :                  Application FIXE - PREDIAG_SUSPICION_IG
+        Modification        	IMA/CZO	03/11/2023		Integration du traitement d'exclusion au reboot modem suivant IAD_MODEL
+														  	                            
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_PREDIAG_SUSPICION_IG.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+
+
+    <!--########################################################################
+         TRAITEMENT ELIGIBILITE PREDIAG
+    ######################################################################## -->
+
+    <form id="VERS_ELIGIBILITE_PREDIAG">
+        <script><![CDATA[ formCourant = "VERS_ELIGIBILITE_PREDIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- eligibilite prediag active  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.ELIGIBILITE_PREDIAG == 'true'"); ]]></script>
+            <if cond="CUSTOMER_IHM.ELIGIBILITE_PREDIAG == 'true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.ELIGIBILITE_PREDIAG == 'true'"); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_ELIGIBILITE_PREDIAG"); ]]></script>
+	            <goto next="#PRE_TRAITEMENT_ELIGIBILITE_PREDIAG"/>               
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>               
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_PREDIAG_OFF"); ]]></script>
+	            <goto next="#ELIGIBILITE_PREDIAG_OFF"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <!--	PRE TRAITEMENT: Eligibilite par rapport au nombre d'appel du mm ndi au PREDIAG   -->
+    <form id="PRE_TRAITEMENT_ELIGIBILITE_PREDIAG">
+        <script><![CDATA[ formCourant = "PRE_TRAITEMENT_ELIGIBILITE_PREDIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var ndi = NDI;
+		    if ( isDexterRessourcePrincipaleValid()){
+				ndi  = CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE;
+		    }
+		    else{
+				ndi  = NDI;
+		    }
+        ]]></script>        
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'ELIGIBILITE_PREDIAG_HISTO', subdialogEligibilityPrediagHisto , 'ndi='+ndi ); ]]></script>
+        <subdialog name="ELIGIBILITE_PREDIAG_HISTO"
+                   srcexpr="subdialogEligibilityPrediagHisto"
+                   namelist="ndi"
+                   method="post"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav">
+            <catch event="error"> <!-- webapp KO -->
+                <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_PREDIAG_ELIGIBILITE_NBRE_APPEL_HS');
+				]]></script>              
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_PREDIAG_KO"); ]]></script>
+                <goto next="#ELIGIBILITE_PREDIAG_KO"/>
+            </catch>
+        </subdialog>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'ELIGIBILITE_PREDIAG_HISTO', ELIGIBILITE_PREDIAG_HISTO); ]]></script>
+            <!--	traitement KO - HS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "ELIGIBILITE_PREDIAG_HISTO.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="ELIGIBILITE_PREDIAG_HISTO.APP_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELIGIBILITE_PREDIAG_HISTO.APP_STATUS == 'NOK' "); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_PREDIAG_ELIGIBILITE_NBRE_APPEL_HS');
+				]]></script>                 
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_PREDIAG_KO"); ]]></script>
+                <goto next="#ELIGIBILITE_PREDIAG_KO"/>                             
+			
+            <!--	traitement web app OK  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_ELIGIBILITE_PREDIAG_HISTO" expr="ELIGIBILITE_PREDIAG_HISTO"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_ELIGIBILITE_PREDIAG_HISTO", ELIGIBILITE_PREDIAG_HISTO); ]]></script>
+                 
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_PREDIAG"); ]]></script>
+                <goto next="#ELIGIBILITE_PREDIAG"/>                                                                       
+                
+            </if>               
+                      
+        </block>
+    </form>     
+        
+    <form id="ELIGIBILITE_PREDIAG">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_PREDIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- eligibilite prediag: nbre appel par jour + dexter: (type_materiel,techno) ou (code_produit, techno) + ressource_principale est un num fixe  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isEligiblePrediag()"); ]]></script>
+            <if cond="isEligiblePrediag()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isEligiblePrediag()"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20043_ELIGIBILITE_PREDIAG_OK');
+					POSITION_ARBO = 41;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>                
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_PREDIAG_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_PREDIAG_KO"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <form id="ELIGIBILITE_PREDIAG_OFF">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_PREDIAG_OFF"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20043_ELIGIBILITE_PREDIAG_OFF');
+				POSITION_ARBO = 42;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/> 
+        </block>
+    </form> 
+        
+    <form id="ELIGIBILITE_PREDIAG_KO">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_PREDIAG_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20043_ELIGIBILITE_PREDIAG_NOK');
+				POSITION_ARBO = 42;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/> 
+        </block>
+    </form>    
+    
+    <!--########################################################################
+         CTRL APPEL A PARTIR BOX CLIENT
+    ######################################################################## -->
+
+    <form id="CTRL_APPEL_BOX_CLIENT">
+        <script><![CDATA[ formCourant = "CTRL_APPEL_BOX_CLIENT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Autoriser les appels non identifie automatiquement à partir de leurs box  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.APPEL_LIGNE_BOX == 'true' &amp;&amp; FIXE_RECO_AUTO_NUM_FIXE !='true' "); ]]></script>
+            <if cond="CUSTOMER_IHM.APPEL_LIGNE_BOX == 'true' &amp;&amp; FIXE_RECO_AUTO_NUM_FIXE !='true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.APPEL_LIGNE_BOX == 'true' &amp;&amp; FIXE_RECO_AUTO_NUM_FIXE !='true' "); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20043_APPEL_LIGNE_BOX_NOK');	
+					POSITION_ARBO = 43;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+            <elseif cond="CUSTOMER_IHM.APPEL_LIGNE_BOX != 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.APPEL_LIGNE_BOX != 'true'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20043_APPEL_LIGNE_BOX_OFF');	
+					POSITION_ARBO = 44;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20043_APPEL_LIGNE_BOX_OK');
+					POSITION_ARBO = 44;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+            </if>
+
+        </block>
+    </form>    
+
+ 
+    
+    <!--###########################################
+        Appel HISPEED - recup IDUR
+    ########################################### -->  
+    <form id="RECO_HISPEED">
+    	<script><![CDATA[ formCourant = "RECO_HISPEED"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+      	<script><![CDATA[
+			ndi= CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE;            
+	    ]]></script>
+	    
+		<script><![CDATA[ log_debug_appel_web_app(pageCourante, 'BDDClientHISPEED', subdialogHISPEED , 'ndi=' + ndi  ); ]]></script>
+	
+	      <subdialog name="BDDClientHISPEED" 
+	      	srcexpr="subdialogHISPEED" 
+	      	namelist="ndi" 
+	      	method="get" 
+	      	fetchtimeout="10s" 
+	      	fetchaudio="../../../audio/Attente.wav"/>
+	      <catch event="error">
+	      		<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_RECO_HISPEED_HS');
+				]]></script>              
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RECO_HISPEED_KO"); ]]></script>
+	            <goto next="#RECO_HISPEED_KO" /> 			
+	      </catch>
+
+      <block>
+      		<script><![CDATA[ log_debug_result_web_app(pageCourante, 'BDDClientHISPEED', BDDClientHISPEED ); ]]></script> 
+     		<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " BDDClientHISPEED.APP_STATUS == 'NOK' || BDDClientHISPEED.HISPEED_STATUS == 'NOK' "); ]]></script>	
+     		<if cond=" BDDClientHISPEED.APP_STATUS == 'NOK' || BDDClientHISPEED.HISPEED_STATUS == 'NOK' ">
+     			<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " BDDClientHISPEED.APP_STATUS == 'NOK' || BDDClientHISPEED.HISPEED_STATUS == 'NOK' "); ]]></script>	
+				<script><![CDATA[ log_appel_web_app_nok(pageCourante, 'BDDClientHISPEED', subdialogHISPEED , 'ndi=' + NDI ); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_RECO_HISPEED_HS');
+				]]></script> 	
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RECO_HISPEED_KO"); ]]></script>
+				<goto next="#RECO_HISPEED_KO"/>					
+			</if>   
+			   
+      		<!--	Client reconnu dans hispeed et IDUR est retourné et non vide-->	
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "BDDClientHISPEED.NDI_FOUND == 'true' &amp;&amp; BDDClientHISPEED.IDUR !='' &amp;&amp; BDDClientHISPEED.IDUR !='null' "); ]]></script>	
+			<if cond="BDDClientHISPEED.NDI_FOUND == 'true' &amp;&amp; BDDClientHISPEED.IDUR !='' &amp;&amp; BDDClientHISPEED.IDUR !='null'">     
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "BDDClientHISPEED.NDI_FOUND == 'true' &amp;&amp; BDDClientHISPEED.IDUR !='' &amp;&amp; BDDClientHISPEED.IDUR !='null'"); ]]></script>	
+
+                <assign name="IDUR" expr="BDDClientHISPEED.IDUR"/> 
+                <script><![CDATA[ log_debug_assignment(pageCourante,"IDUR", IDUR); ]]></script>				
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RECO_HISPEED_OK"); ]]></script>
+				<goto next="#RECO_HISPEED_OK"/>
+				
+           <!--	Client reconnu dans hispeed et IDUR  vide-->	
+            <elseif cond="BDDClientHISPEED.NDI_FOUND == 'true' &amp;&amp; (BDDClientHISPEED.IDUR =='' || BDDClientHISPEED.IDUR =='null')"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "BDDClientHISPEED.NDI_FOUND == 'true' &amp;&amp; (BDDClientHISPEED.IDUR =='' || BDDClientHISPEED.IDUR =='null')"); ]]></script>
+                <assign name="IDUR" expr="BDDClientHISPEED.IDUR"/> 
+                <script><![CDATA[ log_debug_assignment(pageCourante,"IDUR", IDUR); ]]></script>				
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RECO_HISPEED_OK_IDUR_VIDE"); ]]></script>
+				<goto next="#RECO_HISPEED_OK_IDUR_VIDE"/>					
+	            								            				
+			<!--	Client non reconnu dans hispeed -->									
+			<else />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RECO_HISPEED_KO"); ]]></script>
+				<goto next="#RECO_HISPEED_KO"/>
+            </if>  
+           
+      </block>
+   </form>
+   
+    <form id="RECO_HISPEED_OK">
+        <script><![CDATA[ formCourant = "RECO_HISPEED_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20044_WS_HISPEED_OK');			
+            ]]></script>        
+			<script><![CDATA[ log_debug_next_form(pageCourante, "Vers_APPEL_STATUS_MODEM"); ]]></script>
+			<goto next="#Vers_APPEL_STATUS_MODEM"/>	
+            
+        </block>
+    </form>
+       
+    <form id="RECO_HISPEED_KO">
+        <script><![CDATA[ formCourant = "RECO_HISPEED_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20043_WS_HISPEED_KO');		
+				POSITION_ARBO = 181;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>              
+            
+        </block>
+    </form> 
+    
+    <form id="RECO_HISPEED_OK_IDUR_VIDE">
+        <script><![CDATA[ formCourant = "RECO_HISPEED_OK_IDUR_VIDE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20043_HISPEED_IDUR_VIDE');		
+				POSITION_ARBO = 181;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>              
+            
+        </block>
+    </form>        
+    
+    
+    <!--###########################################
+         VERS APPEL DIAG_FRONT - STATUS_MODEM
+    ########################################### -->
+    <form id="Vers_APPEL_STATUS_MODEM">
+        <script><![CDATA[ formCourant = "Vers_APPEL_STATUS_MODEM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_INFO_PREDIAG_AUDIO)"/>
+	        </prompt>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT');			
+            ]]></script>	        	        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "FILTRE_APPEL_STATUS_MODEM"); ]]></script>
+            <goto next="#FILTRE_APPEL_STATUS_MODEM"/>
+
+        </block>
+    </form>
+    
+    <form id="FILTRE_APPEL_STATUS_MODEM">
+        <script><![CDATA[ formCourant = "FILTRE_APPEL_STATUS_MODEM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <!-- filtre activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUS_MODEM != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.STATUS_MODEM != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUS_MODEM != 'false'"); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "HISTORISATION_APPEL_PREDIAG"); ]]></script>
+	            <goto next="#HISTORISATION_APPEL_PREDIAG"/>
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_OFF');			
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+	            <goto next="#VERS_MENU_TECHNIQUE_CC"/>
+
+            </if>
+        </block>
+    </form> 
+    
+    
+    <form id="HISTORISATION_APPEL_PREDIAG">
+        <script><![CDATA[ formCourant = "HISTORISATION_APPEL_PREDIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var ndi  = CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE;
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'PREDIAG_HISTOSIATION', subdialogPrediagHistorisation , 'ndi='+ndi ); ]]></script>
+        <subdialog name="PREDIAG_HISTOSIATION"
+                   srcexpr="subdialogPrediagHistorisation"
+                   namelist="ndi"
+                   method="post"
+                   fetchtimeout="3s"
+                   fetchaudio="../../../audio/Attente.wav">
+            <catch event="error"> <!-- webapp KO -->
+                <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_PREDIAG_HISTORISATION_HS');
+				]]></script>               
+                <script><![CDATA[ log_debug_next_form(pageCourante, "APPEL_STATUS_MODEM"); ]]></script>
+                <goto next="#APPEL_STATUS_MODEM"/>
+            </catch>
+        </subdialog>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'PREDIAG_HISTOSIATION', PREDIAG_HISTOSIATION); ]]></script>
+            <!--	traitement KO - HS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "PREDIAG_HISTOSIATION.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="PREDIAG_HISTOSIATION.APP_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "PREDIAG_HISTOSIATION.APP_STATUS == 'NOK' "); ]]></script>
+				<script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_PREDIAG_HISTORISATION_HS');
+				]]></script>                 
+                <script><![CDATA[ log_debug_next_form(pageCourante, "APPEL_STATUS_MODEM"); ]]></script>
+                <goto next="#APPEL_STATUS_MODEM"/>                             
+			
+            <!--	traitement web app OK  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+
+	 	 		<!--	traitement OK - et historisation ok -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "PREDIAG_HISTOSIATION.RECORDED == 'true'"); ]]></script>
+	            <if cond="PREDIAG_HISTOSIATION.RECORDED == 'true'">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "PREDIAG_HISTOSIATION.RECORDED == 'true'"); ]]></script>            		
+	                <script><![CDATA[ log_debug_next_form(pageCourante, "APPEL_STATUS_MODEM"); ]]></script>
+	                <goto next="#APPEL_STATUS_MODEM"/>   
+				
+	            <!--	traitement OK - et appel non eligible -->                                
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_BOX_HISTORISATION_APPEL_KO');			
+		            ]]></script>
+	                <script><![CDATA[ log_debug_next_form(pageCourante, "APPEL_STATUS_MODEM"); ]]></script>
+	                <goto next="#APPEL_STATUS_MODEM"/>                
+	            </if>              	                
+           
+            </if>               
+                      
+        </block>
+    </form>              
+            
+    <!--###########################################
+         TEST PREDIAG - STATUS_MODEM
+    ########################################### -->
+    <form id="APPEL_STATUS_MODEM">
+        <script><![CDATA[ formCourant = "APPEL_STATUS_MODEM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var idur = IDUR;
+			var techno = '' ; 
+				if ( isClientFixeFTTH()) {
+					techno = 'FTTH' ;
+				}
+				else if ( isClientFixeFTTB())
+				{
+					techno = 'FTTB' ;	
+   		        }
+   		        else {
+					techno = 'ADSL' ;
+             	}			
+        ]]></script>
+        <script><![CDATA[ log_debug_assignment(pageCourante,'idur', idur); ]]></script>
+        <script><![CDATA[ log_debug_assignment(pageCourante,'techno', techno); ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS_BOX_STATUS_MODEM', subdialogWS_BOX_STATUS_MODEM , 'idur=' + idur +'|techno=' + techno  ); ]]></script>
+        <subdialog name="WS_BOX_STATUS_MODEM"
+                   srcexpr="subdialogWS_BOX_STATUS_MODEM"
+                   namelist="idur techno"
+                   method="get"
+                   fetchtimeout="120s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_HS');
+            ]]></script>             
+            <script><![CDATA[ log_debug_next_form(pageCourante, "BOX_DOWN"); ]]></script>
+            <goto next="#BOX_DOWN"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_BOX_STATUS_MODEM', WS_BOX_STATUS_MODEM ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_BOX_STATUS_MODEM.APP_STATUS == 'NOK' || WS_BOX_STATUS_MODEM.WS_STATUS_MODEM_STATUS == 'NOK' "); ]]></script>
+            <if cond=" WS_BOX_STATUS_MODEM.APP_STATUS == 'NOK' || WS_BOX_STATUS_MODEM.WS_STATUS_MODEM_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_BOX_STATUS_MODEM.APP_STATUS == 'NOK' || WS_BOX_STATUS_MODEM.WS_STATUS_MODEM_STATUS == 'NOK' "); ]]></script>                
+                <!--	gestion des stat des erreurs WS STATUS_MODEM -->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "WS_BOX_STATUS_MODEM.CODE_ERREUR_WS  &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                <if cond=" WS_BOX_STATUS_MODEM.CODE_ERREUR_WS  &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != 'undefined' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "WS_BOX_STATUS_MODEM.CODE_ERREUR_WS  &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_STATUS_MODEM.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_HS_'+ WS_BOX_STATUS_MODEM.CODE_ERREUR_WS+'_'+ WS_BOX_STATUS_MODEM.LIBELLE_ERREUR_WS);
+                    ]]></script>
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_HS');
+                    ]]></script>                  
+                </if> 
+                                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "BOX_DOWN"); ]]></script>
+                <goto next="#BOX_DOWN"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <assign name="CUSTOMER_BOX_STATUS_MODEM" expr="WS_BOX_STATUS_MODEM"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_BOX_STATUS_MODEM", WS_BOX_STATUS_MODEM); ]]></script>
+
+            </if>
+
+	            
+	                        
+            <!--	IAD_MODEL non eligible au rebbot_box  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL_ELIG_REBOOT == 'false' "); ]]></script>
+            <if cond=" CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL_ELIG_REBOOT == 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL_ELIG_REBOOT == 'false'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_EXCLU_BOX_'+ CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL);				
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+	            <goto next="#VERS_MENU_TECHNIQUE_CC"/>                 
+
+            <!--	WS_BOX_STATUS_MODEM UP  -->
+            <elseif cond=" isBoxUp()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxUp()"); ]]></script>                
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20044_WS_BOX_UP');
+					POSITION_ARBO = 45;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>  
+                                
+            <!--	WS_BOX_STATUS_MODEM DOWN  -->
+            <elseif cond="isBoxDown()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxDown()"); ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "BOX_DOWN"); ]]></script>
+                <goto next="#BOX_DOWN"/>                
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BOX_STATUS_MODEM.CAUSE  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != 'undefined'"); ]]></script>
+                <if cond=" CUSTOMER_BOX_STATUS_MODEM.CAUSE  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != 'undefined' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BOX_STATUS_MODEM.CAUSE  &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != '' &amp;&amp; CUSTOMER_BOX_STATUS_MODEM.CAUSE != 'undefined'"); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_NOK_'+ CUSTOMER_BOX_STATUS_MODEM.CAUSE );
+                    ]]></script>
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	                <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_PREDIAG_DIAG_FRONT_NOK');
+	                ]]></script>                 
+                </if>                 
+                <script><![CDATA[ log_debug_next_form(pageCourante, "BOX_DOWN"); ]]></script>
+                <goto next="#BOX_DOWN"/>
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="BOX_DOWN">
+        <script><![CDATA[ formCourant = "BOX_DOWN"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20044_WS_BOX_DOWN');			
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_FILTRE_SUSPICION_IG"); ]]></script>
+            <goto next="#VERS_FILTRE_SUSPICION_IG"/>
+        </block>
+    </form>    
+
+    
+    <!--###########################################
+         SUSPICION IG
+    ########################################### --> 
+    <form id="VERS_FILTRE_SUSPICION_IG">
+        <script><![CDATA[ formCourant = "VERS_FILTRE_SUSPICION_IG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <!-- filtre activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.SUSPICION_IG != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.SUSPICION_IG != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.SUSPICION_IG != 'false'"); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "FILTRE_SUSPICION_IG"); ]]></script>
+	            <goto next="#FILTRE_SUSPICION_IG"/>
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_OFF');			
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+	            <goto next="#VERS_MENU_TECHNIQUE_CC"/>
+
+            </if>
+        </block>
+    </form>           
+            
+    <!--###########################################
+         TEST PREDIAG - STATUS_MODEM
+    ########################################### -->
+    <form id="FILTRE_SUSPICION_IG">
+        <script><![CDATA[ formCourant = "FILTRE_SUSPICION_IG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var ndi = CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE;
+        ]]></script>
+        <script><![CDATA[ log_debug_assignment(pageCourante,'ndi', ndi); ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS_BOX_SUSPICION_IG', subdialogWS_BOX_SUSPICION_IG , 'ndi=' + ndi  ); ]]></script>
+        <subdialog name="WS_BOX_SUSPICION_IG"
+                   srcexpr="subdialogWS_BOX_SUSPICION_IG"
+                   namelist="ndi"
+                   method="get"
+                   fetchtimeout="120s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>           
+            <!--	gestion des stat des erreurs WS SUPICION_ig -->
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_HS');
+            ]]></script>  
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+            <goto next="#VERS_MENU_TECHNIQUE_CC"/>             
+                            
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_BOX_SUSPICION_IG', WS_BOX_SUSPICION_IG ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_BOX_SUSPICION_IG.APP_STATUS == 'NOK' || WS_BOX_SUSPICION_IG.WS_STATUS_SUSPICION_IG == 'NOK' "); ]]></script>
+            <if cond=" WS_BOX_SUSPICION_IG.APP_STATUS == 'NOK' || WS_BOX_SUSPICION_IG.WS_STATUS_SUSPICION_IG == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_BOX_SUSPICION_IG.APP_STATUS == 'NOK' || WS_BOX_SUSPICION_IG.WS_STATUS_SUSPICION_IG == 'NOK' "); ]]></script>
+                            
+                <!--	gestion des stat des erreurs WS SUPICION_ig -->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "WS_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                <if cond=" WS_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "WS_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; WS_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_HS_'+ WS_BOX_SUSPICION_IG.CODE_ERREUR_WS+'_'+ WS_BOX_SUSPICION_IG.LIBELLE_ERREUR_WS);
+                    ]]></script>
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_HS');
+                    ]]></script>                  
+                </if>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+                <goto next="#VERS_MENU_TECHNIQUE_CC"/> 
+	                            
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <assign name="CUSTOMER_BOX_SUSPICION_IG" expr="WS_BOX_SUSPICION_IG"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_BOX_SUSPICION_IG", WS_BOX_SUSPICION_IG); ]]></script>
+
+            </if>
+
+            <!--	BOX SUSPICION OK -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isBoxSuspicionIg_OK()"); ]]></script>
+            <if cond=" isBoxSuspicionIg_OK() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxSuspicionIg_OK() "); ]]></script>
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "FILTRE_SUSPICION_IG_TRF"); ]]></script>
+                <goto next="#FILTRE_SUSPICION_IG_TRF"/>         
+
+            <!--	BOX SUSPICION NON -->
+            <elseif cond="isBoxSuspicionIg_NON()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxDown()"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_NON');						
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+                <goto next="#VERS_MENU_TECHNIQUE_CC"/>                
+                                              
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <!--	gestion des stat des erreurs WS SUPICION_ig -->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                <if cond=" CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS  &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != '' &amp;&amp; CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS != 'undefined'"); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_NOK_'+ CUSTOMER_BOX_SUSPICION_IG.CODE_ERREUR_WS+'_'+ CUSTOMER_BOX_SUSPICION_IG.LIBELLE_ERREUR_WS);
+                    ]]></script>
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '20044_WS_DIAG_FRONT_SUSPICION_IG_NOK');
+                    ]]></script>                  
+                </if>                                
+                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+                <goto next="#VERS_MENU_TECHNIQUE_CC"/>
+            </if>
+
+        </block>
+    </form> 
+    
+    <!--###########################################
+         SUSPICION IG-TRANSFERT
+    ########################################### --> 
+    <form id="FILTRE_SUSPICION_IG_TRF">
+        <script><![CDATA[ formCourant = "FILTRE_SUSPICION_IG_TRF"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <!-- filtre activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.SUSPICION_IG_TRANSFERT != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.SUSPICION_IG_TRANSFERT != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.SUSPICION_IG_TRANSFERT != 'false'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20044_PREDIAG_SUSPICION_IG_TRANSFERT');
+					POSITION_ARBO = 177;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20044_PREDIAG_SUSPICION_IG_DISSUASION');
+					POSITION_ARBO = 178;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+            </if>
+        </block>
+    </form>
+    
+    <!--###########################################
+        SUSPICION_IG:DISSUASION
+    ########################################### -->
+    <form id="SUSPICION_IG_DISSUASION">
+        <script><![CDATA[ formCourant = "SUSPICION_IG_DISSUASION"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_INFO_SUSPICION_IG_AUDIO)"/>
+	        </prompt>	        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "QUIT"); ]]></script>
+            <goto next="#QUIT"/>
+
+        </block>
+    </form>
+    
+    
+    <!--#################################################################################################
+         Vers MENU TECH CC
+    ################################################################################################# -->
+    <form id="VERS_MENU_TECHNIQUE_CC">
+        <script><![CDATA[ formCourant = "VERS_MENU_TECHNIQUE_CC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TECHNIQUE.vxml#RETOUR_ELIG_PREDIAG_SUSPICION_IG"); ]]></script>
+            <goto next="./FIXE_TECHNIQUE.vxml#RETOUR_ELIG_PREDIAG_SUSPICION_IG"/>
+            
+        </block>
+    </form>    
+    
+    <!--###############################################################################
+                DISCONNECT
+        ############################################################################### -->    
+    <form id="QUIT">
+        <script><![CDATA[ formCourant = "QUIT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>    
+    
+
+</vxml>

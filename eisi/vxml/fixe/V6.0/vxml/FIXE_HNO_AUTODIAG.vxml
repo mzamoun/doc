@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		15/05/2024
+        Page :                  Application FIXE - FIXE_HNO_AUTODIAG
+        Modification
+        
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_HNO_AUTODIAG.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+		var mob_contact ='';
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    <var name="errorCounter1" expr="1"/>
+    <var name="errorCounter2" expr="1"/>
+
+    
+        
+    <form id="VERS_MENU_AUTODIAG">
+        <script><![CDATA[ formCourant = "VERS_MENU_AUTODIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_MENU_AUTODIAG');			
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_AUTODIAG"); ]]></script>
+            <goto next="#MENU_AUTODIAG"/>
+        </block>
+    </form>
+    
+    <form id="MENU_AUTODIAG">
+        <script><![CDATA[ formCourant = "MENU_AUTODIAG"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_AUTODIAG_MENU_AUTODIAG_AUDIO)"/>
+	        </prompt>
+	        <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_NDI_CONTACT"); ]]></script>
+	        <goto next="#CTRL_NDI_CONTACT"/>        
+
+        </block>
+    </form>     
+
+    <form id="CTRL_NDI_CONTACT">
+        <script><![CDATA[ formCourant = "Retour_FLASH_REINIT_MDP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+    
+        	<!-- Recup numero appelant -->
+            <script><![CDATA[
+		 	    var callerNumber = GVP_IN_DATA.caller_number;
+			    if (callerNumber.length==10) { mob_contact = "0" + callerNumber.substring(1,10); }
+			    if (callerNumber.length==13) { mob_contact = "0" + callerNumber.substring(4,13); }
+            ]]></script>
+          
+        	<!-- determination si client identifie dexter et num_contact est mobile  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "controlNdiMobile(mob_contact) == 'true'  "); ]]></script>
+            <if cond="controlNdiMobile(mob_contact) == 'true'  ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "controlNdiMobile(mob_contact) == 'true' "); ]]></script>
+
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_CONFIRM_NUM_CONTACT"); ]]></script>
+	            <goto next="#MENU_CONFIRM_NUM_CONTACT"/>                
+                
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '73000_AUTODIAG_FIXE_APPELANT');
+	            ]]></script>   
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_SAISIE_NUM_CONTACT"); ]]></script>
+	            <goto next="#VERS_MENU_SAISIE_NUM_CONTACT"/>                
+
+            </if>
+
+        </block>
+    </form>
+
+
+
+    <!-- ==================================== -->
+    <!-- Menu CONFIRM_NUM_CONTACT				 -->
+    <!-- ==================================== --> 
+
+    <menu id="MENU_CONFIRM_NUM_CONTACT">
+        <script><![CDATA[ formCourant = "MENU_CONFIRM_NUM_CONTACT"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+                
+        <prompt bargein="true">
+            <audio expr="PlayFile('AUTODIAG_SMS_MOB_CONTACT')"/>
+ 
+            <foreach item="i" array="[0, 2, 4, 6, 8]">
+                <audio expr="sayasDigitsWav(mob_contact.substring(i,i+2))"/>
+                <break time="0.4s"/>
+            </foreach>
+        </prompt>
+
+        <prompt bargein="true">
+            <audio expr="PlayFile('AUTODIAG_SMS_MOB_CONTACT_SUITE')"/>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_NMNI_1');
+            ]]></script>
+
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+                    <!--
+                        Désolé, nous n’avons pas compris votre choix, de nouveau
+                    -->
+                </audio>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>            
+			<script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_NMNI_2');			
+			]]></script>				
+            <prompt bargein="true">
+                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+            </prompt>				
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>            
+        </catch>
+
+        <choice dtmf="1" next="#CONFIRM_NUM_CONTACT_CHOIX1"/>
+        <choice dtmf="2" next="#CONFIRM_NUM_CONTACT_CHOIX2"/>
+    </menu>
+     
+                
+    <form id="CONFIRM_NUM_CONTACT_CHOIX1">
+        <script><![CDATA[ formCourant = "CONFIRM_NUM_CONTACT_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_CONFIRM_NUM_CONTACT", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_MOB_OK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_ENVOI_SMS"); ]]></script>
+            <goto next="#VERS_ENVOI_SMS"/>
+
+        </block>
+    </form>
+
+    <form id="CONFIRM_NUM_CONTACT_CHOIX2">
+        <script><![CDATA[ formCourant = "CONFIRM_NUM_CONTACT_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_CONFIRM_NUM_CONTACT", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_MOB_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_SAISIE_NUM_CONTACT"); ]]></script>
+            <goto next="#VERS_MENU_SAISIE_NUM_CONTACT"/>
+                       
+
+        </block>
+    </form>
+
+    
+    
+    <!-- ==================================== -->
+    <!-- Menu SAISIE NUM CONTACT			  -->
+    <!-- ==================================== -->
+
+    <form id="VERS_MENU_SAISIE_NUM_CONTACT">
+        <script><![CDATA[ formCourant = "VERS_MENU_SAISIE_NUM_CONTACT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "SAISIE_MOB_CONTACT"); ]]></script>
+            <goto next="#SAISIE_MOB_CONTACT"/>
+
+        </block>
+    </form>
+        
+	<form id="SAISIE_MOB_CONTACT">
+		<script><![CDATA[ formCourant = "SAISIE_MOB_CONTACT"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>		
+		
+		<field name="enteredAccountNumber" type="digits?length=10">
+			<property name="termchar" value="#"/>
+			<property name="timeout" value="5s"/>
+  			<property name="interdigittimeout" value="5s"/>				
+			<prompt  bargein="true" >
+				<audio expr="PlayFile('SAISIE_NUM_CONTACT_SMS')"/>
+			</prompt>
+	         
+			<catch event="noinput nomatch">
+				<script><![CDATA[ log_debug_next_form(pageCourante, "nomatch_saisie_num_contact"); ]]></script>
+				<goto next="#nomatch_saisie_num_contact"/>
+			</catch>
+			
+			<filled>
+				<assign name="mob_contact" expr="enteredAccountNumber"/>
+				<script><![CDATA[ track_dtmfList (formCourant, "NUM_CONTACT_AUTODIAG="+enteredAccountNumber); ]]></script> 
+
+				<script><![CDATA[ log_debug_next_form(pageCourante, "action_ok_num_contact"); ]]></script>
+				<goto next="#action_ok_num_contact"/>
+			</filled>
+		</field>
+	</form>
+	
+	<!--###########################################
+		Controle du numero saisie: 10 digit et Mobile
+	########################################### -->
+	<form id="action_ok_num_contact">
+		<script><![CDATA[ formCourant = "action_ok_num_contact"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<block>			
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "controlNdiMobile(mob_contact) == 'true'"); ]]></script>
+			<if cond="controlNdiMobile(mob_contact) == 'true'">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "controlNdiMobile(mob_contact) == 'true'"); ]]></script>
+
+				<!--Vers MENU confirmation saisie-->
+				<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_CONFIRM_NUM_SAISIE"); ]]></script>
+				<goto next="#MENU_CONFIRM_NUM_SAISIE"/>
+				
+			<else />
+		    	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+
+				<script><![CDATA[ log_debug_next_form(pageCourante, "nomatch_saisie_num_contact"); ]]></script>
+				<goto next="#nomatch_saisie_num_contact"/>												    					   
+			</if>
+				
+		</block>
+	</form>
+			
+	<form id="nomatch_saisie_num_contact">
+		<script><![CDATA[ formCourant = "nomatch_saisie_num_contact"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<block>					
+
+			<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+			<script><![CDATA[ track_dtmfList ("SAISIE_MOB_CONTACT","NMNI"); ]]></script>			
+			        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter1 &lt; 2"); ]]></script>	
+            <if cond="document.errorCounter1 &lt; 2">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter1 &lt; 2"); ]]></script>	
+                <assign name="document.errorCounter1" expr="document.errorCounter1 + 1"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter1", document.errorCounter1); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NUM_CONTACT_NMNI_1');
+	            ]]></script> 
+	            <prompt bargein="true">
+	                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+	                    <!--
+	                        Désolé, nous n’avons pas compris votre choix, de nouveau
+	                    -->
+	                </audio>
+	            </prompt>	                            
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_SAISIE_NUM_CONTACT"); ]]></script>
+                <goto next="#VERS_MENU_SAISIE_NUM_CONTACT"/>
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+				<script><![CDATA[
+					customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NUM_CONTACT_NMNI_2');			
+				]]></script>				
+	            <prompt bargein="true">
+	                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+	            </prompt>				
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto expr="pageDisconnect"/>
+	            
+            </if> 
+					
+		</block>
+	</form>
+						
+
+    <!-- ==================================== -->
+    <!-- Menu CONFIRM_NUM_SAISIE			  -->
+    <!-- ==================================== -->
+    
+    <menu id="MENU_CONFIRM_NUM_SAISIE">
+        <script><![CDATA[ formCourant = "MENU_CONFIRM_NUM_SAISIE"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+                
+        <prompt bargein="true">
+            <audio expr="PlayFile('AUTODIAG_SMS_MOB_CONTACT')"/>
+ 
+            <foreach item="i" array="[0, 2, 4, 6, 8]">
+                <audio expr="sayasDigitsWav(mob_contact.substring(i,i+2))"/>
+                <break time="0.4s"/>
+            </foreach>
+        </prompt>
+
+        <prompt bargein="true">
+            <audio expr="PlayFile('AUTODIAG_SMS_MOB_CONTACT_SUITE')"/>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter2 &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "NMNI"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter2" expr="document.errorCounter2 + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter2", document.errorCounter2); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NMNI_1');
+            ]]></script>                 
+            <prompt>
+                <audio expr="PlayFile('ERREUR_CHOIX_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter2 == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "NMNI"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+			<script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NMNI_2');			
+			]]></script>				
+            <prompt bargein="true">
+                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+            </prompt>				
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+            
+        </catch>
+
+        <choice dtmf="1" next="#CONFIRM_NUM_SAISIE_CHOIX1"/>
+        <choice dtmf="2" next="#CONFIRM_NUM_SAISIE_CHOIX2"/>
+    </menu>
+
+    <form id="CONFIRM_NUM_SAISIE_CHOIX1">
+        <script><![CDATA[ formCourant = "CONFIRM_NUM_SAISIE_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_CONFIRM_NUM_SAISIE", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_MOB_SAISIE_OK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_ENVOI_SMS"); ]]></script>
+            <goto next="#VERS_ENVOI_SMS"/>
+
+        </block>
+    </form>
+
+    <form id="CONFIRM_NUM_SAISIE_CHOIX2">
+        <script><![CDATA[ formCourant = "CONFIRM_NUM_SAISIE_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_CONFIRM_NUM_CONTACT", "2"); ]]></script>
+        <block>
+            
+			<!-- NMNI MENU CHOIX CONFIRM NUM CONTACT SAISIE  -->
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_AUTODIAG_MOB_SAISIE_NOK');
+            ]]></script>                      
+			<script><![CDATA[ track_dtmfList ("MENU_CONFIRM_NUM_SAISIE","NMNI"); ]]></script>
+			        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter2 &lt; 2"); ]]></script>	
+            <if cond="document.errorCounter2 &lt; 2">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter2 &lt; 2"); ]]></script>	
+                <assign name="document.errorCounter2" expr="document.errorCounter2 + 1"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter2", document.errorCounter2); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NMNI_1');
+	            ]]></script>                 
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "SAISIE_MOB_CONTACT"); ]]></script>
+                <goto next="#SAISIE_MOB_CONTACT"/>
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+				<script><![CDATA[
+					customNode(applicationName + '_' + '73000_AUTODIAG_SAISIE_NMNI_2');			
+				]]></script>				
+	            <prompt bargein="true">
+	                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+	            </prompt>				
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto expr="pageDisconnect"/>
+	            
+            </if>  
+                        
+        </block>
+    </form>
+
+   
+		
+    <!-- ==================================== -->
+    <!-- ENVOI SMS - WS GINGER			  -->
+    <!-- ==================================== -->
+            
+    <form id="VERS_ENVOI_SMS">
+        <script><![CDATA[ formCourant = "VERS_ENVOI_SMS"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'FIXE_WS_MESSAGEREST20', subdialogWS_MESSAGEREST20 , 'mob_contact=' + mob_contact ); ]]></script>
+        <subdialog name="FIXE_WS_MESSAGEREST20"
+                   srcexpr="subdialogWS_MESSAGEREST20"
+                   namelist="mob_contact"
+                   method="post"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav">
+        </subdialog>
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '73000_MESSAGEREST20_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "ENVOI_SMS_KO"); ]]></script>
+            <goto next="#ENVOI_SMS_KO"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'FIXE_WS_MESSAGEREST20', FIXE_WS_MESSAGEREST20 ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="FIXE_WS_MESSAGEREST20.APP_STATUS == 'NOK'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.APP_STATUS == 'NOK'"); ]]></script>
+                <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'FIXE_WS_MESSAGEREST20', subdialogWS_ASC_REINIT_MDP , 'ndi=' + ndi +'|login=' + login +'notificationMedia=' + notificationMedia +'|notificationAdresseMedia=' + notificationAdresseMedia ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '73000_MESSAGEREST20_HS');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ENVOI_SMS_KO"); ]]></script>
+                <goto next="#ENVOI_SMS_KO"/>
+
+                <!-- Retour OK de la web APP-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <!-- Code Retour OK-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.APP_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.WS_MESSAGEREST20_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.ENVOI_SMS_SUCCES == 'true' "); ]]></script>
+                <if cond="FIXE_WS_MESSAGEREST20.APP_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.WS_MESSAGEREST20_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.ENVOI_SMS_SUCCES == 'true' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.APP_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.WS_MESSAGEREST20_STATUS == 'OK' &amp;&amp; FIXE_WS_MESSAGEREST20.ENVOI_SMS_SUCCES == 'true' "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '73000_MESSAGEREST20_OK');
+						<!--maj  de la variable CLICKFOX statAutre avec la donnee -->
+						statAutre=statAutre+'YOURREF:'+FIXE_WS_MESSAGEREST20.YOURREF+'|';						
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "ENVOI_SMS_SUCCES"); ]]></script>
+                    <goto next="#ENVOI_SMS_SUCCES"/>
+
+
+                    <!-- ENVOI SMS KO ou avec erreu-->
+                <else/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>                  
+                    
+		            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.CODE_ERREUR &amp;&amp; FIXE_WS_MESSAGEREST20.CODE_ERREUR !=''"); ]]></script>
+		            <if cond="FIXE_WS_MESSAGEREST20.CODE_ERREUR &amp;&amp; FIXE_WS_MESSAGEREST20.CODE_ERREUR !='' ">
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_MESSAGEREST20.CODE_ERREUR &amp;&amp; FIXE_WS_MESSAGEREST20.CODE_ERREUR !=''"); ]]></script>				
+	                    <script><![CDATA[
+							customNode(applicationName + '_' + '73000_MESSAGEREST20_'+FIXE_WS_MESSAGEREST20.CODE_ERREUR);
+	                    ]]></script>
+		            <else/>
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	                    <script><![CDATA[
+							customNode(applicationName + '_' + '73000_MESSAGEREST20_ERREUR');
+	                    ]]></script>				                 
+		
+		            </if>                                
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "ENVOI_SMS_KO"); ]]></script>
+                    <goto next="#ENVOI_SMS_KO"/>
+                </if>
+
+            </if>
+
+        </block>
+    </form>
+       
+
+    <form id="ENVOI_SMS_SUCCES">
+        <script><![CDATA[ formCourant = "ENVOI_SMS_SUCCES"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_AUTODIAG_WS_OK_AUTODIAG_WS_OK_AUDIO)"/>
+	        </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>
+    
+    <form id="ENVOI_SMS_KO">
+        <script><![CDATA[ formCourant = "ENVOI_SMS_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="false">
+	             <audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_AUTODIAG_WS_ERREUR_AUTODIAG_WS_ERREUR_AUDIO)"/>
+	        </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>    
+
+</vxml>

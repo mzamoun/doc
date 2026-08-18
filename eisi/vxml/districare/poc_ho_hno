@@ -1,0 +1,36 @@
+<!--######################################################
+         CTRL HOHNO
+    ###################################################### -->       
+    <form id="CtrlHoHnoCom">
+    	<script><![CDATA[ formCourant = "CtrlHoHnoCom"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	
+        <block>
+          
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	            
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_COM_HO');
+	            	POSITION_ARBO = 3;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>	            
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_COM_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form> 
+    
+    

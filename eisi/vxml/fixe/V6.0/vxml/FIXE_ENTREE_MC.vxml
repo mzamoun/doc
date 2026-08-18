@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		12/04/2014
+        Page :					Application FIXE - Retour MC
+        Modification :			MAJ  IMA/CZO	10/03/2017	Ajout de l'entrée GP-ADMIN
+								MRO				15/03/2018	migration v8
+								IMA/CZO			10/04/2018	Prise en compte des branches FIXE_PRO_INCIDENT_O et FIXE_GP_INCIDENT_O
+								EISI			22/11/2018	Prise en compte de l'appel au WS MC_TECH 
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_ENTREE_MC.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <!-- ==================================== //-->
+    <!-- Accueil ENTREE A PARTIR de FOP //-->
+    <!-- ==================================== //-->
+
+    <script><![CDATA[
+		ndi = NDI;
+	    <!--	Paramètres ClickFOX-->	
+		CLICKFOX_SVI_ELIG='true';
+		customListApp=customListApp + applicationName +',';
+    ]]></script>
+
+    <!--###########################################
+        Aiguillage suite au retour du parcours MC
+        ########################################### -->
+    <form id="Aiguillage_Retour_MC">
+    	<script><![CDATA[ formCourant = "Aiguillage_Retour_MC"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Client GP-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "MC_APP_ORIGINE=='FIXE_GP_WS'|| MC_APP_ORIGINE=='FIXE_GP_ADMIN_WS'"); ]]></script>	
+            <if cond="MC_APP_ORIGINE=='FIXE_GP_WS'|| MC_APP_ORIGINE=='FIXE_GP_ADMIN_WS' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MC_APP_ORIGINE=='FIXE_GP' || MC_APP_ORIGINE=='FIXE_GP_WS'||  MC_APP_ORIGINE=='FIXE_GP_ADMIN' || MC_APP_ORIGINE=='FIXE_GP_ADMIN_WS' "); ]]></script>	
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TECHNIQUE.vxml#Retour_MC"); ]]></script>
+                <goto next="./FIXE_TECHNIQUE.vxml#Retour_MC"/>
+                
+            <!--	FIXE_PRO_INCIDENT_O_WS ou   FIXE_GP_INCIDENT_O_WS --> 	
+			<elseif cond="MC_APP_ORIGINE == 'FIXE_PRO_INCIDENT_O_WS' || MC_APP_ORIGINE == 'FIXE_GP_INCIDENT_O_WS' " />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MC_APP_ORIGINE == 'FIXE_PRO_INCIDENT_O_WS' || MC_APP_ORIGINE == 'FIXE_GP_INCIDENT_O_WS'  "); ]]></script>	
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_DISSUASION_ORIENTEE.vxml#Retour_MC"); ]]></script>
+				<goto next="./FIXE_DISSUASION_ORIENTEE.vxml#Retour_MC"/>
+
+                <!--	Client PREMIUM-->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_PREMIUM.vxml#STC_PREMIUM_KO"); ]]></script>
+                <goto next="./FIXE_PREMIUM_TECH.vxml#STC_PREMIUM_KO"/>
+
+            </if>
+        </block>
+    </form>
+
+</vxml>

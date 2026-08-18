@@ -1,0 +1,1065 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	14/04/2017
+        Page :				Application FIXE - 			Traitement des appels en provenance de WCB_DIGITAL
+        Modification :		IMA/CZO 12/10/2017     	   	Prise en compte des traitements CONV et RISQUE
+                            IMA/CZO 24/01/2018     	   	Simplification des flux de transfert
+                            MRO		15/03/2018			migration v8
+							IMA/CZO 05/05/2018			menage conditions mog SAFIR	
+							IMA/CZO	05/07/2018			Menage des traitements SAFIR - full LDCCSU	
+							EISI	12/11/2018			MAJ du traitement PREMIUM - Ajout du traitement du marker CELL_PREM	
+							EISI	12/12/2018			Integration des traitements PREMIUM DMGT	
+							EISI	16/01/2019			MAJ du traitement PREMIUM - PLATINE + inetgartion ctrl HOHNO specifique	
+							IMA/CZO	01/03/2019		  	suppression traitement RED    
+							IMA/CZO	25/03/2019		    MAJ traitement PREMIUM - PACKPRO
+							IMA/CZO	05/11/2019		    MAJ traitement COLLAB
+							IMA/CZO	07/05/2021		    Menage des traitements ARAMIS			   		
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_WCB_DIGITAL.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <!--##################################################
+      AIGUILLAGE appels WCB_DIGITAL suivant MOTIF
+ 	 ################################################# -->
+    <form id="WCB_AIGUILLAGE_MOTIF">
+        <script><![CDATA[ formCourant = "WCB_AIGUILLAGE_MOTIF"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isObjectInArray(wcb_digital_codeMotif, ['01','02' ,'03' ])"); ]]></script>
+            <if cond="isObjectInArray(wcb_digital_codeMotif, ['01','02' ,'03' ])">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isObjectInArray(wcb_digital_codeMotif, ['01','02' ,'03' ])"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_WCB_TECHNIQUE');
+                ]]></script>
+                
+	            <!--	SOUS APPLI FIXE_TECH HO  -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_TECH_IS_OPEN !='false' "); ]]></script>	
+	            <if cond=" CUSTOMER_HOHNO.FIXE_TECH_IS_OPEN !='false' ">
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_TECH_IS_OPEN !='false' "); ]]></script>
+	                <script><![CDATA[
+						customNode(applicationName + '_' + '00080_WCB_HO_TECH');
+	                ]]></script>	 
+	                           	
+		            <!-- PREMIUM -->  
+		            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		                <script><![CDATA[
+							customNode(applicationName + '_' + '00080_WCB_PREM_TECH');
+		                ]]></script>		
+			            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_PREMIUM.vxml#ENTREE_WCB_DIGITAL_PREMIUM_TECH"); ]]></script>
+		                <goto next="./FIXE_PREMIUM.vxml#ENTREE_WCB_DIGITAL_PREMIUM_TECH"/>
+		                		
+		            <else/>
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		                <script><![CDATA[
+							customNode(applicationName + '_' + '00080_WCB_TECH');
+		                ]]></script>		                
+		            
+		                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_WCB_DIGITAL_TECH"); ]]></script>
+		                <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_WCB_DIGITAL_TECH"/>		
+		            </if> 
+					
+	
+	            <!--	FIXE_TECH HNO  -->
+	            <else/>
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	                <script><![CDATA[
+						customNode(applicationName + '_' + '00042_WCB_HNO_TECH');
+	                ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_TECH.vxml"); ]]></script>
+	                <goto next="./FIXE_HNO_TECH.vxml"/>
+	
+	            </if>             
+
+            <elseif cond="wcb_digital_codeMotif == '04' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '04' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_WCB_DEMENAGEMENT');
+                ]]></script>
+                
+	            <!--	SOUS APPLI FIXE_DEM HO  -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_DEM_IS_OPEN !='false' "); ]]></script>	
+	            <if cond=" CUSTOMER_HOHNO.FIXE_DEM_IS_OPEN !='false' ">
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_DEM_IS_OPEN !='false' "); ]]></script>	
+	                <script><![CDATA[
+						customNode(applicationName + '_' + '00080_WCB_HO_DEM');
+	                ]]></script>	            	
+	            	
+		            <!-- PREMIUM -->  
+		            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		                <script><![CDATA[
+							customNode(applicationName + '_' + '00080_WCB_PREM_DMGT');
+		                ]]></script>		
+			            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_PREMIUM.vxml#ENTREE_WCB_DIGITAL_PREMIUM_DMGT"); ]]></script>
+		                <goto next="./FIXE_PREMIUM.vxml#ENTREE_WCB_DIGITAL_PREMIUM_DMGT"/>
+		                		
+		            <else/>
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		                <script><![CDATA[
+							customNode(applicationName + '_' + '00080_WCB_DMGT');
+		                ]]></script>		                
+		            
+		                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_WCB_DIGITAL_DMGT"); ]]></script>
+		                <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_WCB_DIGITAL_DMGT"/>	 	
+		            </if>
+	
+	            <!--	FIXE_DEM HNO  -->
+	            <else/>
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	                <script><![CDATA[
+						customNode(applicationName + '_' + '00042_WCB_HNO_DEM');
+	                ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_DEM.vxml"); ]]></script>
+	                <goto next="./FIXE_HNO_DEM.vxml"/>
+	
+	            </if>                
+
+            <elseif cond="wcb_digital_codeMotif == '05' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '05' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_WCB_ADMIN');
+                ]]></script>                
+                
+	            <!--	SOUS APPLI FIXE_COM HO  -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' "); ]]></script>	
+	            <if cond=" CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' ">
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' "); ]]></script>	
+	                <script><![CDATA[			               
+						customNode(applicationName + '_' + '00080_WCB_HO_COM');
+		            ]]></script>
+		            
+		            <!-- PREMIUM -->  
+		            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+		
+			            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_PREMIUM_AUTRE.vxml#ENTREE_WCB_DIGITAL_PREMIUM_AUTRE"); ]]></script>
+		                <goto next="./FIXE_PREMIUM_AUTRE.vxml#ENTREE_WCB_DIGITAL_PREMIUM_AUTRE"/>
+		
+		            <else/>
+		                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	            
+	
+		                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ADMINISTRATIF.vxml#ENTREE_GP_ADMIN_WCB"); ]]></script>
+		                <goto next="./FIXE_ADMINISTRATIF.vxml#ENTREE_GP_ADMIN_WCB"/>	
+		            </if>
+	
+	            <!--	FIXE_COM HNO  -->
+	            <else/>
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	                <script><![CDATA[			               
+						customNode(applicationName + '_' + '00042_WCB_HNO_COM');
+	                ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_COM.vxml"); ]]></script>
+	                <goto next="./FIXE_HNO_COM.vxml"/>
+	
+	            </if>                 
+                 
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#RETOUR_TRAITEMENT_WCB"); ]]></script>
+                <goto next="./FIXE_ENTREE_GP.vxml#RETOUR_TRAITEMENT_WCB"/>
+
+            </if>
+        </block>
+    </form>
+
+    <!--#################################################################################################
+         GP/PREMIUM- ACTIVATION : Traitement des appels en provenance de WCB en ACTIVATION
+    ################################################################################################# -->
+    <form id="Wcb_Activation_PREMIUM">
+        <script><![CDATA[ formCourant = "Wcb_Activation_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+			<!-- Client PREMIUM -->                  
+            <!-- Client PREMIUM -  CABLE - APPORTEUR= MIG_NC	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>
+            <if cond="isClientFixeMIG_NC() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC()  "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_PREMIUM_FTTB_MIG');
+					ID_FLUX='WCB_ACTIV_PREMIUM_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+            <!-- Client PREMIUM  - CABLE* -->
+            <elseif cond="isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_PREMIUM_FTTB');
+					ID_FLUX='WCB_ACTIV_PREMIUM_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+                <!-- Client PREMIUM  - FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_PREMIUM_FTTH');
+					ID_FLUX='WCB_ACTIV_PREMIUM_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+                <!-- cas par défaut - PREMIUM  AUTRE	-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '00010_WCB_ACTIV_PREMIUM_AUTRE');
+					ID_FLUX='WCB_ACTIV_PREMIUM_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+            </if> 
+
+        </block>
+    </form>    
+    
+    <form id="Wcb_Activation_GP">
+        <script><![CDATA[ formCourant = "Wcb_Activation_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<!-- Client GP -->                      
+            <!-- Client CABLE - APPORTEUR= MIG_NC	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC()"); ]]></script>
+            <if cond="isClientFixeMIG_NC() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>                               
+
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_FTTB_MIG');
+					ID_FLUX='WCB_ACTIV_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+                <!-- Client CABLE -->
+            <elseif cond=" isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_FTTB');
+					ID_FLUX='WCB_ACTIV_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+                <!-- Client THD	-->
+            <elseif cond="isClientFixeFTTH()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_FTTH');
+					ID_FLUX='WCB_ACTIV_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+                <!-- cas par défaut	-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_WCB_ACTIV_AUTRE');
+					ID_FLUX='WCB_ACTIV_ADSL';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+            </if>
+
+        </block>
+    </form>
+
+    <!--#################################################################################################
+         TECHNIQUE GP: Traitement des appels en provenance de WCB avec motif technique
+    ################################################################################################# -->
+
+    <form id="Wcb_Technique_GP">
+        <script><![CDATA[ formCourant = "Wcb_Technique_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+            <if cond="wcb_digital_codeMotif == '01'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '21000_WCB_TECH_INTERNET');		
+                ]]></script>
+                
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '2|21000_WCB_TECH_INTERNET|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 46;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>                
+
+            <elseif cond="wcb_digital_codeMotif == '02'"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '02'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '22000_WCB_TECH_TV');	
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '3|22000_WCB_TECH_TV|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 47;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>   
+
+                <!--	motif=03 - cas par défaut  -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '23000_WCB_TECH_AUTRE');
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '4|23000_WCB_TECH_AUTRE|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 48;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <form id="Wcb_Technique_GP_Transfert">
+        <script><![CDATA[ formCourant = "Wcb_Technique_GP_Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Client THD** ou  offre manuel THD-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH()|| OFFRE_MANUELLE == 'THD' "); ]]></script>
+            <if cond="isClientFixeFTTH() || OFFRE_MANUELLE == 'THD' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() || OFFRE_MANUELLE == 'THD' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_FTT_FTTH');
+					ID_FLUX='WCB_FTT_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client CABLE (FTTB)	ou offre manuelle CABLE-->
+            <elseif cond="isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_FTT_FTTB');
+					ID_FLUX='WCB_FTT_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_FTT_AUTRE');
+					ID_FLUX='WCB_FTT_AUTRE';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            </if>
+        </block>
+    </form>
+
+    
+    <!--#################################################################################################
+         TECHNIQUE CARE: Traitement des appels en provenance de WCB avec motif technique
+    ################################################################################################# -->
+
+    <form id="Wcb_Technique_CARE">
+        <script><![CDATA[ formCourant = "Wcb_Technique_CARE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+            <if cond="wcb_digital_codeMotif == '01'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '21000_WCB_CARE_TECH_INTERNET');		
+                ]]></script>
+                
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '2|21000_WCB_CARE_TECH_INTERNET|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 145;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>                
+
+            <elseif cond="wcb_digital_codeMotif == '02'"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '02'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '22000_WCB_CARE_TECH_TV');	
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '3|22000_WCB_CARE_TECH_TV|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 146;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>   
+
+                <!--	motif=03 - cas par défaut  -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '23000_WCB_CARE_TECH_AUTRE');
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '4|23000_WCB_CARE_TECH_AUTRE|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            
+	
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 147;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <form id="Wcb_Technique_CARE_Transfert">
+        <script><![CDATA[ formCourant = "Wcb_Technique_GP_Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Client THD** ou  offre manuel THD-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH()|| OFFRE_MANUELLE == 'THD' "); ]]></script>
+            <if cond="isClientFixeFTTH() || OFFRE_MANUELLE == 'THD' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() || OFFRE_MANUELLE == 'THD' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_CARE_FTT_FTTH');
+					ID_FLUX='WCB_CARE_FTT_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client CABLE (FTTB)	ou offre manuelle CABLE-->
+            <elseif cond="isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_CARE_FTT_FTTB');
+					ID_FLUX='WCB_CARE_FTT_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_WCB_CARE_FTT_AUTRE');
+					ID_FLUX='WCB_CARE_FTT_AUTRE';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            </if>
+        </block>
+    </form>
+        
+    <!--#################################################################################
+         DEMENAGEMENT : Traitement des appels en provenance de WCB avec motif DMGT
+    ################################################################################ -->
+    <form id="Wcb_DMGT_Transfert">
+        <script><![CDATA[ formCourant = "Wcb_DMGT_Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!-- filtre Premium actif er client premium -->  
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+	       		 <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+	        
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_OK');
+					POSITION_ARBO = 34;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <else/>
+            	<!-- Client GP 	-->             	
+           		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_NOK');
+					POSITION_ARBO = 35;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>                     
+            </if>  
+            
+        </block>
+    </form>
+    
+    <form id="Wcb_DMGT_Transfert_PREMIUM">
+        <script><![CDATA[ formCourant = "Wcb_DMGT_Transfert_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+                                
+            <!-- Client PREMIUM et THD	 -->    
+           <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>        
+            <if cond="isClientFixeFTTH() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>                                
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_FTTH');
+					ID_FLUX='WCB_DEM_PREMIUM_FTTH';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+                   
+           <!-- Client PREMIUM  et FTTB et APPORTEUR=MIG_NC	-->
+            <elseif cond="isClientFixeMIG_NC() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_FTTB_MIG');
+					ID_FLUX='WCB_DEM_PREMIUM_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+                  
+            <!-- Client PREMIUM et FTTB -->
+            <elseif cond="isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_FTTB');
+					ID_FLUX='WCB_DEM_PREMIUM_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>                          
+        		                
+			<!-- Client PREMIUM et autre offre-->
+             <else/>            	
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_PREMIUM_FIXE');
+					ID_FLUX='WCB_DEM_PREMIUM_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+                
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="Wcb_DMGT_Transfert_GP">
+        <script><![CDATA[ formCourant = "Wcb_DMGT_Transfert_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<!-- Client FTTH -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH() || OFFRE_MANUELLE == 'THD'"); ]]></script>
+            <if cond="isClientFixeFTTH() || OFFRE_MANUELLE == 'THD' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() || OFFRE_MANUELLE == 'THD'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_FTTH');
+					ID_FLUX='WCB_DEM_FTTH';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+			<!-- Client FTTB et APPORTEUR=MIG_NC 	-->
+            <elseif cond="isClientFixeMIG_NC()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC()"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_FTTB_MIG');
+					ID_FLUX='WCB_DEM_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+                
+			<!-- Client FTTB  ou Offre manuelle CABLE	-->
+            <elseif cond="isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_FTTB');
+					ID_FLUX='WCB_DEM_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30040_WCB_DEM_FIXE');
+					ID_FLUX='WCB_DEM_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            </if> 
+        </block>
+    </form>        
+
+    <!--#################################################################################
+         ADMIN : Traitement des appels en provenance de WCB avec motif ADMIN 05
+    ################################################################################ -->
+    <form id="Wcb_ADMIN_GP">
+        <script><![CDATA[ formCourant = "Wcb_ADMIN_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Appel en provenance de WCB_DIGITAL  -->
+
+
+                <!-- Client ADSL RECENT CO  -->
+           <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientRecent_CO_DEXTER()"); ]]></script>
+            <if cond="isClientRecent_CO_DEXTER()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientRecent_CO_DEXTER()"); ]]></script>                
+
+                <script><![CDATA[
+					balise_transfert ='43000_WCB_ACTIV_ADSL';
+					ID_FLUX='WCB_ACTIV_ADSL';				
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_Transfert_ANC"); ]]></script>
+            	<goto next="#Vers_Transfert_ANC"/>
+                
+				<!--  Client FTTB et APPORTEUR=MIG_NC et RECENT -->              	
+            <elseif cond=" isMIGNC_RECENT_DEXTER() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isMIGNC_RECENT_DEXTER() "); ]]></script>
+                <script><![CDATA[
+					balise_transfert ='43000_WCB_ACTIV_FTTB_MIG';
+					ID_FLUX='WCB_ACTIV_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_Transfert_ANC"); ]]></script>
+            	<goto next="#Vers_Transfert_ANC"/>
+
+
+                <!-- Client FTTB RECENT	-->
+            <elseif cond="isClientRecent_FTTB_DEXTER()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientRecent_FTTB_DEXTER()"); ]]></script>
+                <script><![CDATA[
+					balise_transfert ='43000_WCB_ACTIV_FTTB';	
+					ID_FLUX='WCB_ACTIV_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_Transfert_ANC"); ]]></script>
+            	<goto next="#Vers_Transfert_ANC"/>
+
+                <!-- Client FTTH RECENT	-->
+            <elseif cond="isClientRecent_FTTH_DEXTER() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientRecent_FTTH_DEXTER() "); ]]></script>
+                <script><![CDATA[
+					balise_transfert ='43000_WCB_ACTIV_FTTH';	
+					ID_FLUX='WCB_ACTIV_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_Transfert_ANC"); ]]></script>
+            	<goto next="#Vers_Transfert_ANC"/>
+            	
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					balise_transfert ='43000_WCB_FCT_CONV_FIXE';
+					POSITION_ARBO = 50;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					
+					ID_FLUX='WCB_FCT_CONV_FIXE';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert_COM"); ]]></script>
+	            <goto next="#Transfert_COM"/>
+            </if>            	
+
+        </block>
+    </form>
+    
+    
+    <form id="Vers_Transfert_ANC">
+        <script><![CDATA[ formCourant = "Vers_Transfert_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <!--	SOUS APPLI FIXE_ANC HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_ANC_IS_OPEN !='false' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.FIXE_ANC_IS_OPEN !='false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_ANC_IS_OPEN !='false' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '43000_ADMIN_WCB_ANC');				
+            		POSITION_ARBO = 36;		
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>            
+    
+            <!--	FIXE_ANC HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					ID_FLUX='';				
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);	
+									
+                	customNode(applicationName + '_' + '43000_ADMIN_WCB_HNO_ANC');					
+                ]]></script>
+                                           
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_ANC.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_ANC.vxml"/>
+            </if> 
+                                        
+        </block>
+    </form>
+    
+    <form id="Transfert_ANC">
+        <script><![CDATA[ formCourant = "Transfert_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + balise_transfert );	
+            ]]></script>                
+           <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+        	<goto next="#Transfert"/>						
+                                        
+        </block>
+    </form>    
+    
+    <form id="Transfert_COM">
+        <script><![CDATA[ formCourant = "Transfert_COM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <!--	SOUS APPLI FIXE_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.FIXE_COM_IS_OPEN !='false' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + balise_transfert );
+	            ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>	            
+
+            <!--	FIXE_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					ID_FLUX='';				
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);	                
+					customNode(applicationName + '_' + '43000_ADMIN_WCB_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_COM.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_COM.vxml"/>
+
+            </if>          
+    
+        </block>
+    </form>    
+
+    <!--#################################################################################################
+         PREMIUM- TECH : Traitement des appels en provenance de WCB
+    ################################################################################################# -->
+    <form id="Wcb_TECH_Premium">
+        <script><![CDATA[ formCourant = "Wcb_TECH_Premium"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block> 
+        
+            <!-- CABLE et PACKPRO					  //-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>
+            <if cond="isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true'  ">            
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>      
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_WCB_FTT_PACKPRO_FTTB');
+					ID_FLUX='WCB_FTT_PACKPRO_FTTB';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+
+            <!-- FTTH et PACKPRO					  //-->
+            <elseif cond="isClientFixeFTTH() &amp;&amp; FIXE_PACKPRO == 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_WCB_FTT_PACKPRO_FTTH');
+					ID_FLUX='WCB_FTT_PACKPRO_FTTH';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                
+                                 
+            <!-- AUTRE	et PACKPRO					  //-->
+            <elseif cond="FIXE_PACKPRO == 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_WCB_FTT_PACKPRO_AUTRE');
+					ID_FLUX='WCB_FTT_PACKPRO_AUTRE';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>         
+                                                                                               
+            	<!--	FIDE et CABLE		--> 
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTB() "); ]]></script>                
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_FTTB_FIDE');
+					   ID_FLUX='WCB_FTT_PREMIUM_FTTB_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+               <!--	FIDE et FTTH		-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_FTTH_FIDE');
+					   ID_FLUX='WCB_FTT_PREMIUM_FTTH_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+               <!--	FIDE - AUTRE		-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_AUTRE_FIDE');
+					   ID_FLUX='WCB_FTT_PREMIUM_AUTRE_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script> 
+                
+                        
+            	<!--FTTB -->
+            <elseif cond="isClientFixeFTTB() "/>            
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isCABLE_FTTB()"); ]]></script>
+                <script><![CDATA[
+				   customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_FTTB');
+				   ID_FLUX='WCB_FTT_PREMIUM_FTTB';		
+				   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+                <!--FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+				   customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_FTTH');
+				   ID_FLUX='WCB_FTT_PREMIUM_FTTH';		
+				   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+				<!--AUTRE -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_WCB_FTT_PREMIUM_AUTRE');
+					ID_FLUX='WCB_FTT_PREMIUM_AUTRE';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+            </if>
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>            
+
+        </block>
+    </form>
+
+    <!--#################################################################################################
+         PREMIUM- FCT (AUTRE) : Traitement des appels en provenance de WCB
+    ################################################################################################# -->
+    <form id="Wcb_FCT_Premium">
+        <script><![CDATA[ formCourant = "Wcb_FCT_Premium"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>                                                       
+                
+              <!--  PACKPRO					  //-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_PACKPRO == 'true' "); ]]></script>
+            <if cond="FIXE_PACKPRO == 'true' ">                        
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_PACKPRO == 'true' "); ]]></script>                
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '43000_WCB_FCT_PACKPRO');
+					   ID_FLUX='FIXE_WCB_FCT_PACKPRO';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script> 
+                                
+            <!--  FIDE					  //-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '43000_WCB_FCT_PREMIUM_FIDE');
+					   ID_FLUX='FIXE_WCB_FCT_PREMIUM_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script> 
+                                                              
+
+                <!--Autre PREMIUM -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '43000_WCB_FCT_PREMIUM_AUTRE');
+					ID_FLUX='FIXE_WCB_FCT_PREMIUM';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>
+
+        </block>
+    </form>
+    
+
+    <!--#################################################################################################
+         GP- SUSPENDU : Traitement des appels en provenance de WCB SUSPENDU
+    ################################################################################################# -->
+    <form id="WCB_SUSPENDU_CTRL_PREMIUM">
+        <script><![CDATA[ formCourant = "WCB_SUSPENDU_CTRL_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- PREMIUM -->  
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_SUSPENDU_PREMIUM_COM');
+					POSITION_ARBO = 69;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>
+                		
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+            
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_CONV_SUSP');
+					POSITION_ARBO = 65;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>	
+            </if> 
+		            
+        </block>
+    </form>
+    
+   <form id="Wcb_SUSPENDU_PREMIUM">
+        <script><![CDATA[ formCourant = "Wcb_SUSPENDU_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>       
+                                                                                    
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "); ]]></script>
+            <if cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' ">                        
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "); ]]></script>                
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '00072_WCB_FCT_PREMIUM_FIDE_SUSP');
+					   ID_FLUX='WCB_FCT_PREMIUM_FIDE_SUSP';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                
+
+                <!--Autre PREMIUM -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_WCB_FCT_PREMIUM_SUSP');
+					ID_FLUX='WCB_FCT_PREMIUM_SUSP';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>
+                            	
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>       
+
+        </block>
+    </form>
+        
+   <form id="Wcb_SUSPENDU">
+        <script><![CDATA[ formCourant = "Wcb_SUSPENDU"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>       
+                	
+            <script><![CDATA[
+				ID_FLUX='WCB_FCT_CONV_FIXE_SUSP';			
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>       
+
+        </block>
+    </form>    
+
+    <!--########################################################
+         Transfert: Vers la page TRANSFERT
+    ############################################################ -->
+
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+    </form>
+
+</vxml>

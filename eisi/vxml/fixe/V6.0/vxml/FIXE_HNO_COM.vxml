@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			EISI
+        Date de Creation :	16/01/2019
+        Page :				Application FIXE - HNO SOUS APPLI FIXE_COM
+        Modification :	
+        	
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_HNO_COM.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+
+    <form id="HNO_COM">
+    	<script><![CDATA[ formCourant = "HNO_COM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+			<!-- Diffusion du message HNO COM -->
+			<prompt bargein="false">
+				<audio maxage="30" maxstale="30" expr="PlayFileHNO_MAC2(CUSTOMER_HOHNO.FIXE_COM_MSG_TO_PLAY)"/>
+			</prompt>        
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_DISCONNECT.vxml"); ]]></script>
+            <goto next="./FIXE_DISCONNECT.vxml"/>
+        </block>
+    </form>  
+
+</vxml>

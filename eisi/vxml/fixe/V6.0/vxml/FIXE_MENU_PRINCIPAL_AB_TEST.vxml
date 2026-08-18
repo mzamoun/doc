@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		05/07/2023
+        Page :                  Application FIXE  - Menu principal AB_TEST
+        Modification :			
+        
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_MENU_PRINCIPAL_AB_TEST.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <script><![CDATA[
+			var tabMenu = new Array ();
+			var tabMenuAction = new Array ();
+			var tabMenuActivite = new Array ();
+			var tabChoix = ['false', 'false', 'false', 'false', 'false'];
+			var followingForm = ''; 			
+			var compteur = 0;			
+			var choixDtmf = 1;
+			AB_TEST_PARCOURS_ELIG ='1';
+			log_debug_assignment(pageCourante,'AB_TEST_PARCOURS_ELIG',AB_TEST_PARCOURS_ELIG);			
+    ]]></script>	
+	    
+    <var name="errorCounter" expr="1"/>    
+
+  <!-- ==================================== //-->
+  <!-- INIT Menu principal dynamique        //-->
+  <!-- ==================================== //-->          
+    <form id="initMenuPrincipal">
+    	<script><![CDATA[ formCourant = "initMenuPrincipal"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        	<!-- CHOIX SELFCARE --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_ORDRE -1] = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_AUDIO;
+						tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_ORDRE -1] = 'true';	
+						tabMenuAction[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_ORDRE -1] ='VERS_SLF';
+						tabMenuActivite[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_ORDRE -1] ='SLF';						
+						compteur++;
+					
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'SLF',tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_SLF_ORDRE -1]); ]]></script>
+
+            </if>
+            
+        	<!-- CHOIX TECHNIQUE --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_ORDRE -1] = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_AUDIO;
+						tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_ORDRE -1] = 'true';	
+						tabMenuAction[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_ORDRE -1] ='VERS_TEK';
+						tabMenuActivite[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_ORDRE -1] ='TEK';
+						compteur++;
+					
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'TEK',tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_TEK_ORDRE -1]); ]]></script>
+
+            </if> 
+            
+        	<!-- CHOIX DEM --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_ORDRE -1] = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_AUDIO;
+						tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_ORDRE -1] = 'true';	
+						tabMenuAction[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_ORDRE -1] ='VERS_DEM';
+						tabMenuActivite[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_ORDRE -1] ='DEM';
+						compteur++;
+					
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'DEM',tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_DEM_ORDRE -1]); ]]></script>
+
+            </if>
+                        
+        	<!-- CHOIX COM --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE -1] = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_AUDIO;
+						tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE -1] = 'true';	
+						tabMenuAction[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE -1] ='VERS_COM';
+						tabMenuActivite[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE -1] ='COM';
+						compteur++;
+					
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'COM',tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_COM_ORDRE -1]); ]]></script>
+
+            </if> 
+            
+        	<!-- CHOIX RET --> 
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_ORDRE -1] = CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_AUDIO;
+						tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_ORDRE -1] = 'true';	
+						tabMenuAction[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_ORDRE -1] ='VERS_RET';
+						tabMenuActivite[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_ORDRE -1] ='RET';
+						compteur++;
+					
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'RET',tabChoix[CUSTOMER_IHM.FIXE_MENU_PRINCIPAL_AB_TEST_RET_ORDRE -1]); ]]></script>
+
+            </if>                                    
+            
+            <script><![CDATA[ log_debug_assignment(pageCourante,'compteur',compteur); ]]></script>
+	
+            <if cond="compteur == 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+              
+            <script><![CDATA[ log_debug_next_form(pageCourante, "FIXE_MENU_PRINCIPAL_AB_TEST"); ]]></script>
+            <goto next="#FIXE_MENU_PRINCIPAL_AB_TEST"/>
+        </block>
+    </form>
+    
+    
+    
+    <menu id="FIXE_MENU_PRINCIPAL_AB_TEST">
+    	<script><![CDATA[ formCourant = "FIXE_MENU_PRINCIPAL_AB_TEST"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="bargein" value="true"/>
+
+        <prompt>
+            <foreach item="itemMenu" array="tabMenu">
+                <audio  maxage="7200" maxstale="7200" expr="PlayFileCommun(itemMenu)"/>
+                <audio  maxage="7200" maxstale="7200" expr="sayasChoixDtmfWav(choixDtmf)"/>
+                <assign name="choixDtmf" expr="choixDtmf + 1"/>
+            </foreach>
+        </prompt>
+
+        
+        <catch event="noinput nomatch">           
+            <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+            <goto next="#nomatch"/>
+        </catch>        
+
+        <choice dtmf="1" next="#VersChoix1"/>
+        <choice dtmf="2" next="#VersChoix2"/>
+        <choice dtmf="3" next="#VersChoix3"/>
+        <choice dtmf="4" next="#VersChoix4"/>
+		<choice dtmf="5" next="#VersChoix5"/>
+    </menu>
+
+
+    
+    <!--###########################################
+		Vers Choix1
+		########################################### -->
+    <form id="VersChoix1">
+    	<script><![CDATA[ formCourant = "VersChoix1"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST", "1"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "tabChoix[0] == 'false'"); ]]></script>	
+            <if cond="tabChoix[0] == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "tabChoix[0] == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				MENU_AB_TEST_NIVEAU1_CHOIX ='1';
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);				
+            	customNode(applicationName + '_' + '10000_'+ tabMenuActivite[0] );
+				var followingForm = "#" + tabMenuAction[0] ; 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingForm); ]]></script>
+            <goto expr="followingForm"/>            
+            
+        </block>
+    </form>
+    
+        
+    <!--###########################################
+		Vers Choix2
+		########################################### -->
+    <form id="VersChoix2">
+    	<script><![CDATA[ formCourant = "VersChoix2"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST", "2"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "tabChoix[1] == 'false'"); ]]></script>	
+            <if cond="tabChoix[1] == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "tabChoix[1] == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				MENU_AB_TEST_NIVEAU1_CHOIX ='2';
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);				
+            	customNode(applicationName + '_' + '20000_'+ tabMenuActivite[1]);
+				var followingForm = "#" + tabMenuAction[1] ; 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingForm); ]]></script>
+            <goto expr="followingForm"/>            
+            
+        </block>
+    </form>
+    
+    <!--###########################################
+		Vers Choix3
+		########################################### -->
+    <form id="VersChoix3">
+    	<script><![CDATA[ formCourant = "VersChoix3"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST", "3"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "tabChoix[2] == 'false'"); ]]></script>	
+            <if cond="tabChoix[2] == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "tabChoix[2] == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				MENU_AB_TEST_NIVEAU1_CHOIX ='3';
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);				
+            	customNode(applicationName + '_' + '30000_'+ tabMenuActivite[2]);
+				var followingForm = "#" + tabMenuAction[2] ; 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingForm); ]]></script>
+            <goto expr="followingForm"/>            
+            
+        </block>
+    </form>
+    
+    <!--###########################################
+		Vers Choix4
+		########################################### -->
+    <form id="VersChoix4">
+    	<script><![CDATA[ formCourant = "VersChoix4"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "4"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST", "4"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "tabChoix[3] == 'false'"); ]]></script>	
+            <if cond="tabChoix[3] == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "tabChoix[3] == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				MENU_AB_TEST_NIVEAU1_CHOIX ='4';
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);				
+            	customNode(applicationName + '_' + '40000_' + tabMenuActivite[3]);
+				var followingForm = "#" + tabMenuAction[3] ; 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingForm); ]]></script>
+            <goto expr="followingForm"/>            
+            
+        </block>
+    </form> 
+    
+    <!--###########################################
+		Vers Choix5
+		########################################### -->
+    <form id="VersChoix5">
+    	<script><![CDATA[ formCourant = "VersChoix5"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "5"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST", "5"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "tabChoix[4] == 'false'"); ]]></script>	
+            <if cond="tabChoix[4] == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "tabChoix[4] == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				MENU_AB_TEST_NIVEAU1_CHOIX ='5';
+				log_debug_assignment(pageCourante, "MENU_AB_TEST_NIVEAU1_CHOIX", MENU_AB_TEST_NIVEAU1_CHOIX);				
+            	customNode(applicationName + '_' + '50000_' + tabMenuActivite[4]);
+				var followingForm = "#" + tabMenuAction[4] ; 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingForm); ]]></script>
+            <goto expr="followingForm"/>            
+            
+        </block>
+    </form>               
+   
+          
+    <!-- ==================================== //-->
+    <!-- NOMATCH				//-->
+    <!-- ==================================== //-->   
+          
+    <form id="nomatch">
+    	<script><![CDATA[ formCourant = "nomatch"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<script><![CDATA[ track_dtmfList ("FIXE_MENU_PRINCIPAL_AB_TEST","NMNI"); ]]></script>        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+            <if cond="document.errorCounter &lt; 2">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+	            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+	            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"+document.errorCounter); ]]></script>
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '90001_NMNI');	
+					choixDtmf = 1; 			
+	            ]]></script>
+	            
+	            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+	            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>	            
+	            
+	            <prompt>
+	                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+	            </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "FIXE_MENU_PRINCIPAL_AB_TEST"); ]]></script>
+                <goto next="#FIXE_MENU_PRINCIPAL_AB_TEST"/>
+                
+                <!-- cas d erreur 2-->
+            <elseif cond="document.errorCounter &lt; 3"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 3"); ]]></script>
+	            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+	            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"+document.errorCounter); ]]></script>
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '90002_NMNI_X2');	
+					choixDtmf = 1; 			
+	            ]]></script>
+	            
+	            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+	            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>	            
+	            
+	            <prompt>
+	                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+	            </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "FIXE_MENU_PRINCIPAL_AB_TEST"); ]]></script>
+                <goto next="#FIXE_MENU_PRINCIPAL_AB_TEST"/>
+                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+	            <script><![CDATA[ track_dtmfList (formCourant,"NMNI3"); ]]></script>
+	            
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>	            
+            </if>
+        </block>
+    </form>
+        
+    
+    <!--###########################################
+		Choix  SELFCARE
+		########################################### -->
+    <form id="VERS_SLF">
+    	<script><![CDATA[ formCourant = "VERS_SLF"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_SELFCARE_AB_TEST.vxml"); ]]></script>
+            <goto next="./FIXE_MENU_SELFCARE_AB_TEST.vxml"/>
+        </block>
+    </form> 
+    
+    <!--###########################################
+		Choix  TEK
+		########################################### -->
+    <form id="VERS_TEK">
+    	<script><![CDATA[ formCourant = "VERS_TEK"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_TECH"); ]]></script>
+            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_TECH"/>            
+        </block>
+    </form>        
+    
+    <!--###########################################
+		Choix  DEM
+		########################################### -->
+    <form id="VERS_DEM">
+    	<script><![CDATA[ formCourant = "VERS_DEM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_DEM"); ]]></script>
+            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_DEM"/>            
+        </block>
+    </form>  
+        
+    <!--###########################################
+		Choix  COM
+		########################################### -->
+    <form id="VERS_COM">
+    	<script><![CDATA[ formCourant = "VERS_COM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_ADM_CO"); ]]></script>
+            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_ADM_CO"/>                         
+        </block>
+    </form>
+    
+    <!--###########################################
+		Choix  RETENTION
+		########################################### -->
+    <form id="VERS_RET">
+    	<script><![CDATA[ formCourant = "VERS_RET"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_ADM_RET"); ]]></script>
+            <goto next="./FIXE_MENU_PRINCIPAL.vxml#ENTREE_MENU_AB_TEST_ADM_RET"/> 
+            
+        </block>
+    </form>           
+    
+
+    <!--###########################################
+           NMNI
+    ########################################### -->    
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '90003_NMNI_X3');				
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>            
+        </block>
+    </form>
+
+</vxml>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		25/02/2022
+        Page :                  Application ABO  - Menu RDGU
+        Modification :			IMA/CZO		10/03/2023	Refonte abo lot1: MAJ choix MENU PRDGU + MAJ balises
+    -->
+    <script><![CDATA[
+	applicationName = "ABO"; appSvi = applicationName;
+	var pageCourante = "ABO_RDGU.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    <menu id="MENU_PRINCIPAL_RDGU">
+    	<script><![CDATA[ formCourant = "MENU_PRINCIPAL_RDGU"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+		<prompt bargein="true">
+			<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_PRINCIPAL_RDGU_MENU_PRINCIPAL_RDGU_AUDIO)"/>
+		</prompt>        
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_90001_RDGU_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+            <goto next="#NMNI"/>
+        </catch>
+        
+        <choice dtmf="1" next="#SELFCARE"/>       
+        <choice dtmf="2" next="#TECHNIQUE"/>
+        <choice dtmf="3" next="#AUTRE"/>
+    </menu>
+
+    <!-- ==================================== //-->
+    <!-- Choix 1 - SELFCARE					//-->
+    <!-- ==================================== //-->    
+        
+    <form id="SELFCARE">
+    	<script><![CDATA[ formCourant = "SELFCARE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10000_RDGU_SELFCARE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_MENU_SELFCARE.vxml"); ]]></script>
+            <goto next="./ABO_MENU_SELFCARE.vxml"/>
+        </block>
+    </form>
+        
+    <!-- ==================================== //-->
+    <!-- Choix 2 - TECHNIQUE					//-->
+    <!-- ==================================== //-->
+
+    <form id="TECHNIQUE">
+    	<script><![CDATA[ formCourant = "TECHNIQUE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_RDGU_TECHNIQUE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_TECH"); ]]></script>
+            <goto next="#CTRL_HOHNO_TECH"/> 
+        </block>
+    </form>
+    
+   <!--###########################################
+               CTRL HOHNO TECH
+        ########################################### -->    
+    <form id="CTRL_HOHNO_TECH">
+    	<script><![CDATA[ formCourant = "CTRL_HOHNO_TECH"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            
+            <!--	SOUS APPLI ABO_TECH HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_RDGU_TECH_HO');
+	                ID_FLUX='ABO_FTT_PREMIUM_RDGU';
+	                log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);					
+					customNode(applicationName + '_' + '20000_FTT_PREMIUM_RDGU');
+	            ]]></script>                	            
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+	            <goto next="#Transfert"/>  
+
+            <!--	ABO_TECH HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_RDGU_TECH_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_TECH.vxml"); ]]></script>
+                <goto next="./ABO_HNO_TECH.vxml"/>
+
+            </if>             
+        </block>
+    </form>
+        
+ 
+    <!-- ==================================== //-->
+    <!-- Choix 3 - AUTRE						//-->
+    <!-- ==================================== //-->
+
+    <form id="AUTRE">
+    	<script><![CDATA[ formCourant = "AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30000_RDGU_AUTRE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_COM"); ]]></script>
+            <goto next="#CTRL_HOHNO_COM"/>
+        </block>
+    </form>
+    
+   <!--###########################################
+               CTRL HOHNO COM
+        ########################################### -->    
+    <form id="CTRL_HOHNO_COM">
+    	<script><![CDATA[ formCourant = "CTRL_HOHNO_COM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+                        
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30000_RDGU_COM_HO');
+	                ID_FLUX='ABO_FCT_PREMIUM_RDGU';
+	                log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);					
+					customNode(applicationName + '_' + '30000_FCT_PREMIUM_RDGU');
+	            ]]></script>                	            
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+	            <goto next="#Transfert"/>                       	
+	            
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30000_RDGU_COM_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>                         
+        </block>
+    </form>    
+
+    <!--###########################################
+           NMNI
+    ########################################### -->    
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '90002_RDGU_NMNI_X2');
+            ]]></script>
+            <prompt bargein="false">
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+            
+        </block>
+    </form>
+    
+    <form id="Transfert">
+    	<script><![CDATA[ formCourant = "Transfert"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form>    
+
+</vxml>

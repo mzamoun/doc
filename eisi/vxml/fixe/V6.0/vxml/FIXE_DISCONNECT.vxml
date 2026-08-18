@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				MRO
+        Date de Creation :		11/12/2017
+        Page :					Application FIXE - Vers Module DISCONNECT
+        Modification :          MRO	05/01/2018	migration v8
+
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_DISCONNECT.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <!--###########################################
+        Vers Module Transfert - FIXE
+        ########################################### -->
+    <form id="VERS_MODULE_DISCONNECT_AVEC_SFR_QUIT">
+        <script><![CDATA[ formCourant = "VERS_MODULE_DISCONNECT_AVEC_SFR_QUIT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				<!--	Vers le Module DISONNECT -->
+				var nextAPP ="../../../disconnect/"+ Version_DISCONNECT + "vxml/DISCONNECT_SFR_QUIT.vxml";
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page("FIXE_DISCONNECT.vxml", nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>
+
+    <form id="VERS_MODULE_DISCONNECT_SANS_SFR_QUIT">
+        <script><![CDATA[ formCourant = "VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				<!--	Vers le Module DISONNECT -->
+				var nextAPP ="../../../disconnect/"+ Version_DISCONNECT + "vxml/DISCONNECT.vxml";
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page("FIXE_DISCONNECT.vxml", nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>
+
+</vxml>

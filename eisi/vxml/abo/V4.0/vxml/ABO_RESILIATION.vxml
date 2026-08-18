@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			MLA
+        Date de Creation :	01/12/2012
+        Page :				Application ABO - ABO_MENU RESILIATION
+        Modification        IMA			05/02/2013	Suppression des filtres valoprev et valovente + ajout des flashs
+                            IMA			24/07/2013	Ajout des clients RETME_P1 et RETME_P2
+                            IMA			20/11/2013	suppression des filtres TYPO
+                            CKO			18/02/2014	Modification des noms des flux de transfert : ABO_...
+                            CKO			09/09/2014	Ajout filtre pourcentage multiequipe
+                            CZO			29/09/2015	surpression de flashs ABO_SR_RED ABO_RESIL_RED
+                            IMA/CZO		30/09/2016	Intégration des  ttraitements MIGBIOS (suite ident AEM)
+                            IMA/CZO		25/01/2017	MAJ traitemlent MIGBIOS
+                            IMA/CZO		12/09/2017	Menage traitement MIGBIOS
+                            IMA/CZO 	16/10/2017     	Prise en compte des traitements CONV et RISQUE
+                            MRO			07/03/2018	migration v8
+                            IMA/CZO		15/01/2019	integration CtrlHoHno sous appli ABO_COM et ABO_RET
+                            IMA/CZO		17/05/2019	suppresion du menu resiliation +renommage page + garder le choix 2 uniquement 
+                            IMA/CZO		07/08/2019	Ajout des traitements BEB_MOB_RET
+                            IMA/CZO		04/10/2019	Ajout des positions flahs (refonte flash abo)
+                            IMA/CZO		06/09/2021	Integration CTRL HOHNO dans le traitement BEB_MOB
+                            IMA/CZO		10/03/2023	Refonte abo lot1: MAJ balises
+                            IMA/CZO	    23/05/2023	Ajout des filtres C2OL (CONV/RISQUE)	
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_RESILIATION.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    
+    <form id="RESIL_CtrlHoHnoRet">
+    	<script><![CDATA[ formCourant = "RESIL_CtrlHoHnoRet"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	
+        <block>
+          
+            <!--	SOUS APPLI ABO_RET HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' "); ]]></script>	            
+	            <script><![CDATA[
+					POSITION_ARBO = 76;					
+					customNode(applicationName + '_' + '32000_RESIL_RET_HO');
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>	            
+
+            <!--	ABO_RET HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '32000_RESIL_RET_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_RET.vxml"); ]]></script>
+                <goto next="./ABO_HNO_RET.vxml"/>
+
+            </if>             
+        </block>
+    </form> 
+    
+  
+    
+    <!--###########################################
+         CTRL BEB_MOB RET
+    ########################################### -->
+  
+    <form id="VERS_RESIL_CTRL_BEB_MOB">
+    	<script><![CDATA[ formCourant = "VERS_RESIL_CTRL_BEB_MOB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--FILTRE BEB_MOB_RET actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_RET != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_MOB_RET != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_RET != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RESIL_CTRL_BEB_MOB"); ]]></script>
+	            <goto next="#RESIL_CTRL_BEB_MOB"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '32000_RESIL_BEB_RET_OFF'); 					
+	            ]]></script>                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_RET_KO"); ]]></script>
+	            <goto next="#BEB_MOB_RET_KO"/>
+	       	</if>
+	       		                                   
+        </block>
+    </form>
+        
+    <form id="RESIL_CTRL_BEB_MOB">
+        <script><![CDATA[ formCourant = "RESIL_CTRL_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- CTRL ELIGIBILITE BEB_MOB_RET -->           
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_MOB_RET()  "); ]]></script>
+            <if cond=" isBEB_MOB_RET()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_MOB_RET() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '32000_RESIL_BEB_RET_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité BEB_MOB RET	-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_RET_OPEN =='true'  "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_MOB -->
+	                <script><![CDATA[
+			            BEB_MOB_ORIGINE ='BEB_MOB_RET';
+			            customNode(applicationName + '_' + '32000_RESIL_BEB_RET_HO');
+		            	POSITION_ARBO = 75;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>	                
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/>	
+	                             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '32000_RESIL_BEB_RET_HNO');
+		            ]]></script>    	                
+		            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+		            <goto next="#BEB_MOB_RET_KO"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '32000_RESIL_BEB_RET_NOK');		            										
+           		 ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+	            <goto next="#BEB_MOB_RET_KO"/>             
+   
+            </if>            
+
+        </block>
+    </form> 
+
+	<!--###########################################
+        BEB_MOB COM RET KO
+    ########################################### -->           
+    <form id="BEB_MOB_RET_KO">
+        <script><![CDATA[ formCourant = "BEB_MOB_RET_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+            	POSITION_ARBO = 16;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+            ]]></script>  
+        
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/> 
+        </block>
+    </form>     
+    
+	<!--###########################################
+         Vers parcours BEB_MOB
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_MOB">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				var nextAPP ="../../../beb_mob/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_MOB -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>       
+
+	<!--###########################################
+         RESILIATION - Transfert
+    ########################################### -->    
+
+    <form id="transfert_RESILIATION">
+    	<script><![CDATA[ formCourant = "transfert_RESILIATION"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	NON_CONV_RISQUE: Marqueur C2OL = A_Reengager ou  A_SAUVER (value1 <> 0)  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '32000_RESIL_RET_RISQUE');
+					POSITION_ARBO = 34;
+					ID_FLUX='ABO_RET_RISQUE';
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+                <!--	AUTRE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '32000_RESIL_RET');
+					POSITION_ARBO = 17;
+					ID_FLUX='ABO_RET';
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            </if>
+
+        </block>
+    </form>
+
+</vxml>

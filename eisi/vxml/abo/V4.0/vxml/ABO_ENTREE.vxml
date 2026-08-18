@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :
+        Date de Creation :	15/02/2012
+        Page :				Application ABO - Accueil Jour  - GEstion des cas Clients
+        Modification :		IMA 	22/05/2012  	 Suppression des filttes VALO PREV PREMIUM et VALO PREV PRO
+                            MLA		18/06/2012		- Suppression filtres ARRET_DE_SERVICE/CLEF_3G_PRO/BOX_PLUS_CLE/
+                                                                        CAMPAGNE_DEMAT/MIGRATION_NEUF/PURGE_PTA/VALO_PREV_PREMIUM/ABOUTEMENT_963/MEILLEUR_CLIENT
+                                                    - Ajout Filtres PRO_PROBABLES_PAR_QPRO/PRO_CERTIFIES_PAR_QPRO/GP_3_ETOILES
+                                                    - Reorganisation ordre des filtres
+                            MLA		31/07/2012		- Ajout du filtre RED
+                            MLA		08/10/2012		- Suppression des filtres GP3*/RED/VALO_PREV/VALO_PREV_ME/VALO_VENTE/VALO_VENTE_ME
+                                                    - Ajout Filtre Orig appel = 8623
+                            MLA		09/11/2012		- MAJ filtre ENTREPRISE
+                            MLA		13/11/2012		- MAJ Suppression filtre PRO MOBILE PAR CAMPAGNE
+                            MLA		14/11/2012		- MAJ Suppression GOLD et mise à jour balises de stat
+                            IMA		10/05/2013	      Intégration des appels en provenance de RDGU et SVI_V
+                            CKO		18/02/2014		Modification des noms des flux de transfert : ABO_...
+                            CKO		30/06/2014		Suppression des filtres : Entreprise et PRO Probable
+                            IMA		01/04/2015		Ajout du filtre suspendu
+                            IMA/CZO	09/09/2016		Suppression des traitements SVI_VISUEL
+                            IMA/CZO 06/12/2016	 	MAJ des traitements premium (ancien PRO, JOYA et collab)
+                            IMA/CZO	20/02/2017		Ajout traitement CHGT_TIT_MOB + MAJ traitements PREMIUM: MAJ des traitements premium + suppreesion PRO PROBABLE
+                            IMA/CZO	11/04/2017		Ajout traitement WCBDIGITAL
+                            IMA/CZO	19/04/2017		Ajout traitement des appels en provenance de RDGU
+                            IMA/CZO 13/10/2017     	Ajout du pre traitement CONV et RISQUE + suppression acces AD
+                            IMA/CZO 15/02/2018		Ajout du traitement BOX4G
+							MRO		08/03/2018		migration v8
+							IMA/CZO 05/05/2018		Prise en compte des données LDCCSU
+							IMA/CZO	05/07/2018		Menage des traitements SAFIR - full LDCCSU
+							EISI	09/11/2018		MAJ du traitement PREMIUM - Ajout du traitement du marker CELL_PREM
+							IMA/CZO	20/03/2019		Traitement PACKPRO
+							IMA/CZO	25/07/2019		Ajout du menu dynamqique  ABO_CHGT_TITULAIRE_MOBILE_SMS
+							IMA/CZO	02/10/2019		suppression du filtre chgt titulaire + ajout des positions flahs (refonte flash abo
+							IMA/CZO	16/06/2020		Ajout filtre RESILIE
+							IMA/CZO	18/05/2021		MAJ filtres BOX 4G et PREMIUM suite evol AEM
+							IMA/CZO	14/06/2021		MAJ filtres RESILIE et SUSPENDU avec les donnees AEM
+							IMA/CZO	24/02/2022		Integration du filtre RDGU
+							IMA/CZO 22/01/2024		Integration de l'identification SEARCH
+							IMA/CZO 23/07/2024		Ajout parametre ndi pour l'appel beb_mob_fastr
+							IMA/CZO 13/08/2024		Prise en compte du traitement BOX5G
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_ENTREE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="context" expr="''"/>
+
+
+	<script><![CDATA[
+	    function isDEBUT_PRE_FID_M(chaine,sous_chaine) {
+		    return  (chaine.indexOf(sous_chaine)==0);
+		}	
+				
+	]]></script>   
+   	    
+
+    <form id="VersFlashJour">
+    	<script><![CDATA[ formCourant = "VersFlashJour"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				POSITION_ARBO = 0;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+    
+    
+    <!--############################################################
+               PRE TRAITEMENT BEB_MOB - appel au WS BEB_MOB (FASTR)
+        ############################################################ -->
+
+    <form id="Vers_PRE_TRAITEMENT_BEB_MOB">
+        <script><![CDATA[ formCourant = "Vers_PRE_TRAITEMENT_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+          
+            <!--CTRL avant appel au WS  WS_BEB_MOB - au moins un des 4 filtres doit etre activé et ID_CSU non vide-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "(CUSTOMER_IHM.BEB_MOB_RET != 'false' || CUSTOMER_IHM.BEB_MOB_COM != 'false'  || CUSTOMER_IHM.BEB_MOB_TECH != 'false') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null'  "); ]]></script>
+            <if cond="(CUSTOMER_IHM.BEB_MOB_RET != 'false' || CUSTOMER_IHM.BEB_MOB_COM != 'false'  || CUSTOMER_IHM.BEB_MOB_TECH != 'false') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "(CUSTOMER_IHM.BEB_MOB_RET != 'false' || CUSTOMER_IHM.BEB_MOB_COM != 'false'  || CUSTOMER_IHM.BEB_MOB_TECH != 'false') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null'  "); ]]></script>
+                
+            	<script><![CDATA[ log_debug_next_form(pageCourante, "WS_ELIGIBILITE_BEB_MOB"); ]]></script>
+            	<goto next="#WS_ELIGIBILITE_BEB_MOB"/>                
+              
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RESILIE"); ]]></script>
+	            <goto next="#Filtre_RESILIE"/>                  
+                
+             </if>                 
+            
+
+        </block>
+    </form>  
+
+    <form id="WS_ELIGIBILITE_BEB_MOB">
+        <script><![CDATA[ formCourant = "WS_ELIGIBILITE_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_csu = IDCSU; 
+			var ndi = getNdiBebMob() ;     
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS_ELIGIBILITE_BEB', subdialogWS_ELIGIBILITE_BEB_MOB , 'id_csu=' + id_csu +'|ndi=' + ndi  ); ]]></script>
+        <subdialog name="WS_ELIGIBILITE_BEB_MOB"
+                   srcexpr="subdialogWS_ELIGIBILITE_BEB_MOB"
+                   namelist="id_csu ndi"
+                   method="get"
+                   fetchtimeout="10s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+                   
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80000_WS_ELIGIBILITE_BEB_MOB');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RESILIE"); ]]></script>
+            <goto next="#Filtre_RESILIE"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_ELIGIBILITE_BEB_MOB', WS_ELIGIBILITE_BEB_MOB ); ]]></script>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_ELIGIBILITE_BEB_MOB.APP_STATUS == 'NOK' || WS_ELIGIBILITE_BEB_MOB.WS_STATUS == 'NOK' "); ]]></script>
+            <if cond=" WS_ELIGIBILITE_BEB_MOB.APP_STATUS == 'NOK' || WS_ELIGIBILITE_BEB_MOB.WS_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_ELIGIBILITE_BEB_MOB.APP_STATUS == 'NOK' || WS_ELIGIBILITE_BEB_MOB.WS_STATUS == 'NOK'  "); ]]></script>
+	            <script><![CDATA[
+					CUSTOMER_BEB_MOB = {};
+	            ]]></script>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+				<script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_BEB_MOB", WS_ELIGIBILITE_BEB_MOB); ]]></script>
+                <assign name="CUSTOMER_BEB_MOB" expr="WS_ELIGIBILITE_BEB_MOB"/>
+                
+             </if>  
+             
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RESILIE"); ]]></script>
+            <goto next="#Filtre_RESILIE"/>
+                                          
+        </block>
+    </form>
+    
+
+    <!--#####################################################################################################
+        RESILIE
+        ##################################################################################################### -->
+    <form id="Filtre_RESILIE">
+    	<script><![CDATA[ formCourant = "Filtre_RESILIE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	 RESILIE ACTIVE et AEM- SATUT 20,21 ou 30	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RESILIE != 'false'  &amp;&amp; isClientMobileResilie() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.RESILIE != 'false'  &amp;&amp; isClientMobileResilie() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RESILIE != 'false'  &amp;&amp; isClientMobileResilie() "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00002_RESILIE');
+					POSITION_ARBO = 91;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_BOX4G5G"); ]]></script>
+                <goto next="#Filtre_BOX4G5G"/>
+
+            </if>
+        </block>
+    </form>
+        
+    <!--#####################################################################################################
+        BOX4G
+        ##################################################################################################### -->
+    <form id="Filtre_BOX4G5G">
+    	<script><![CDATA[ formCourant = "Filtre_BOX4G5G"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	 AEM -BOX4G ou BOX5G		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BOX4G_5G != 'false'  &amp;&amp; (isClientMobileBox4G() || isClientMobileBox5G()) "); ]]></script>	
+            <if cond="CUSTOMER_IHM.BOX4G_5G != 'false'  &amp;&amp; (isClientMobileBox4G() || isClientMobileBox5G()) ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BOX4G_5G != 'false'  &amp;&amp; (isClientMobileBox4G() || isClientMobileBox5G()) "); ]]></script>	
+	            
+            	<!--BOX5G		-->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientMobileBox5G()"); ]]></script>	
+	            <if cond="isClientMobileBox5G()">
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientMobileBox5G()"); ]]></script>		
+	            	<script><![CDATA[
+						TYPE_BOX_XG = 'BOX5G';
+						log_debug_assignment(pageCourante, "TYPE_BOX_XG", TYPE_BOX_XG);
+	                ]]></script>
+	            <else/>
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	            	<script><![CDATA[
+						TYPE_BOX_XG = 'BOX4G';
+						log_debug_assignment(pageCourante, "TYPE_BOX_XG", TYPE_BOX_XG);
+	                ]]></script>
+	            </if>
+
+            	<script><![CDATA[
+					customNode(applicationName + '_' + '00010_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+					POSITION_ARBO = 53;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_MAISON_SECURISEE"); ]]></script>
+                <goto next="#Filtre_MAISON_SECURISEE"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <!--#####################################################################################################
+        CTRL FILTRE Maison SECURISEE
+        ##################################################################################################### -->
+    <form id="Filtre_MAISON_SECURISEE">
+    	<script><![CDATA[ formCourant = "Filtre_MAISON_SECURISEE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	 AEM -flagHome=O		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MAISON_SECURISEE != 'false'  &amp;&amp; isClientMobileMaison_Securise() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.MAISON_SECURISEE != 'false'  &amp;&amp; isClientMobileMaison_Securise() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MAISON_SECURISEE != 'false'  &amp;&amp; isClientMobileMaison_Securise() "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_MAISON_SECURISEE');
+					POSITION_ARBO = 132;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VersCtrlCell_Prem"); ]]></script>
+                <goto next="#VersCtrlCell_Prem"/>
+
+            </if>
+        </block>
+    </form>
+        
+<!--#####################################################################################################
+    PRE TRAITEMENT PREMIUM
+##################################################################################################### -->    
+    
+    <!--#####################################################################################################
+        CTRL CELL_PREM
+        ##################################################################################################### -->
+
+    <form id="VersCtrlCell_Prem">
+    	<script><![CDATA[ formCourant = "VersCtrlCell_Prem"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_IHM.MARQUEUR_C2OL != 'false' &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' "); ]]></script>	
+            <if cond=" CUSTOMER_IHM.MARQUEUR_C2OL != 'false' &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_IHM.MARQUEUR_C2OL != 'false' &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' "); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlCell_Prem"); ]]></script>
+                <goto next="#CtrlCell_Prem"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+            	<script><![CDATA[ log_debug_assignment(pageCourante,'MOBILE_CELL_PREM_FIDE', MOBILE_CELL_PREM_FIDE); 	]]></script>
+                <script><![CDATA[
+						MOBILE_CELL_PREM_FIDE = 'false';
+                ]]></script>
+               
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+                <goto next="#CtrlPACKPRO_AEM"/>
+            </if>
+        </block>
+    </form>
+
+    <!--CTRL MARQUEUR CELL_PREM -->
+    <form id="CtrlCell_Prem">
+    	<script><![CDATA[ formCourant = "CtrlCell_Prem"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_csu = IDCSU;
+			var searchMarker = 'CELL_PREM';     
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+        <subdialog name="BDDClientFIND_CLIENT"
+                   srcexpr="subdialogWS_FIND_CLIENT"
+                   namelist="id_csu searchMarker"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80001_C2OL_FIND_CLIENT_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+            <goto next="#CtrlPACKPRO_AEM"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'BDDClientFIND_CLIENT', BDDClientFIND_CLIENT ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+            <if cond=" BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+           	 	<script><![CDATA[ log_appel_web_app_nok(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+            	<script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+          		<goto next="#CtrlPACKPRO_AEM"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_FIND_CLIENT_MARKER" expr="BDDClientFIND_CLIENT"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_FIND_CLIENT_MARKER", CUSTOMER_FIND_CLIENT_MARKER); ]]></script>
+
+            </if>
+
+            <!--	traitement du marqueur CELL_PREM - A FIDELISER  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; (isDEBUT_PRE_FID_M (CUSTOMER_FIND_CLIENT_MARKER.VALUE1,'PRE_FID_M' )  || CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00')"); ]]></script>	
+            <if cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; ( isDEBUT_PRE_FID_M (CUSTOMER_FIND_CLIENT_MARKER.VALUE1,'PRE_FID_M' )  || CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00') ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; (isDEBUT_PRE_FID_M (CUSTOMER_FIND_CLIENT_MARKER.VALUE1,'PRE_FID_M' )  || CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00')  "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_CELL_PREM_FIDE = 'true';				
+                ]]></script>
+                <!--	traitement du marqueur CELL_PREM - PLATINE  -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00'"); ]]></script>	
+	            <if cond="CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00' ">
+	            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PLATINE_00'  "); ]]></script>	
+	                <script><![CDATA[
+						MOBILE_CELL_PREM_PLATINE = 'true';				
+	                ]]></script>
+	            </if>
+	                             
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+                <goto next="#CtrlPACKPRO_AEM"/>
+
+          	 <!--	traitement du marqueur CELL_PREM - PACKPRO  -->
+            <elseif cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PACKPRO_M' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == 'PACKPRO_M' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_PACKPRO = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+                <goto next="#CtrlPACKPRO_AEM"/>            	
+
+            	                
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					MOBILE_CELL_PREM_FIDE = 'false';
+					MOBILE_PACKPRO = 'false';					
+                ]]></script>            	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlPACKPRO_AEM"); ]]></script>
+                <goto next="#CtrlPACKPRO_AEM"/>
+
+            </if>
+           
+        </block>
+    </form>  
+    
+    
+    <form id="CtrlPACKPRO_AEM">
+    	<script><![CDATA[ formCourant = "CtrlPACKPRO_AEM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "  CUSTOMER_AEM.codePTA == 'PE9' || CUSTOMER_AEM.codePTA == 'PG9' "); ]]></script>	
+            <if cond=" CUSTOMER_AEM.codePTA == 'PE9' || CUSTOMER_AEM.codePTA == 'PG9'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "  CUSTOMER_AEM.codePTA == 'PE9' || CUSTOMER_AEM.codePTA == 'PG9' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_PACKPRO = 'true';					
+                ]]></script>
+            </if>
+                     
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VersPreTraitementRisque"); ]]></script>
+            <goto next="#VersPreTraitementRisque"/>             
+           
+        </block>
+    </form>       
+
+
+
+    <!--#####################################################################################################
+        Pre traitement marqueurs CONV et RISQUE
+        ##################################################################################################### -->
+
+    <form id="VersPreTraitementRisque">
+    	<script><![CDATA[ formCourant = "VersPreTraitementRisque"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_IHM.MARQUEUR_C2OL != 'false'  &amp;&amp; (CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' || CUSTOMER_IHM.C2OL_CONV == 'true' || CUSTOMER_IHM.C2OL_RISQUE == 'true') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' "); ]]></script>	
+            <if cond=" CUSTOMER_IHM.MARQUEUR_C2OL != 'false' &amp;&amp; (CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' || CUSTOMER_IHM.C2OL_CONV == 'true' || CUSTOMER_IHM.C2OL_RISQUE == 'true') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_IHM.MARQUEUR_C2OL != 'false'  &amp;&amp; (CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' || CUSTOMER_IHM.C2OL_CONV == 'true' || CUSTOMER_IHM.C2OL_RISQUE == 'true') &amp;&amp; IDCSU != '' &amp;&amp; IDCSU != 'null' "); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_ME_RISQVAL"); ]]></script>
+                <goto next="#RET_RISQUE_ME_RISQVAL"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+						MOBILE_CONV_RISQUE = 'false';
+						MOBILE_CONV_NON_RISQUE = 'false';
+						MOBILE_NON_CONV_RISQUE = 'false';
+						MOBILE_NON_CONV_NON_RISQUE = 'false';
+                ]]></script>
+                
+				<script><![CDATA[ 
+					log_debug_assignment(pageCourante,'MOBILE_CONV_RISQUE', MOBILE_CONV_RISQUE); 
+					log_debug_assignment(pageCourante,'MOBILE_CONV_NON_RISQUE', MOBILE_CONV_NON_RISQUE); 
+					log_debug_assignment(pageCourante,'MOBILE_NON_CONV_RISQUE', MOBILE_NON_CONV_RISQUE); 
+					log_debug_assignment(pageCourante,'MOBILE_NON_CONV_NON_RISQUE', MOBILE_NON_CONV_NON_RISQUE); 
+				]]></script>
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+                <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+            </if>
+        </block>
+    </form>
+
+    <!--RET_RISQUE_ME_RISQVAL - C2OL -->
+    <form id="RET_RISQUE_ME_RISQVAL">
+    	<script><![CDATA[ formCourant = "RET_RISQUE_ME_RISQVAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_csu = IDCSU;
+			var searchMarker = 'ME_RISQVAL';     
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+        <subdialog name="BDDClientFIND_CLIENT"
+                   srcexpr="subdialogWS_FIND_CLIENT"
+                   namelist="id_csu searchMarker"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80001_C2OL_FIND_CLIENT_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_REENGAGER"); ]]></script>
+            <goto next="#RET_RISQUE_A_REENGAGER"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'BDDClientFIND_CLIENT', BDDClientFIND_CLIENT ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+            <if cond=" BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+            <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_REENGAGER"); ]]></script>
+            <goto next="#RET_RISQUE_A_REENGAGER"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_FIND_CLIENT_MARKER" expr="BDDClientFIND_CLIENT"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_FIND_CLIENT_MARKER", CUSTOMER_FIND_CLIENT_MARKER); ]]></script>
+
+            </if>
+
+            <!--	Client eligible au traitement ME_RISQVAL  - controle: value1   -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == '1' "); ]]></script>	
+            <if cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == '1' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == '1' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_CONV_RISQUE = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_REENGAGER"); ]]></script>
+                <goto next="#RET_RISQUE_A_REENGAGER"/>
+
+                <!--	Client eligible au traitement ME_RISQVAL  - controle: value1 !=1  -->
+            <elseif cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 != '1' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 != '1' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_CONV_NON_RISQUE = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_REENGAGER"); ]]></script>
+                <goto next="#RET_RISQUE_A_REENGAGER"/>
+
+                <!--	Client non eligible au traitement A_SAUVER  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_REENGAGER"); ]]></script>
+                <goto next="#RET_RISQUE_A_REENGAGER"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <!--RET_RISQUE_A_REENGAGER - C2OL -->
+    <form id="RET_RISQUE_A_REENGAGER">
+    	<script><![CDATA[ formCourant = "RET_RISQUE_A_REENGAGER"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_csu = IDCSU;
+			var searchMarker = 'A_Reengager';     
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+        <subdialog name="BDDClientFIND_CLIENT"
+                   srcexpr="subdialogWS_FIND_CLIENT"
+                   namelist="id_csu searchMarker"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80001_C2OL_FIND_CLIENT_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_SAUVER"); ]]></script>
+            <goto next="#RET_RISQUE_A_SAUVER"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'BDDClientFIND_CLIENT', BDDClientFIND_CLIENT ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+            <if cond=" BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+				<script><![CDATA[ log_appel_web_app_nok(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+           		<script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_SAUVER"); ]]></script>
+           		 <goto next="#RET_RISQUE_A_SAUVER"/>
+	
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_FIND_CLIENT_MARKER" expr="BDDClientFIND_CLIENT"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_FIND_CLIENT_MARKER", CUSTOMER_FIND_CLIENT_MARKER); ]]></script>
+
+            </if>
+
+            <!--	Client eligible au traitement A_Reengager	 -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' "); ]]></script>	
+            <if cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_NON_CONV_RISQUE = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_SAUVER"); ]]></script>
+                <goto next="#RET_RISQUE_A_SAUVER"/>
+
+                <!--	Client non eligible au traitement A_REENGAGER  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "RET_RISQUE_A_SAUVER"); ]]></script>
+                <goto next="#RET_RISQUE_A_SAUVER"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <!--RET_RISQUE_A_SAUVER - C2OL -->
+    <form id="RET_RISQUE_A_SAUVER">
+    	<script><![CDATA[ formCourant = "RET_RISQUE_A_SAUVER"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_csu = IDCSU;
+			var searchMarker = 'A_SAUVER';     
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+        <subdialog name="BDDClientFIND_CLIENT"
+                   srcexpr="subdialogWS_FIND_CLIENT"
+                   namelist="id_csu searchMarker"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80001_C2OL_FIND_CLIENT_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+            <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'BDDClientFIND_CLIENT', BDDClientFIND_CLIENT ); ]]></script>
+
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+            <if cond=" BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " BDDClientFIND_CLIENT.APP_STATUS == 'NOK' || BDDClientFIND_CLIENT.WS_FIND_CLIENT_STATUS == 'NOK' "); ]]></script>	
+	            <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'BDDClientFIND_CLIENT', subdialogWS_FIND_CLIENT , 'id_csu=' + id_csu +'|searchMarker=' + searchMarker ); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+	            <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_FIND_CLIENT_MARKER" expr="BDDClientFIND_CLIENT"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_FIND_CLIENT_MARKER", CUSTOMER_FIND_CLIENT_MARKER); ]]></script>
+
+            </if>
+
+            <!--	Client eligible au traitement A_SAUVER  - controle: value1   -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 != '0' "); ]]></script>	
+            <if cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 != '0' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 != '0' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_NON_CONV_RISQUE = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+                <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+
+                <!--	Client eligible au traitement ME_RISQVAL  - controle: value1 !=1  -->
+            <elseif cond="CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == '0' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_FIND_CLIENT_MARKER.MARKER_FOUND == 'true' &amp;&amp; CUSTOMER_FIND_CLIENT_MARKER.VALUE1 == '0' "); ]]></script>	
+                <script><![CDATA[
+					MOBILE_NON_CONV_NON_RISQUE = 'true';					
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+                <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+
+                <!--	Client non eligible au traitement A_SAUVER  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "PRE_TRAITEMENT_WS_SAP_RMCA"); ]]></script>
+                <goto next="#PRE_TRAITEMENT_WS_SAP_RMCA"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+
+<!--#####################################################################################################
+	Pre Traitement IMPAYE: WS SAP RMCA  - se base sur search
+##################################################################################################### -->
+    <form id="PRE_TRAITEMENT_WS_SAP_RMCA">
+    	<script><![CDATA[ formCourant = "PRE_TRAITEMENT_WS_SAP_RMCA"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_IHM.WS_SAP_RMCA != 'false' &amp;&amp; isClientMobileImpayeSearch()  "); ]]></script>	
+			<if cond=" CUSTOMER_IHM.WS_SAP_RMCA != 'false' &amp;&amp; isClientMobileImpayeSearch()  ">				
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WS_SAP_RMCA != 'false' &amp;&amp; isClientMobileImpayeSearch() "); ]]></script>	
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "WS_SAP_RMCA"); ]]></script>
+                <goto next="#WS_SAP_RMCA"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_SUSPENDU"); ]]></script>
+                <goto next="#Filtre_SUSPENDU"/>
+                
+            </if>
+        </block>
+    </form> 
+    
+    <!--Appel WS_SAP_RMCA-->
+    <form id="WS_SAP_RMCA">
+    	<script><![CDATA[ formCourant = "WS_SAP_RMCA"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var Key = CUSTOMER_SEARCH.ID_COMPTE_FACTURATION;
+			  
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS', subdialogWS_SAP_RMCA , 'Key=' + Key ); ]]></script>
+        <subdialog name="WS_SAP_RMCA"
+                   srcexpr="subdialogWS_SAP_RMCA"
+                   namelist="Key"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80002_SAP_RMCA_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_SUSPENDU"); ]]></script>
+            <goto next="#Filtre_SUSPENDU"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_SAP_RMCA', WS_SAP_RMCA ); ]]></script>
+
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_SAP_RMCA.APP_STATUS == 'NOK' || WS_SAP_RMCA.WS_SAP_RMCA_STATUS == 'NOK' "); ]]></script>	
+            <if cond="WS_SAP_RMCA.APP_STATUS == 'NOK' || WS_SAP_RMCA.WS_SAP_RMCA_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_SAP_RMCA.APP_STATUS == 'NOK' || WS_SAP_RMCA.WS_SAP_RMCA_STATUS == 'NOK' "); ]]></script>
+           		<script><![CDATA[ log_appel_web_app_nok(pageCourante, 'WS_SAP_RMCA', subdialogWS_SAP_RMCA , 'Key=' + Key ); ]]></script>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_MOBILE_IMPAYE" expr="WS_SAP_RMCA"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_MOBILE_IMPAYE", CUSTOMER_MOBILE_IMPAYE); ]]></script>                           
+
+            </if>
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_SUSPENDU"); ]]></script>
+            <goto next="#Filtre_SUSPENDU"/>              
+
+        </block>
+    </form> 
+
+    <!--#####################################################################################################
+        filtre suspendu
+        ##################################################################################################### -->
+
+    <form id="Filtre_SUSPENDU">
+    	<script><![CDATA[ formCourant = "Filtre_SUSPENDU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	Suspendu	 -->             
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_IHM.SUSPENDU != 'false' &amp;&amp; isClientMobileSuspendu() "); ]]></script>	
+			<if cond=" CUSTOMER_IHM.SUSPENDU != 'false' &amp;&amp; isClientMobileSuspendu() ">				
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_IHM.SUSPENDU != 'false' &amp;&amp; isClientMobileSuspendu() "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00070_M_SUSPENDU');
+					POSITION_ARBO = 56;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                            
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE"); ]]></script>
+                <goto next="#Filtre_IMPAYE"/>
+
+            </if>
+        </block>
+    </form>
+    
+    
+    <!--#####################################################################################################
+        filtre IMPAYE
+        ##################################################################################################### -->
+   
+    <!--CTRL CLIENT IMPAYE-->
+    <form id="Filtre_IMPAYE">
+    	<script><![CDATA[ formCourant = "Filtre_IMPAYE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Client eligible au traitement IMPAYE  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.IMPAYE != 'false' &amp;&amp; isClientMobileImpayeSAP_RMCA() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.IMPAYE != 'false' &amp;&amp; isClientMobileImpayeSAP_RMCA() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.IMPAYE != 'false' &amp;&amp; isClientMobileImpayeSAP_RMCA() "); ]]></script>	
+
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_M_IMPAYE');
+					POSITION_ARBO = 57;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                       
+
+                <!--	Client non eligible  au traitement IMPAYE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_Filtre_IMPAYE"); ]]></script>
+                <goto next="#AFTER_Filtre_IMPAYE"/>
+
+            </if>
+
+        </block>
+    </form>     
+    
+ 	<!--	suite traitement impaye et acces à partir de la page ABO_IMPAYE  -->    
+    <form id="AFTER_Filtre_IMPAYE">
+    	<script><![CDATA[ formCourant = "AFTER_Filtre_IMPAYE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+            <goto next="#Filtre_RDGU"/>            
+            
+        </block>
+    </form> 
+    
+    
+    <!--#####################################################################################################
+        filtre RDGU
+        ##################################################################################################### -->
+   
+    <!--CTRL PROVENANCE RDGU-->
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Client RDGU  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU != 'false' &amp;&amp; appel_rdgu == 'true' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.RDGU != 'false' &amp;&amp; appel_rdgu == 'true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU != 'false' &amp;&amp; appel_rdgu == 'true'"); ]]></script>	
+
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00050_M_RDGU');
+					POSITION_ARBO = 50;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                       
+
+                <!--	Client non rdgu  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_PREMIUM"); ]]></script>
+                <goto next="#Filtre_PREMIUM"/>
+
+            </if>
+
+        </block>
+    </form>
+        
+    <!--#####################################################################################################
+        PREMIUM
+        ##################################################################################################### -->
+    <form id="Filtre_PREMIUM">
+    	<script><![CDATA[ formCourant = "Filtre_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        
+            <block>
+            <!--	 Premium via les données SEARCH ou Marqueur C2OL ou AEM  --> 
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile()  ">				
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false'  &amp;&amp; is_premium_mobile() "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00060_M_PREMIUM');
+					POSITION_ARBO = 58;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/> 	                            
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>                
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00012_MENU_PRINCIPAL');
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_MENU_PRINCIPAL.vxml"); ]]></script>
+	            <goto next="./ABO_MENU_PRINCIPAL.vxml"/>                
+
+            </if>
+            </block>
+    </form>          
+
+</vxml>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		08/02/2022
+        Page :                  Application FIXE - RDGU_TECH
+        Modification        	IMA/CZO	09/02/2023	ajout du filtre FTT_RDGU_TECH	
+        						  	                            
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_RDGU_TECH.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    
+ 
+    
+    <!--#################################################################################################
+         VERS MENU RDGU TECH 
+    ################################################################################################# -->
+    <form id="VERS_MENU_RDGU_TECH">
+        <script><![CDATA[ formCourant = "VERS_MENU_RDGU_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+            	customNode(applicationName + '_' + '10000_RDGU_TECHNIQUE');
+				customNode(applicationName + '_' + '10000_RDGU_TECH_MENU');				
+            ]]></script>
+            
+            <!-- filtre activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_RDGU_TECH != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.FTT_RDGU_TECH != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_RDGU_TECH != 'false'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '10000_RDGU_TECH_OK');
+					POSITION_ARBO = 155;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '10000_RDGU_TECH_MENU_CHOIX');			
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_RDGU_TECH"); ]]></script>
+	            <goto next="#MENU_RDGU_TECH"/>
+	            
+            </if>                        
+           
+        </block>
+    </form>    
+
+    <!--###########################################
+                Menu TECHNIQUE Rdgu
+        ########################################### -->
+
+    <menu id="MENU_RDGU_TECH">
+        <script><![CDATA[ formCourant = "MENU_RDGU_TECH"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_RDGU_TECH_MENU_RDGU_TECH_AUDIO)"/>
+        </prompt>         
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10009_RDGU_TECH_NMNI');				
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10009_RDGU_TECH_NMNI_X2');				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "TRANSFERT_RDGU_TECH"); ]]></script>
+            <goto next="#TRANSFERT_RDGU_TECH"/> 
+        </catch>
+
+        <choice dtmf="1" next="#VersAccesInternetRdgu"/>
+        <choice dtmf="2" next="#VersTvRdgu"/>
+        <choice dtmf="3" next="#VersTechAutreRdgu"/>
+    </menu>
+
+    <!--###########################################
+        Choix 1: Acces Internet
+   ########################################### -->
+    <form id="VersAccesInternetRdgu">
+        <script><![CDATA[ formCourant = "VersAccesInternetRdgu"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_RDGU_TECH", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '11000_RDGU_TECH_INTERNET');				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '2|11000_RDGU_TECH_INTERNET|RDGU_TECH|#TRANSFERT_RDGU_TECH;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+
+    <!--###########################################
+        Choix 2: Tech TV
+   ########################################### -->
+    <form id="VersTvRdgu">
+        <script><![CDATA[ formCourant = "VersTvRdgu"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_RDGU_TECH", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12000_RDGU_TECH_TV');				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '3|12000_RDGU_TECH_TV|RDGU_TECH|#TRANSFERT_RDGU_TECH;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+     <!--###########################################
+    Choix 3: Tech AUTRE
+    ########################################### -->
+    <form id="VersTechAutreRdgu">
+        <script><![CDATA[ formCourant = "VersTechAutreRdgu"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "3"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_TECH", "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '13000_RDGU_TECH_AUTRE');				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '4|13000_RDGU_TECH_AUTRE|RDGU_TECH|#TRANSFERT_RDGU_TECH;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script> 
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+    
+    <!--###########################################
+    	TRF RDGU TECH
+    ########################################### -->    
+    <form id="TRANSFERT_RDGU_TECH">
+        <script><![CDATA[ formCourant = "TRANSFERT_RDGU_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Client FTTB	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH()  "); ]]></script>
+            <if cond="isClientFixeFTTB()  ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB()  "); ]]></script>
+                <script><![CDATA[
+						customNode(applicationName + '_' + '10000_FTT_RDGU_FTTB');
+						ID_FLUX='FTT_PREMIUM_FTTB_RDGU';
+						log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+
+               <!-- Client FTTH -->
+            <elseif cond=" isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+						customNode(applicationName + '_' + '10000_FTT_RDGU_FTTH');
+						ID_FLUX='FTT_PREMIUM_FTTH_RDGU';
+						log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+						customNode(applicationName + '_' + '10000_FTT_RDGU_AUTRE');
+						ID_FLUX='FTT_PREMIUM_AUTRE_RDGU';
+						log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            </if>
+        </block>
+    </form>
+
+
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageTransfert); ]]></script>
+            <goto expr="pageTransfert"/>
+        </block>
+    </form>
+
+</vxml>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		15/02/2012
+        Page :					Application ABO - Transfert SelfCare
+        Modification :			IMA			30/04/2013	Prise en compte des stat ClickFOX
+                                IMA			04/08/2015	Ajout de la duree AFNOR: afnorDuration
+                                IMA/CZO		08/06/2017	Initialisation des données de stat et clickfox en cas d'appel en échec à l'URL SELFCARE
+                                MRO			07/03/2018	migration v8
+    -->
+    <script><![CDATA[
+	applicationName = "ABO"; appSvi = applicationName;
+	var pageCourante = "ABO_TRANSFERT_SELFCARE.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+     <form id="CtrlService">
+     <block>
+    	<script><![CDATA[ formCourant = "CtrlService"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+       
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "Service == 'dcs'"); ]]></script>	
+            
+            <if cond="Service == 'dcs'">
+                 <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "Service == 'dcs'"); ]]></script>           	
+                             
+                 <script><![CDATA[
+				 	ID_FLUX='ABO_SELFCARE_DCS';
+                 ]]></script>
+                 
+             <elseif cond="Service == 'acs'"/>
+                 <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "Service == 'acs'"); ]]></script>	            	
+                     
+                 <script><![CDATA[
+				 	ID_FLUX='ABO_SELFCARE_ACS';
+                 ]]></script>
+                 
+              <elseif cond="Service == 'sdl'"/>
+                 <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "Service == 'sdl'"); ]]></script>	            	
+                           
+                 <script><![CDATA[
+					<!--	MAJ du NDI avec le num appelant -- deamnde specifique SDL  -->    
+					 NDI='0'+ NDI_UNMASK ;
+					 log_debug_assignment(pageCourante, "SPECIFIQUE SDL - MAJ NDI NDI", NDI);					           
+				 	 ID_FLUX='ABO_SELFCARE_SDL';
+                 ]]></script>
+                 
+                 
+               <elseif cond="Service == 'pcb'"/>
+                 <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "Service == 'pcb'"); ]]></script>	            	
+                           
+                 <script><![CDATA[
+					 ID_FLUX='ABO_SELFCARE_PCB';
+                 ]]></script>
+                
+               <else />
+                  <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "Else Service non valide"); ]]></script>
+                  <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+                  <goto expr="pageDisconnect"/>
+            </if>
+          <script><![CDATA[ log_debug_next_page(pageCourante, pageTransfert); ]]></script>
+          <goto expr="pageTransfert"/>  
+        </block>
+    </form>
+
+   
+    
+
+</vxml>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		14/10/2014
+        Page :					Application FIXE - Transfert vers le parcours MC_ACTIV
+        Modification :
+                                MRO	15/03/2018	migration v8
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_VERS_MC_ACTIV.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <!--###########################################
+        Transfert vers  MC_ACTIV
+        ########################################### -->
+    <form id="VERS_MC_ACTIV">
+        <script><![CDATA[ formCourant = "VERS_MC_ACTIV"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV"); ]]></script>
+            <goto next="#MC_ACTIV"/>
+        </block>
+    </form>
+
+    <form id="MC_ACTIV">
+        <script><![CDATA[ formCourant = "MC_ACTIV"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				MC_APP_ORIGINE='FIXE';		
+				var nextAPP ="../../../mc_activ/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours MC_ACTIV -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>
+
+</vxml>

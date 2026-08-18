@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	16/06/2017
+        Page :				Application FIXE - Traitement MC_ACTIV (BEB_DMGT - ETL, WS MC_ACTIV)
+        Modification        IMA/CZO		25/08/2017	MAJ de la liste des equipes eligible prio0,1 et 2
+                            IMA/CZO		31/10/2017	Suppression des trairements ETL DMGT
+                            MRO			15/03/2018	migration v8
+                            IMA/CZO		10/04/2018	MAJ des conditions MC_ACTIV -FTTB - PRIO 1
+                            IMA/CZO		11/04/2019	Ajout du nouveau partenaire INT_CASA   
+                            IMA/CZO		05/11/2019	Refontre traitement MC_ACTIV
+                            IMA/CZO		12/04/2022	Ajout de branches FLASH FIXE_ADMIN_AUTRE_BEB_COM  pour l'appel en provenance de la page administratif
+                            IMA/CZO		13/05/2023	Integration de l'appel à partuir de la branche TECH
+    -->
+    <script><![CDATA[
+	applicationName = "FIXE"; appSvi = applicationName;
+	var pageCourante = "FIXE_MC_ACTIV.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+	var searchMultiAppTech = "false";
+    ]]></script>
+
+    <!-- ==================================== //-->
+    <!-- Filtre Type Client	//-->
+    <!-- ==================================== //-->
+    <form id="MC_ACTIV_TYPE_CLIENT">
+        <script><![CDATA[ formCourant = "MC_ACTIV_TYPE_CLIENT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--FTTB -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+            <if cond="isClientFixeFTTB() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					TECHNO ='FTTB';				
+                ]]></script>
+				<script><![CDATA[ log_debug_assignment(pageCourante,'TECHNO', TECHNO); ]]></script>
+
+                <!--FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					TECHNO ='FTTH';					
+                ]]></script>
+				<script><![CDATA[ log_debug_assignment(pageCourante,'TECHNO', TECHNO); ]]></script>
+
+                <!--ADSL et cas par défaut-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					TECHNO ='ADSL';						
+                ]]></script>
+				<script><![CDATA[ log_debug_assignment(pageCourante,'TECHNO', TECHNO); ]]></script>
+            </if>
+            
+            <!--CTRL Parametre searchMultiAppTech  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE'"); ]]></script>
+            <if cond="FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE'"); ]]></script>
+                <script><![CDATA[
+					searchMultiAppTech ='true';	
+					log_debug_assignment(pageCourante,'searchMultiAppTech', searchMultiAppTech);			
+                ]]></script>
+            </if>
+                        
+            
+            <!--Transfert vers l'appel au WS MC_ACTIV  -->
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV_WS"); ]]></script>
+            <goto next="#MC_ACTIV_WS"/>            
+        </block>
+    </form>
+
+    <!-- =========================================== //-->
+    <!-- Appel au WS MC_ACTIV	  					   //-->
+    <!-- =========================================== //-->
+    <form id="MC_ACTIV_WS">
+        <script><![CDATA[ formCourant = "MC_ACTIV_WS"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var id_siebel = Id_Siebel ; 
+			var techno = TECHNO ;      
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS_MC_ACTIV', subdialogWS_MC_ACTIV , 'id_siebel=' + id_siebel +'|techno=' + techno +'|searchMultiAppTech=' + searchMultiAppTech ); ]]></script>
+        <subdialog name="WS_MC_ACTIV"
+                   srcexpr="subdialogWS_MC_ACTIV"
+                   namelist="id_siebel techno searchMultiAppTech"
+                   method="get"
+                   fetchtimeout="10s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00112_WS_MC_ACTIV_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV_WS_KO"); ]]></script>
+            <goto next="#MC_ACTIV_WS_KO"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_MC_ACTIV', WS_MC_ACTIV ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_MC_ACTIV.APP_STATUS == 'NOK' || WS_MC_ACTIV.WS_MC_ACTIV_STATUS == 'NOK' "); ]]></script>
+            <if cond=" WS_MC_ACTIV.APP_STATUS == 'NOK' || WS_MC_ACTIV.WS_MC_ACTIV_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_MC_ACTIV.APP_STATUS == 'NOK' || WS_MC_ACTIV.WS_MC_ACTIV_STATUS == 'NOK' "); ]]></script>
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV_WS_KO"); ]]></script>
+                <goto next="#MC_ACTIV_WS_KO"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <assign name="CUSTOMER_WS_MC_ACTIV" expr="WS_MC_ACTIV"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_WS_MC_ACTIV", CUSTOMER_WS_MC_ACTIV); ]]></script>
+                <!--donnees multiappelant  -->
+                <assign name="MULTIAPPELANT_FOUND" expr="WS_MC_ACTIV.MULTIAPPELANT_FOUND"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MULTIAPPELANT_FOUND", MULTIAPPELANT_FOUND); ]]></script>
+                <assign name="MULTIAPPELANT_POSITION_CREATEUR" expr="WS_MC_ACTIV.MULTIAPPELANT_POSITION_CREATEUR"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MULTIAPPELANT_POSITION_CREATEUR", MULTIAPPELANT_POSITION_CREATEUR); ]]></script>
+                <assign name="MULTIAPPELANT_ROUTAGE" expr="WS_MC_ACTIV.MULTIAPPELANT_ROUTAGE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MULTIAPPELANT_ROUTAGE", MULTIAPPELANT_ROUTAGE); ]]></script>
+
+                <!--donnees mc_activ  -->
+                <assign name="MC_ACTIV_FOUND" expr="WS_MC_ACTIV.MC_ACTIV_FOUND"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_FOUND", MC_ACTIV_FOUND); ]]></script>
+                <assign name="MC_ACTIV_ACTIVITE" expr="WS_MC_ACTIV.MC_ACTIV_ACTIVITE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_ACTIVITE", MC_ACTIV_ACTIVITE); ]]></script>
+                <assign name="MC_ACTIV_POSITION_CREATEUR" expr="WS_MC_ACTIV.MC_ACTIV_POSITION_CREATEUR"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_POSITION_CREATEUR", MC_ACTIV_POSITION_CREATEUR); ]]></script>
+                <assign name="MC_ACTIV_STATUT" expr="WS_MC_ACTIV.MC_ACTIV_STATUT"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_STATUT", MC_ACTIV_STATUT); ]]></script>
+                <assign name="MC_ACTIV_CONCLUSION" expr="WS_MC_ACTIV.MC_ACTIV_CONCLUSION"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_CONCLUSION", MC_ACTIV_CONCLUSION); ]]></script>
+                <assign name="MC_ACTIV_PRIO" expr="WS_MC_ACTIV.MC_ACTIV_PRIO"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_PRIO", MC_ACTIV_PRIO); ]]></script>
+                <assign name="MC_ACTIV_ROUTAGE" expr="WS_MC_ACTIV.MC_ACTIV_ROUTAGE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"MC_ACTIV_ROUTAGE", MC_ACTIV_ROUTAGE); ]]></script>              
+
+            </if>
+            
+            <!-- multiappelant TECH et provenance TECHNIQUE -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE'  &amp;&amp; ELIG_MULTI_APPELANT_TECH()"); ]]></script>            
+            <if cond="FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE' &amp;&amp; ELIG_MULTI_APPELANT_TECH()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE' &amp;&amp; ELIG_MULTI_APPELANT_TECH()"); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MULTI_APPELANT_TECH_OK"); ]]></script>
+                <goto next="#VERS_MULTI_APPELANT_TECH_OK"/>
+
+                <!-- multiappelant ou mc_activ (FTTB ou FFTH ou ADSL) - pour toute les provenances en dehors de la provenance TECHNIQUE -->
+            <elseif cond="FIXE_ORIGINE_MC_ACTIV != 'TECHNIQUE' &amp;&amp; ELIG_MC_ACTIV()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_ORIGINE_MC_ACTIV != 'TECHNIQUE' &amp;&amp; ELIG_MC_ACTIV()"); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MC_ACTIV_OK"); ]]></script>
+                <goto next="#VERS_MC_ACTIV_OK"/>
+                                
+                <!--Retour Ws non eligible au traitement mc_activ -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV_WS_KO"); ]]></script>
+                <goto next="#MC_ACTIV_WS_KO"/>
+
+            </if>            
+
+        </block>
+    </form>
+
+
+    <!-- ====================================================================//-->
+    <!-- Retour KO du WS MC_ACTIV			 								 //-->
+    <!-- MC_ACTIV ko: Retour au traitement d'origine appelant - 	  		 //-->
+    <!-- ====================================================================//-->
+    <form id="MC_ACTIV_WS_KO">
+        <script><![CDATA[ formCourant = "MC_ACTIV_WS_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>        
+            
+           <!-- appel à partir de la page activation    -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' "); ]]></script>
+            <if cond=" FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_MC_ACTIV_NOK');
+                ]]></script>                
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ACTIVATION.vxml#Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="./FIXE_ACTIVATION.vxml#Retour_MC_ACTIV_KO"/>
+
+                <!-- appel à partir de la page demenagement    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'DEMENAGEMENT' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'DEMENAGEMENT' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30010_DEM_MC_ACTIV_NOK');
+                ]]></script>                 
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_DEMENAGEMENT.vxml#Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="./FIXE_DEMENAGEMENT.vxml#Retour_MC_ACTIV_KO"/>
+
+                <!-- appel à partir de la page CLNS    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'CLNS' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'CLNS' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_MC_ACTIV_NOK');
+                ]]></script>                 
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_BEB_CLNS.vxml#Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="./FIXE_BEB_CLNS.vxml#Retour_MC_ACTIV_KO"/>
+
+                <!-- appel à partir de la page NOS    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'NOS' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'NOS' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00042_NOS_MC_ACTIV_NOK');
+                ]]></script>                 
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_BEB_CLNS_NOS.vxml#Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="./FIXE_BEB_CLNS_NOS.vxml#Retour_MC_ACTIV_KO"/>
+
+                <!-- appel à partir de la page ADMINISTRATIF    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'ADMINISTRATIF' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ADMINISTRATIF' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '40300_ADMIN_AUTRE_MC_ACTIV_NOK');
+                ]]></script>                
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ADMINISTRATIF.vxml#Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="./FIXE_ADMINISTRATIF.vxml#Retour_MC_ACTIV_KO"/>
+                
+                <!-- appel à partir de la page TECHNIQUE    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'TECHNIQUE' "); ]]></script>    
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TECHNIQUE.vxml#Retour_MULTI_APPELANT_KO"); ]]></script>
+                <goto next="./FIXE_TECHNIQUE.vxml#Retour_MULTI_APPELANT_KO"/>                                   
+
+                <!-- cas par défaut - retour menu principal    -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#VERS_MENU_PRINCIPAL"); ]]></script>
+                <goto next="./FIXE_ENTREE_GP.vxml#VERS_MENU_PRINCIPAL"/>
+
+            </if> 
+                              
+        </block>
+    </form>
+
+    <!--###########################################
+        Transfert vers  le parcours MC_ACTIV
+        ########################################### -->
+    <form id="VERS_MC_ACTIV_OK">
+        <script><![CDATA[ formCourant = "VERS_MC_ACTIV_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+           <!-- appel à partir de la page activation    -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' "); ]]></script>
+            <if cond=" FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ACTIVATION' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_MC_ACTIV_OK');
+                ]]></script>                
+
+                <!-- appel à partir de la page demenagement    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'DEMENAGEMENT' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'DEMENAGEMENT' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30010_DEM_MC_ACTIV_OK');
+                ]]></script> 
+
+                <!-- appel à partir de la page CLNS    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'CLNS' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'CLNS' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_MC_ACTIV_OK');
+                ]]></script> 
+
+                <!-- appel à partir de la page NOS    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'NOS' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'NOS' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00042_NOS_MC_ACTIV_OK');
+                ]]></script> 
+
+                <!-- appel à partir de la page ADMINISTRATIF    -->
+            <elseif cond=" FIXE_ORIGINE_MC_ACTIV == 'ADMINISTRATIF' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ORIGINE_MC_ACTIV == 'ADMINISTRATIF' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '40300_ADMIN_AUTRE_MC_ACTIV_OK');
+		    			POSITION_ARBO = 186;
+		    			log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);			            										
+           		 ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>                          
+
+                <!-- cas par défaut - retour menu principal    -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#VERS_MENU_PRINCIPAL"); ]]></script>
+                <goto next="./FIXE_ENTREE_GP.vxml#VERS_MENU_PRINCIPAL"/>
+
+            </if>
+                    
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MC_ACTIV_WS_OK"); ]]></script>
+            <goto next="#MC_ACTIV_WS_OK"/>
+
+        </block>
+    </form>
+    
+    <!--###########################################
+        Transfert vers  MULTI_APPELANT_TECH OK
+        ########################################### -->
+    <form id="VERS_MULTI_APPELANT_TECH_OK">
+        <script><![CDATA[ formCourant = "VERS_MULTI_APPELANT_TECH_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TECHNIQUE.vxml#MULTI_APPELANT_OK"); ]]></script>
+            <goto next="./FIXE_TECHNIQUE.vxml#MULTI_APPELANT_OK"/> 
+
+        </block>
+    </form>    
+          
+	<!-- traitement MC_ACTIV_WS_OK et retour du flash    -->      
+    <form id="MC_ACTIV_WS_OK">
+        <script><![CDATA[ formCourant = "MC_ACTIV_WS_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				MC_APP_ORIGINE='FIXE';
+				applicationName = 'MC_ACTIV';	
+				appSvi ='MC_ACTIV';
+			    <!--	Paramètres ClickFOX-->	
+				CLICKFOX_SVI_ELIG='true';
+				//customListApp=customListApp + applicationName +',';
+				var nextAPP ="../../../mc_activ/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours MC_ACTIV -->
+            <script><![CDATA[ log_debug_next_svi(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+
+        </block>
+    </form>
+
+</vxml>

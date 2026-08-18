@@ -1,0 +1,96 @@
+<!-- =============scripts/configuration.js======================= //--> 
+
+var Version_FIXE = "V5.9/";
+
+<!--Config CME-->
+  FIXE|Version|Mask|Routage
+
+
+----------------------------------------------------  
+----------------------------------------------------
+
+TO DO
+
+
+--------------------------------------------			
+<!-- =============root======================= //-->  
+--------------------------------------------	
+--maj fonction function initDexter() {
+	
+	--ajout des lignes
+	
+	CUSTOMER_DEXTER.CLIENT_RESILIE ='';
+	CUSTOMER_DEXTER.CLIENT_RED ='';
+	
+	--suppresion de la ligne 
+	CUSTOMER_DEXTER.FLAG_4P  ='';
+
+
+--ajout variable globale: <!-- -Param IMPAYE FIXE / Mobile //-->
+
+
+
+	
+--------------------------------------------			
+<!-- =============root_transfert.vxml======================= //-->  
+--------------------------------------------
+
+
+       
+<!-- =============scripts/fixe.js======================= //-->    
+
+--MAJ de la fonction is_red_dexter()
+
+  /**
+   * Client RED
+   * @returns
+   */
+function is_red_dexter() {
+	var status_red_dexter = false;
+	
+	if ( CUSTOMER_DEXTER && CUSTOMER_DEXTER.CLIENT_RED && CUSTOMER_DEXTER.CLIENT_RED == 'true') {
+			status_red_dexter = true;
+		}
+	
+	return status_red_dexter;
+
+}
+
+ -------------------------------------------------------------------------
+ -------------------------------------------------------------------------
+--ajout fonction
+
+  /**
+   * Client RESILIE FIXE DEXTER: STATUT RESILIE ou pas d offres dexter
+   * @returns
+   */
+function isClientResilieFixe() {
+	var status_resilie_dexter = false;
+	
+	if ( CUSTOMER_DEXTER && CUSTOMER_DEXTER.CLIENT_RESILIE && CUSTOMER_DEXTER.CLIENT_RESILIE == 'true') {
+			status_resilie_dexter = true;
+		}
+	
+	return status_resilie_dexter;
+
+}
+
+
+
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+--suppression de la fonction isClientResilieFixeSearch  (vérifier si elle est utilisé en dehors de fixe et RED_FIXE
+
+
+
+ -------------------------------------------------------------------------
+ -------------------------------------------------------------------------
+ 
+ 
+
+	
+<!-- =============scripts/mobile.js======================= //--> 
+	
+	

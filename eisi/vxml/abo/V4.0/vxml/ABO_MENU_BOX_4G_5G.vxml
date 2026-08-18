@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	15/02/2018
+        Page :				Application ABO - ABO_BOX_4G
+        Modification
+							MRO			08/03/2018	migration 
+							IMA/CZO		15/01/2019	integration CtrlHoHno sous appli ABO_TECH et ABO_COM
+							IMA/CZO		02/10/2019	Ajout des positions flahs (refonte flash abo)
+							IMA/CZO 	13/08/2024	Renommage de la page +Prise en compte du traitement BOX5G	
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_MENU_BOX_4G_5G.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    <menu id="MENU_BOX_4G_5G">
+    	<script><![CDATA[ formCourant = "MENU_BOX_4G_5G"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>        
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_BOX4G_5G_MENU_BOX4G_5G_AUDIO)"/>
+        </prompt>         
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_00004_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA +'_NMNI'); 
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[
+				customNode(applicationName +'_00004_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA +'_NMNI_X2');  
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+        </catch>
+
+        <choice dtmf="1" next="#BOX4G5G_TECH"/>
+        <choice dtmf="2" next="#BOX4G5G_CO"/>
+    </menu>
+
+    <form id="BOX4G5G_TECH">
+    	<script><![CDATA[ formCourant = "BOX4G5G_TECH"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName +'_00004_BOX_TECH_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA );
+            ]]></script>              
+            
+            <!--	SOUS APPLI ABO_TECH HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_TECH_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName +'_00004_BOX_HO_TECH_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+					ID_FLUX='ABO_BOX_4G_5G_TECH';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+					POSITION_ARBO = 54;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>	            
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>   	            
+
+            <!--	ABO_TECH HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName +'_00004_BOX_HNO_TECH_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_TECH.vxml"); ]]></script>
+                <goto next="./ABO_HNO_TECH.vxml"/>
+
+            </if>            
+        </block>
+    </form>
+
+    <form id="BOX4G5G_CO">
+    	<script><![CDATA[ formCourant = "BOX4G5G_CO"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName +'_00004_BOX_CO_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+            ]]></script>              
+            
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName +'_00004_BOX_HO_COM_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+					ID_FLUX='ABO_BOX_4G_5G_CO';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+					POSITION_ARBO = 55;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>  
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName +'_00004_BOX_HNO_COM_'+ TYPE_BOX_XG +'_'+CUSTOMER_AEM.codePTA);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form>
+
+</vxml>

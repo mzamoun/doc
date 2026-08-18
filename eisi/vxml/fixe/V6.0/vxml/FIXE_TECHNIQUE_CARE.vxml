@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		22/12/2021
+        Page :                  Application FIXE - TECHNIQUE_CARE
+        Modification        	IMA/CZO	14/02/2023		ajout filtre FTT_CARE_TECH
+        						  	                            
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_TECHNIQUE_CARE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    
+ 
+    
+    <!--#################################################################################################
+         CTRL WCB_DIGITAL MENU_TECH 
+    ################################################################################################# -->
+    <form id="Filtre_Wcb_Digital_MENU_TECH">
+        <script><![CDATA[ formCourant = "Filtre_Wcb_Digital_MENU_TECH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <!--	Client en provenance de WCB_DIGITAL		-->
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp;  type_appel_wcb_digital == 'FIXE' &amp;&amp; (isObjectInArray(wcb_digital_codeMotif, ['01', '02' , '03']) )"); ]]></script>
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp;  type_appel_wcb_digital == 'FIXE' &amp;&amp; (isObjectInArray(wcb_digital_codeMotif, ['01', '02' , '03']) )">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp;  type_appel_wcb_digital == 'FIXE' &amp;&amp; (isObjectInArray(wcb_digital_codeMotif, ['01', '02' , '03']) )"); ]]></script>
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_CARE_TECH_MENU_CHOIX');
+					POSITION_ARBO = 144;				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>                
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECH_CARE"); ]]></script>
+                <goto next="#VERS_MENU_TECH_CARE"/>	
+
+            </if>
+        </block>
+    </form>    
+
+    <form id="VERS_MENU_TECH_CARE">
+        <script><![CDATA[ formCourant = "VERS_MENU_TECH_CARE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- filtre activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_CARE_TECH != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.FTT_CARE_TECH != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_CARE_TECH != 'false'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '20000_CARE_TECH_OK');
+					POSITION_ARBO = 156;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+            	<script><![CDATA[
+					customNode(applicationName + '_' + '20000_CARE_TECH_MENU_CHOIX');
+					POSITION_ARBO = 140;				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>  
+	            
+            </if> 
+ 	                        
+        </block>
+    </form> 
+        
+    <!--###########################################
+                Menu TECHNIQUE CARE
+        ########################################### -->
+
+    <menu id="MENU_TECH_CARE">
+        <script><![CDATA[ formCourant = "MENU_TECH_CARE"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_TECHNIQUE_CARE_MENU_TECHNIQUE_CARE_AUDIO)"/>
+        </prompt>         
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20040_CARE_TECH_NMNI');				
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20040_CARE_TECH_NMNI_X2');
+				POSITION_ARBO = 143;				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+        </catch>
+
+        <choice dtmf="1" next="#VersAccesInternetCare"/>
+        <choice dtmf="2" next="#VersTvCare"/>
+        <choice dtmf="3" next="#VersTechAutreCare"/>
+    </menu>
+
+    <!--###########################################
+        Choix 1: Acces Internet
+   ########################################### -->
+    <form id="VersAccesInternetCare">
+        <script><![CDATA[ formCourant = "VersAccesInternetCare"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_TECH_CARE", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '21000_CARE_TECH_INTERNET');			
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '2|21000_CARE_TECH_INTERNET|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->          		
+            <script><![CDATA[
+				POSITION_ARBO = 141;						
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+
+
+    <!--###########################################
+        Choix 2: Tech TV
+   ########################################### -->
+    <form id="VersTvCare">
+        <script><![CDATA[ formCourant = "VersTvCare"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_TECH_CARE", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '22000_CARE_TECH_TELEVISION');			
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '3|22000_CARE_TECH_TELEVISION|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->           		
+            <script><![CDATA[
+				POSITION_ARBO = 142;						
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+    <!--###########################################
+    Choix 3: Tech AUTRE
+    ########################################### -->
+    <form id="VersTechAutreCare">
+        <script><![CDATA[ formCourant = "VersTechAutreCare"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "3"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_TECH", "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '23000_CARE_TECH_AUTRE');
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '4|23000_CARE_TECH_AUTRE|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->            		
+            <script><![CDATA[
+				POSITION_ARBO = 143;					
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+    
+    <!--###########################################
+    TRANSFERT CARE TECH
+    ########################################### -->    
+    <form id="TransfertCareTech">
+        <script><![CDATA[ formCourant = "TransfertCareTech"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Client FTTH ou  offre manuel THD-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTH()  || OFFRE_MANUELLE == 'THD' "); ]]></script>
+            <if cond="isClientFixeFTTH()  || OFFRE_MANUELLE == 'THD' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH()  || OFFRE_MANUELLE == 'THD' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_CARE_FTT_FTTH');
+					ID_FLUX='CARE_FTT_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+
+                <!-- Client FTTB	ou offre manuelle CABLE-->
+            <elseif cond="isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE'"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_CARE_FTT_FTTB');
+					ID_FLUX='CARE_FTT_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '24000_CARE_FTT_AUTRE');
+					ID_FLUX='CARE_FTT_AUTRE';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            </if>
+        </block>
+    </form>    
+
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+    </form>
+
+</vxml>

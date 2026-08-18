@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	03/03/2020
+        Page :				Application FIXE  - FIXE_CHOIX_FLASH_PREMIUM
+        
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_CHOIX_FLASH_PREMIUM.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+    <!--###########################################
+                Menu Choix FLASH PREMIUM
+        ########################################### -->
+    <menu id="MenuChoixFlashPremium">
+        <script><![CDATA[ formCourant = "MenuChoixFlashPremium"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('MENU_ETOILE')"/>
+        </prompt>
+
+        <catch event="noinput nomatch">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '40040_AUTRE_MENU_PREMIUM');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RetourMenuPremiumAutre"); ]]></script>
+            <goto next="#RetourMenuPremiumAutre"/>
+        </catch>
+
+        <choice dtmf="*" next="#choix_etoile"/>
+    </menu>
+
+    <form id="choix_etoile">
+        <script><![CDATA[ formCourant = "choix_etoile"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "*"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MenuChoixFlash", "*"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '40040_CHOIX_FLASH_PREMIUM');	
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_TRANSFERT"); ]]></script>
+            <goto next="#Vers_TRANSFERT"/>
+        </block>
+    </form>
+
+    <!--###########################################
+                Transfert
+        ########################################### -->
+    <form id="Vers_TRANSFERT">
+        <script><![CDATA[ formCourant = "Vers_TRANSFERT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block name="TRF">
+            <script><![CDATA[
+				customNode(applicationName + '_' + '40040_CHOIX_FLASH_PREMIUM_2');
+				POSITION_ARBO = 56;
+				ID_FLUX='FCT_CHOIX_FLASH_PREMIUM';				
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="RetourMenuPremiumAutre">
+        <script><![CDATA[ formCourant = "RetourMenuPremiumAutre"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_PREMIUM_AUTRE.vxml#SUITE_PREMIUM_AUTRE"); ]]></script>
+            <goto next="./FIXE_PREMIUM_AUTRE.vxml#SUITE_PREMIUM_AUTRE"/>
+
+        </block>
+    </form>
+
+    <!--###############################################
+            MENU PREMIUM AUTRE: CHOIX * (choix_retard)
+        ############################################### -->
+    <form id="AccesMenuPremiumAutre">
+        <script><![CDATA[ formCourant = "AccesMenuPremiumAutre"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_TRANSFERT"); ]]></script>
+            <goto next="#Vers_TRANSFERT"/>
+
+        </block>
+    </form>
+
+</vxml>

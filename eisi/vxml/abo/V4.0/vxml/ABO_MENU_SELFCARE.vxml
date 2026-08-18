@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+            Auteur :
+            Date de Creation :		07/03/2018
+            Page :					Application ABO - ABO_MENU_SELFCARE.vxml
+            Modification
+                                    MRO	07/03/2018	migration v8
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_MENU_SELFCARE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    <menu id="MENU_SELFCARE">
+    	<script><![CDATA[ formCourant = "MENU_SELFCARE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">          
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_SELFCARE_MENU_SELFCARE_AUDIO)"/>
+        </prompt>
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_19001_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+            <goto next="#NMNI"/>
+        </catch>
+        <choice dtmf="1" next="#DCS"/>
+        <choice dtmf="2" next="#ACS"/>
+        <choice dtmf="3" next="#SDL"/>
+    </menu>
+
+    <form id="DCS">
+    	<script><![CDATA[ formCourant = "DCS"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '11000_DCS');
+				Service = 'dcs';
+				POSITION_ARBO = 11;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="ACS">
+    	<script><![CDATA[ formCourant = "ACS"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12000_ACS');
+				Service = 'acs';
+				POSITION_ARBO = 12;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="SDL">
+    	<script><![CDATA[ formCourant = "SDL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '13000_SDL');
+				Service = 'sdl';
+				POSITION_ARBO = 13;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '19002_NMNI_X2');
+            ]]></script>
+            <prompt bargein="false">
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+        </block>
+    </form>
+
+</vxml>

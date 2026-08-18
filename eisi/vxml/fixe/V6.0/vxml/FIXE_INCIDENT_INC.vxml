@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	26/02/2020
+        Page :				Application FIXE - Gestion Incident HEIMDALL
+        Modification        IMA/CZO		19/05/2020		Prise en compte de la date: announced_end_date 
+        					IMA/CZO		13/02/2023		MAJ traitement incident dissuader
+        
+                               
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_INCIDENT_INC.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+
+    <var name="IncidentMsg" expr="''"/>
+    <var name="DateFinInc" expr="''"/>
+    <var name="DateRetablissemInc" expr="''"/>
+    <var name="ID_Incident" expr="'NULL'"/>
+    <var name="items_incident" expr="''"/>
+    <var name="Gestion_Incident" expr="''"/>    
+    <var name="POSITION" expr="''"/> 
+    <var name="LabelTraitement" expr="''"/>
+    <var name="LabelTraitementGenerique" expr="''"/>
+    <var name="nextPage" expr="''"/>
+    <var name="formId" expr="''"/>
+    <var name="MsgFolder" expr="'../../../commun/audio/'"/>
+
+
+    <script><![CDATA[
+    
+		<!--Recup de la position incident heimdall à gerer et config associées -->
+	   	var items_position = POSITION_INCIDENT_HEIMDALL.split(";");  
+		var length = items_position.length;
+		
+	    if (0 < length && items_position[0] !=''){
+	        var items_position_config = items_position[0].split("|");
+		    POSITION 		= items_position_config[0];
+		    LabelTraitement = items_position_config[1];
+		    nextPage = items_position_config[2];
+		    formId   = items_position_config[3];
+		    
+		    log_debug_assignment(pageCourante, "POSITION", POSITION);
+		    log_debug_assignment(pageCourante, "LabelTraitement", LabelTraitement);
+		    log_debug_assignment(pageCourante, "nextPage", nextPage);
+		    log_debug_assignment(pageCourante, "formId", formId);		    
+		    
+		    <!--en cas d'incidents en cascade, maj de la POSITION_INCIDENT_HEIMDALL en supprimant la premiere occurance - deja traité, pour preparer la gestion de l'INC suivant  -->
+		    if (1 < length ){	    
+		        POSITION_INCIDENT_HEIMDALL = '';
+			    for(var i = 0; i < length-2; i++) {
+			        POSITION_INCIDENT_HEIMDALL = POSITION_INCIDENT_HEIMDALL + items_position [i+1]+';' ;
+			        	
+				}		    
+		    }
+		    
+	    }
+	    else{
+		    POSITION 		= '';
+		    LabelTraitement = '';
+		    nextPage = '';
+		    formId   = '';    	    
+	    }
+	        
+
+		<!--Gestion du retour de la web App : Incidents HEIMDALL -->
+	    if (LIST_INCIDENT_HEIMDALL == '' || LIST_INCIDENT_HEIMDALL == 'NULL' ){
+			LIST_INCIDENT_HEIMDALL = ";;;;;;;;;;;;;;;;;;;;;;;";
+	    }
+	   	var items = LIST_INCIDENT_HEIMDALL.split(";");
+		var length1 = items.length;
+		
+	    if (POSITION < length1 && items[POSITION] !=''){
+	        var items_incident = items[POSITION].split("|");
+		    
+		    IncidentMsg = MsgFolder +  items_incident[0]+".wav";
+		    Gestion_Incident = items_incident[1];
+		    DateFinInc = items_incident[2];		        
+		    DateRetablissemInc = items_incident[3];
+		    ID_Incident = items_incident[4];
+		    	    	    		    
+		    log_debug_assignment(pageCourante, "IncidentMsg", IncidentMsg);
+		    log_debug_assignment(pageCourante, "Gestion_Incident", Gestion_Incident);
+		    log_debug_assignment(pageCourante, "DateFinInc", DateFinInc);
+		    log_debug_assignment(pageCourante, "DateRetablissemInc", DateRetablissemInc);		    
+		    log_debug_assignment(pageCourante, "ID_Incident", ID_Incident);
+	    }
+	    else{
+		    IncidentMsg = "NULL";
+		    Gestion_Incident = "NULL";
+		    DateRetablissemInc = "NULL";
+		    ID_Incident = "NULL";	    	    
+	    }
+	    
+	 	      	
+	    /////////////////////////////
+	    function LoadData(){
+	    	log_debug_assignment(pageCourante, "POSITION", POSITION);
+		    switch (POSITION) {
+				case	'0':
+					LabelTraitementGenerique = "99999_FIXE_INCIDENT";
+					break;
+					
+				case	'1':
+					LabelTraitementGenerique = "99999_FIXE_INCIDENT_TECH";
+					break;
+						
+				case	'2':
+					LabelTraitementGenerique = "99999_FIXE_INCIDENT_TECH_INTERNET";
+					break;	
+					
+				case	'3':
+					LabelTraitementGenerique = "99999_FIXE_INCIDENT_TECH_TV";
+					break;	
+					
+				case	'4':
+					LabelTraitementGenerique = "99999_FIXE_INCIDENT_TECH_AUTRE";
+					break;																																				
+	
+				default:
+					LabelTraitementGenerique = "00000";
+					break;							    
+			}
+		}
+
+		
+		function compareDate(DateIncident) {
+        	var myDate=new Date();
+			var dateJour = myDate.getDate();
+			if (dateJour<10) {dateJour='0'+dateJour};			
+			var dateMois = myDate.getMonth()+1;
+      		if (dateMois<10) {dateMois='0'+dateMois};						
+			var dateAnnee = myDate.getFullYear();
+			var dateHeure = myDate.getHours();
+      		if (dateHeure<10) {dateHeure='0'+dateHeure};					
+			var dateMinute = myDate.getMinutes();
+			if (dateMinute<10) {dateMinute='0'+dateMinute};
+	        	
+        					
+        	var DateJour = dateAnnee +''+ dateMois +''+ dateJour +''+ dateHeure +''+ dateMinute ;
+      						
+        	log_debug_assignment(pageCourante,'DateJour==========', DateJour);
+        	log_debug_assignment(pageCourante,'DateIncident=========', DateIncident);
+
+        					        
+	        if (DateIncident !='' && DateIncident>DateJour) {
+	        	return "true";
+	        }
+	        else {
+	        	return "false";
+	        }
+	    }
+    ]]></script>
+
+    <form id="main">
+    	<script><![CDATA[ formCourant = "main"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+        	LoadData();
+        ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Incident"); ]]></script>
+            <goto next="#Incident"/>
+        </block>
+    </form>
+
+
+    <!--###########################################
+                Controle si presence incident 
+            ########################################### -->
+    <form id="Incident">
+    	<script><![CDATA[ formCourant = "Incident"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <!--	Cas: pas d'incident	-->
+        <block name="IncidentTest" cond="IncidentMsg == 'NULL'">
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+            
+        </block>
+
+        <!--	Cas: Incidnet présent	-->
+        <block name="ExecuteIncident" cond="IncidentMsg != 'NULL'">
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitement +'_I');	
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_I');
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_I_#' + ID_Incident);		
+            ]]></script>
+            
+            <prompt bargein="false">
+                <audio  maxage ="7200" maxstale="7200"  expr="IncidentMsg" />
+            </prompt>
+        </block>
+        <!--	Gestion diffusion date retablissment incident  -->
+        <block name="DateFin">
+             <!--cas de filtre activé et  DateRetablissemInc non vide -->   
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.DPR == 'true' &amp;&amp; DateRetablissemInc !=''  &amp;&amp; DateRetablissemInc !='null' &amp;&amp; compareDate(DateRetablissemInc)=='true' "); ]]></script>
+            <if cond="CUSTOMER_IHM.DPR == 'true' &amp;&amp; DateRetablissemInc !=''  &amp;&amp; DateRetablissemInc !='null' &amp;&amp; compareDate(DateRetablissemInc)=='true' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.DPR == 'true' &amp;&amp; DateRetablissemInc !=''  &amp;&amp; DateRetablissemInc !='null' &amp;&amp; compareDate(DateRetablissemInc)=='true' "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_I_#' + ID_Incident + '_DPR_OUI');		
+				
+					var DateRetIncident	= DateRetablissemInc.substring(6,8) + "/" + DateRetablissemInc.substring(4,6) + "/" + DateRetablissemInc.substring(0,4);
+					var dateHeure = DateRetablissemInc.substring(8,10);
+					var dateMinute = DateRetablissemInc.substring(10,12);
+					
+			        log_debug_assignment(pageCourante,'DateRetIncident', DateRetIncident);
+			        log_debug_assignment(pageCourante,'dateHeure', dateHeure);
+			        log_debug_assignment(pageCourante,'dateMinute', dateMinute);				
+	            ]]></script>
+	
+	            <prompt bargein="false">
+	                <audio expr="PlayFile('DATE_RESOL_INCIDENT')"/>
+	                <prosody rate="x-slow"/>
+	                <say-as interpret-as="date" format="dmy">
+	                    <value expr="DateRetIncident"/>,
+	                </say-as>
+	                <audio expr="PlayGenericAudio('a')"/>
+	                <value expr="dateHeure"/>
+	                <audio expr="PlayGenericAudio('heure')"/>
+	                <value expr="dateMinute"/>
+	            </prompt>	            
+	            
+	            
+	            
+            <!--cas de filtre activé et  DateRetablissemInc  vide ou null -->      
+        	<elseif cond="CUSTOMER_IHM.DPR == 'true'"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.DPR == 'true'"); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_I_#' + ID_Incident + '_DPR_NON');		
+	            ]]></script>
+                
+			<!--cas par défaut - filtre DPR desactivé  --> 	            
+        	<else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_I_#' + ID_Incident + '_DPR_OFF');		
+	            ]]></script>
+            </if>
+
+        </block>
+        
+        <block>
+            <prompt>
+                <audio expr="PlayFile('SUITE_INCIDENT')"/>
+            </prompt>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_IS_OPEN != 'false' "); ]]></script>	
+            <if cond="FIXE_IS_OPEN != 'false'  ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_IS_OPEN != 'false' "); ]]></script>	
+
+	            <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_I_HO_#' + ID_Incident);					
+	            ]]></script>            	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "SUITE_INCIDENT"); ]]></script>
+                <goto next="#SUITE_INCIDENT"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+ 	            <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_I_HNO_#' + ID_Incident);					
+	            ]]></script> 
+			   	<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_GP.vxml"); ]]></script>
+			   	<goto next="./FIXE_HNO_GP.vxml" />     
+
+            </if>            
+
+        </block> 
+        
+    </form>
+
+    <!--###########################################
+                Gestion option post incidentt 
+     	########################################### -->
+    <form id="SUITE_INCIDENT">                       
+		<script><![CDATA[ formCourant = "SUITE_INCIDENT"; ]]></script>
+        <!-- On continu le traitement  -->
+        <block name="AfterIncident" cond="Gestion_Incident == 'Filtrante'">
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Activation_Bouton_IG"); ]]></script>
+            <goto next="#Activation_Bouton_IG"/>
+        </block>
+
+        <!-- Dissuasion  -->
+        <block name="DissuasionAfterIncident" cond="Gestion_Incident == 'Coupante'">
+
+			<script><![CDATA[ log_debug_next_form(pageCourante, "DISSUASION_Activation_Bouton_IG"); ]]></script>
+			<goto next="#DISSUASION_Activation_Bouton_IG"/>
+			        
+        </block>
+        
+		<!-- Orienter  -->
+		<block name="OrienterAfterIncident" cond="Gestion_Incident == 'Orientée'">
+
+			<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_BOUTON_IG_ORIENTEE"); ]]></script>
+			<goto next="#MENU_BOUTON_IG_ORIENTEE"/>
+		</block>        
+        
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+        </block>
+    </form>
+
+    <!--###########################################
+            Filtre BOUTON IG - FILTRANT
+    ########################################### -->
+    <form id="Activation_Bouton_IG">
+    	<script><![CDATA[ formCourant = "Activation_Bouton_IG"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BOUTON_IG != 'false' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.BOUTON_IG != 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BOUTON_IG != 'false' "); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_BOUTON_IG"); ]]></script>
+                <goto next="#MENU_BOUTON_IG"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + LabelTraitementGenerique +'_IC_#' + ID_Incident);	
+					incidentId = ID_Incident;
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+	            <goto next="#defineNext"/>
+
+            </if>
+        </block>
+    </form>
+
+    <!--###########################################
+            MENU BOUTON IG - FILTRANT
+    ########################################### -->
+    <menu id="MENU_BOUTON_IG">
+    	<script><![CDATA[ formCourant = "MENU_BOUTON_IG"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('MENU_BOUTON_IG')">
+                <!--
+                    Si toutefois vous souhaitez parler à un conseiller,
+                    appuyez sur la touche 7 de votre téléphone
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_ICD_#' + ID_Incident);					
+				incidentId = ID_Incident;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "QUIT_INCIDENT"); ]]></script>
+            <goto next="#QUIT_INCIDENT"/>
+
+        </catch>
+
+        <choice dtmf="7" next="#Vers_CC"/>
+    </menu>
+
+    <form id="Vers_CC">
+    	<script><![CDATA[ formCourant = "Vers_CC"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "7"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "7"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_IC_#' + ID_Incident);	
+				incidentId = ID_Incident;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+
+        </block>
+    </form>
+    
+     
+    
+    <!--###########################################
+            Filtre BOUTON IG - Dissuader 
+    ########################################### -->
+    <form id="DISSUASION_Activation_Bouton_IG">
+    	<script><![CDATA[ formCourant = "DISSUASION_Activation_Bouton_IG"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+			<!-- Filtre MC_TECH  Desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MC_TECH == 'false' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.MC_TECH == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MC_TECH == 'false' "); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "DISSUASION_VERS_QUIT"); ]]></script>
+	            <goto next="#DISSUASION_VERS_QUIT"/>	            
+
+            <!-- Filtre BOUTON IG ACTIVE et MC_TECH  ACTIV et WS MC_TECH Eligible -->
+            <elseif cond="CUSTOMER_IHM.BOUTON_IG != 'false' &amp;&amp; CUSTOMER_IHM.MC_TECH != 'false' &amp;&amp; isSTC_WS_MC()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BOUTON_IG != 'false' &amp;&amp; CUSTOMER_IHM.MC_TECH != 'false' &amp;&amp; isSTC_WS_MC()"); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "DISSUASION_MENU_BOUTON_IG"); ]]></script>
+                <goto next="#DISSUASION_MENU_BOUTON_IG"/>
+                                
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "DISSUASION_VERS_QUIT"); ]]></script>
+	            <goto next="#DISSUASION_VERS_QUIT"/>
+
+            </if>
+        </block>
+    </form>
+
+    <!--###########################################
+            MENU BOUTON IG  (dissuader)
+    ########################################### -->
+    <menu id="DISSUASION_MENU_BOUTON_IG">
+    	<script><![CDATA[ formCourant = "DISSUASION_MENU_BOUTON_IG"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('MENU_BOUTON_IG')">
+                <!--
+                    Si toutefois vous souhaitez parler à un conseiller,
+                    appuyez sur la touche 7 de votre téléphone
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_IDD_#' + ID_Incident);					
+				incidentId = ID_Incident;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "QUIT_INCIDENT"); ]]></script>
+            <goto next="#QUIT_INCIDENT"/>
+
+        </catch>
+
+        <choice dtmf="7" next="#DISSUASION_Vers_CC"/>
+    </menu>
+
+    <form id="DISSUASION_Vers_CC">
+    	<script><![CDATA[ formCourant = "DISSUASION_Vers_CC"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "7"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "7"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_IDC_#' + ID_Incident);	
+				incidentId = ID_Incident;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+
+        </block>
+    </form>    
+    
+    
+    <form id="DISSUASION_VERS_QUIT">
+    	<script><![CDATA[ formCourant = "DISSUASION_VERS_QUIT"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>           
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_ID_#' + ID_Incident);
+				BaliseFlashIncident = LabelTraitementGenerique +'_ID_#' + ID_Incident ;					
+				incidentId = ID_Incident;
+				log_debug_assignment(pageCourante,'incidentId', incidentId);
+					
+				POSITION_ARBO = 77;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>             
+
+        </block>
+    </form>      
+    
+    
+	<!--###########################################
+            MENU BOUTON IG ORIENTEE
+	########################################### -->	
+    <menu id="MENU_BOUTON_IG_ORIENTEE">
+    	<script><![CDATA[ formCourant = "MENU_BOUTON_IG_ORIENTEE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<property name="timeout" value="5s" />
+        <prompt bargein="true">
+        	<audio expr="PlayFile('MENU_BOUTON_IG')">
+        	<!--
+				Si toutefois vous souhaitez parler à un conseiller, 
+				appuyez sur la touche 7 de votre téléphone 
+        	-->
+        	</audio>
+        </prompt>
+
+		<catch event="noinput nomatch">		
+			<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+			<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+			<script><![CDATA[			
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_IOD_#' + ID_Incident);													
+				incidentId = ID_Incident;
+			]]></script>
+			<script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+			<script><![CDATA[ log_debug_next_form(pageCourante, "QUIT_INCIDENT"); ]]></script>
+			<goto next="#QUIT_INCIDENT" /> 
+						
+		</catch>
+		
+		<choice dtmf="7" next="#Vers_DISSUASION_ORIENTEE"/>
+    </menu>
+ 
+	<form id="Vers_DISSUASION_ORIENTEE">
+		<script><![CDATA[ formCourant = "Vers_DISSUASION_ORIENTEE"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "7"); ]]></script> 
+		<script><![CDATA[ track_dtmfList (menuCourant, "7"); ]]></script>
+		<block>
+		    <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitementGenerique +'_IO_#' + ID_Incident);													
+				incidentId = ID_Incident;
+			]]></script>    
+			<script><![CDATA[ log_debug_assignment(pageCourante,'incidentId', incidentId); ]]></script>
+		   	<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_DISSUASION_ORIENTEE.vxml"); ]]></script>
+		   	<goto next="./FIXE_DISSUASION_ORIENTEE.vxml" />
+
+		</block>
+	</form>    
+    
+
+    <!--###########################################
+            Fin de l'appel -QUIT
+        ########################################### -->
+    <form id="QUIT_INCIDENT">
+    	<script><![CDATA[ formCourant = "QUIT_INCIDENT"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_AVEC_SFR_QUIT");  ]]></script>
+			<goto next="./FIXE_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_AVEC_SFR_QUIT" />
+        </block>
+    </form>
+    
+       
+    <!--#################################################
+            Gestion de la page à traiter apres l'INCIDENT
+        ################################################# -->
+    <form id="defineNext">
+    	<script><![CDATA[ formCourant = "defineNext"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				var followingPage = "./FIXE_" + nextPage + ".vxml"+formId;
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingPage); ]]></script>
+            <goto expr="followingPage"/>
+        </block>
+    </form>        
+
+</vxml>

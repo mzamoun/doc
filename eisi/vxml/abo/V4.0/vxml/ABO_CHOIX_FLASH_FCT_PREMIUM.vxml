@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		12/03/2021
+        Page :					Application ABO - CHOIX_FLASH_FCT_PREMIUM
+        Modification :	        IMA/CZO		10/03/2023		Refonte abo lot1:  MAJ balises	
+        
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_CHOIX_FLASH_FCT_PREMIUM.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+	]]></script>
+	
+	<script><![CDATA[    
+	    <!--	Initialisation tableau dynamique-->
+		var tabMenu = new Array ();
+		var compteur = 0;
+		var choix_1 = 'false';
+		var choix_2 = 'false';
+		var choix_3 = 'false';	    		
+	]]></script>
+	
+    <var name="errorCounter" expr="1"/>
+
+	
+    	
+  <!-- ==================================== //-->
+  <!-- INIT MenuChoix_FLASH_MENU_FCT_PREMIUM        //-->
+  <!-- ==================================== //-->          
+    <form id="initMenuChoix_FLASH_MENU_FCT_PREMIUM">
+    	<script><![CDATA[ formCourant = "initMenuChoix_FLASH_MENU_FCT_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_1 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_1 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_1 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_1_AUDIO;
+						compteur++;
+						choix_1 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_1',choix_1); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_2 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_2 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_2 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_2_AUDIO;
+						compteur++;
+						choix_2 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_2',choix_2); ]]></script>
+            </if>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_3 =='true'"); ]]></script>	
+            <if cond="CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_3 =='true'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_3 =='true'"); ]]></script>	
+                <script><![CDATA[
+						tabMenu[compteur] = CUSTOMER_IHM.MENU_CHOIX_FLASH_FCT_PREMIUM_CHOIX_3_AUDIO;
+						compteur++;
+						choix_3 = 'true';
+                ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,'choix_3',choix_3); ]]></script>
+            </if>
+           
+            <script><![CDATA[ log_debug_assignment(pageCourante,'compteur',compteur); ]]></script>
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>	
+            <if cond="compteur == 0">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "compteur == 0"); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30001_CHOIX_FLASH_FCT_PREM_OK');				
+	            ]]></script>            		
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_CHOIX_FLASH_FCT_PREMIUM"); ]]></script>
+            <goto next="#VERS_MENU_CHOIX_FLASH_FCT_PREMIUM"/>
+        </block>
+    </form>
+
+  <!-- ==================================== //-->          
+    <form id="VERS_MENU_CHOIX_FLASH_FCT_PREMIUM">
+    	<script><![CDATA[ formCourant = "VERS_MENU_CHOIX_FLASH_FCT_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30001_CHOIX_FLASH_FCT_PREM_OK');				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_CHOIX_FLASH_FCT_PREMIUM"); ]]></script>
+            <goto next="#MENU_CHOIX_FLASH_FCT_PREMIUM"/>
+        </block>
+    </form>
+        
+    <menu id="MENU_CHOIX_FLASH_FCT_PREMIUM">
+    	<script><![CDATA[ formCourant = "MENU_CHOIX_FLASH_FCT_PREMIUM"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <foreach item="itemMenu" array="tabMenu">
+                <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(itemMenu)">
+                </audio>
+            </foreach>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+           
+            <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+            <goto next="#nomatch"/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+            <goto next="#NMNI"/>
+        </catch>
+        <choice dtmf="1" next="#Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_1"/>
+        <choice dtmf="2" next="#Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_2"/>
+        <choice dtmf="3" next="#Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_3"/>
+    </menu>
+
+    <form id="nomatch">
+    	<script><![CDATA[ formCourant = "nomatch"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+			<script><![CDATA[ track_dtmfList ("MENU_CHOIX_FLASH_FCT_PREMIUM","NMNI"); ]]></script>        
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+            <if cond="document.errorCounter &lt; 2">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "document.errorCounter &lt; 2"); ]]></script>	
+                <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30091_CHOIX_FLASH_FCT_PREMI_NMNI');
+	            ]]></script>                 
+                <prompt>
+                    <audio expr="PlayFile('ERREUR_CHOIX_NOUVEAU')"/>
+                </prompt>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_CHOIX_FLASH_FCT_PREMIUM"); ]]></script>
+                <goto next="#VERS_MENU_CHOIX_FLASH_FCT_PREMIUM"/>
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+                <goto next="#NMNI"/>
+            </if>
+        </block>
+    </form>
+
+	  <!-- ==================================== //-->
+	  <!-- CHOIX MENU_CHOIX_FLASH_FCT_PREMIUM_1						    //-->
+	  <!-- ==================================== //-->    
+    <form id="Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_1">
+    	<script><![CDATA[ formCourant = "Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_1"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("MENU_CHOIX_FLASH_FCT_PREMIUM", "1"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_1 == 'false'"); ]]></script>	
+            <if cond="choix_1 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_1 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30011_CHOIX_FLASH_FCT_PREM1');
+				POSITION_ARBO = 108;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				ID_FLUX='ABO_CHOIX_FLASH_FCT_PREMIUM';	
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+     
+    
+	  <!-- ==================================== //-->
+	  <!-- CHOIX MENU_CHOIX_FLASH_FCT_PREMIUM_2						    //-->
+	  <!-- ==================================== //-->  
+    <form id="Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_2">
+    	<script><![CDATA[ formCourant = "Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_2"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante,"CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("MENU_CHOIX_FLASH_FCT_PREMIUM", "2"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_2 == 'false'"); ]]></script>	
+            <if cond="choix_2 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_2 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30021_CHOIX_FLASH_FCT_PREM2');
+				POSITION_ARBO = 109;	
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_2">
+    	<script><![CDATA[ formCourant = "SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_2"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+	    	<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM2 != 'false' "); ]]></script>	
+	    	<if cond="CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM2 != 'false' ">	
+	    		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM2 != 'false'"); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30021_CHOIX_FLASH_FCT_PREM2_OK');
+					ID_FLUX='ABO_CHOIX_FLASH_FCT_PREMIUM2';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);					
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+	            <goto next="./ABO_TRANSFERT.vxml"/> 	
+	                                	    			    
+	    	<else />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>					
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30021_CHOIX_FLASH_FCT_PREM2_NOK');				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RETOUR_MENU_PREMIUM"); ]]></script>
+	            <goto next="#RETOUR_MENU_PREMIUM"/>	            	
+   				
+			</if>
+			        
+        </block>
+    </form>    
+        
+	  <!-- ==================================== //-->
+	  <!-- CHOIX MENU3						    //-->
+	  <!-- ==================================== //-->      
+
+    <form id="Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_3">
+    	<script><![CDATA[ formCourant = "Vers_MENU_CHOIX_FLASH_FCT_PREMIUM_3"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script>
+    	<script><![CDATA[ track_dtmfList ("MENU_CHOIX_FLASH_FCT_PREMIUM", "3"); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_3 == 'false'"); ]]></script>	
+            <if cond="choix_3 == 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_3 == 'false'"); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "nomatch"); ]]></script>
+                <goto next="#nomatch"/>
+            </if>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30031_CHOIX_FLASH_FCT_PREM3'); 
+				POSITION_ARBO = 110;			
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_3">
+    	<script><![CDATA[ formCourant = "SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_3"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+	    	<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM3 != 'false' "); ]]></script>	
+	    	<if cond="CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM3 != 'false' ">	
+	    		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM3 != 'false'"); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30031_CHOIX_FLASH_FCT_PREM3_OK');
+					ID_FLUX='ABO_CHOIX_FLASH_FCT_PREMIUM3';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);					
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+	            <goto next="./ABO_TRANSFERT.vxml"/> 	
+	                                	    			    
+	    	<else />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>					
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30031_CHOIX_FLASH_FCT_PREM3_NOK');				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RETOUR_MENU_PREMIUM"); ]]></script>
+	            <goto next="#RETOUR_MENU_PREMIUM"/>	            	
+   				
+			</if>
+			        
+
+        </block>
+    </form>      
+       
+        
+	  <!-- ==================================== //-->
+	  <!-- NMNI  					    //-->
+	  <!-- ==================================== //-->  
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <prompt bargein="true">
+                <audio expr="PlayFile('ERREUR_CHOIX_QUIT')"/>
+            </prompt>        
+	    	<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM_NMNI != 'false' "); ]]></script>	
+	    	<if cond="CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM_NMNI != 'false' ">	
+	    		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT_PREMIUM_NMNI != 'false'"); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30091_CHOIX_FLASH_FCT_PREM_NMNI2');
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto next="./ABO_DISCONNECT.vxml"/>	
+	                                	    			    
+	    	<else />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>					
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '30091_CHOIX_FLASH_FCT_PREM_NMNI2B');				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RETOUR_MENU_PREMIUM"); ]]></script>
+	            <goto next="#RETOUR_MENU_PREMIUM"/>	            	
+   				
+			</if>
+			        	
+        </block>
+    </form>
+    
+	  <!-- ==================================== //-->
+	  <!-- RETOUR MENU_PREMIUM_AUTRE		    //-->
+	  <!-- ==================================== //-->  
+    <form id="RETOUR_MENU_PREMIUM">
+    	<script><![CDATA[ formCourant = "RETOUR_MENU_PREMIUM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_MENU_PREMIUM.vxml#CTRL_CHOIX_FLASH2_FCT_PREMIUM"); ]]></script>
+            <goto next="./ABO_MENU_PREMIUM.vxml#CTRL_CHOIX_FLASH2_FCT_PREMIUM"/>	            			        	
+        </block>
+    </form>    	     
+    
+    
+    
+       
+ 
+    
+</vxml>

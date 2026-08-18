@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			EISI
+        Date de Creation :	11/11/2018
+        Page :				Application ABO  - Client IMPAYE
+        Modification        IMA/CZO		17/05/2019		integration des menus dynamiques 
+        					IMA/CZO		03/10/2019		Ajout des positions flahs (refonte flash abo)
+        					IMA/CZO		24/02/2022		Integration du filtre RDGU
+        					IMA/CZO		21/04/2022		MAJ vitesse de prompt (temps break)
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_IMPAYE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+    <!-- ==================================== -->
+    <!-- IMPAYE ACCUEIL					      -->
+    <!-- ==================================== -->
+        
+    <form id="IMPAYE_ACC">
+        <script><![CDATA[ formCourant = "IMPAYE_ACC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+		
+			<script><![CDATA[
+				var Total = CUSTOMER_MOBILE_IMPAYE.UNPAID ;
+				var euros = 0 ;
+				var cent  = 0 ;				
+				
+			    var items = Total.split(",");
+			    var length = items.length;
+			    if (0 < length ){
+					euros = parseInt (items[0]) ;
+					cent  = parseInt (items[1]) ;				    	
+			    }
+			    else{
+					euros = parseInt (Total) ;
+					cent  = 0 ;					    				    
+			    }
+				
+				var euros_millions = Math.floor(euros/1000000);
+				var euros_milliers  = Math.floor ((euros - (euros_millions*1000000))/1000);
+				
+				var euros_milliers_centaine  = Math.floor (euros_milliers/100);
+				var euros_milliers_dizaine  = euros_milliers - (euros_milliers_centaine * 100) ;
+				
+				var euros_centaines  = Math.floor ((euros - ((euros_millions*1000000)+(euros_milliers*1000)))/100);
+				var euros_dizaines  = euros - ((euros_millions*1000000)+(euros_milliers*1000)+(euros_centaines*100));
+								
+								
+			]]></script>
+			        
+	        <prompt bargein="false">
+	            <audio expr="PlayFile('IMPAYE')"/>
+	        </prompt>
+	        
+	        <!-- ==================Restitution du montant imapyé ================== -->
+	        <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_millions &gt; 0 "); ]]></script>
+	        
+			<script><![CDATA[ 
+					 log_debug_assignment(pageCourante, "Total", Total);
+					 log_debug_assignment(pageCourante, "euros", euros);
+					 log_debug_assignment(pageCourante, "cent", cent);
+			 ]]></script>	        
+
+			<!-- ==================millions ================== -->
+			<if cond="euros_millions &gt; 0 ">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_millions &gt; 0"); ]]></script>  
+				<prompt bargein="true">
+					<audio expr="sayasDigitsWav(euros_millions)"/>
+					<audio expr="PlayGenericAudio('MILLION')"/>
+					<break time="0.05s"/>
+				</prompt>
+			</if>
+			<!-- ==================milliers ================== -->
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_milliers &gt; 0 "); ]]></script>
+			<if cond="euros_milliers &gt; 0 ">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_milliers &gt; 0"); ]]></script>  			
+		
+				
+				<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_milliers !=  1"); ]]></script>			
+				<if cond="euros_milliers !=  '1' ">
+					<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_milliers !=  1"); ]]></script> 				
+					
+					<!-- ==================centaine de milliers ================== -->
+					<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_milliers_centaine &gt; 0"); ]]></script>
+					<if cond="euros_milliers_centaine &gt; 0 ">
+					
+						<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_milliers_centaine !=  1 "); ]]></script>			
+						<if cond="euros_milliers_centaine !=  '1'  ">	
+							<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_milliers_centaine !=  1"); ]]></script> 				
+							<prompt bargein="true">
+								<audio expr="sayasDigitsWav(euros_milliers_centaine)"/>
+							</prompt>
+						</if>
+									
+						<prompt bargein="true">
+							<audio expr="PlayGenericAudio('CENT')"/>
+						</prompt>
+					</if>
+					
+					<!-- ==================dizaine de milliers ================== -->
+					<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_milliers_dizaine &gt;= 0 "); ]]></script>			
+					<if cond="euros_milliers_dizaine &gt;= 0 ">
+						<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_milliers_dizaine &gt;= 0"); ]]></script> 
+						<prompt bargein="true">
+							<audio expr="sayasDigitsWav(euros_milliers_dizaine)"/>				
+						</prompt>
+					</if>															
+					
+					
+				</if>									
+								
+				<prompt bargein="true">
+					<audio expr="PlayGenericAudio('MILLE')"/>
+				</prompt>
+			</if>
+			<!-- ==================centaines euros ================== -->				
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_centaines &gt; 0"); ]]></script>
+			<if cond="euros_centaines &gt; 0 ">
+			
+				<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_centaines !=  1 "); ]]></script>			
+				<if cond="euros_centaines !=  '1'  ">	
+					<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_centaines !=  1"); ]]></script> 				
+					<prompt bargein="true">
+						<audio expr="sayasDigitsWav(euros_centaines)"/>
+					</prompt>
+				</if>
+							
+				<prompt bargein="true">
+					<audio expr="PlayGenericAudio('CENT')"/>
+				</prompt>
+			</if>
+			<!-- ==================dizaines euros ================== -->	
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "euros_dizaines &gt;= 0 "); ]]></script>			
+			<if cond="euros_dizaines &gt;= 0 ">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "euros_dizaines &gt;= 0"); ]]></script> 
+				<prompt bargein="true">
+					<audio expr="sayasDigitsWav(euros_dizaines)"/>
+					<audio expr="PlayGenericAudio('EURO')"/>					
+				</prompt>
+			</if>						
+				
+			<!-- ==================centimes ================== -->				
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "cent &gt;= 0  "); ]]></script>				
+			<if cond="cent &gt;= 0 ">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "cent &gt;= 0"); ]]></script> 
+				<prompt bargein="true">
+					<audio expr="sayasDigitsWav(cent)"/>
+					<audio expr="PlayGenericAudio('CENTIME')"/>
+					<break time="0.05s"/>
+				</prompt>
+			</if>        
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+            <goto next="#Filtre_RDGU"/>	        
+                
+        </block>
+    </form>
+    
+    <!--###########################################
+                FILTRE RDGU
+        ########################################### -->       
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_IMPAYE_RDGU_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "FiltreWCBDIGITAL"); ]]></script>
+	            <goto next="#FiltreWCBDIGITAL"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="appel_rdgu == 'true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "appel_rdgu == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_IMPAYE_RDGU_OK');
+                ]]></script> 
+                
+		        <prompt bargein="true">
+		            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_IMPAYE_RDGU_IMPAYE_AUDIO)"/>
+		        </prompt> 
+		                         
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00082_IMPAYE_RDGU');
+                ]]></script>                 
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_SUITE_ENTREE"); ]]></script>
+	            <goto next="#Vers_SUITE_ENTREE"/>                  
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_IMPAYE_RDGU_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_IMPAYE_SUSPENDU"); ]]></script>
+	            <goto next="#FiltreWCBDIGITAL"/>                
+            </if>                                   
+                                         
+        </block>
+    </form>     
+    
+    <!--###########################################
+                FILTRE WCB
+        ########################################### -->    
+    <form id="FiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' "); ]]></script>	
+
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_WCB_IMPAYE');
+					POSITION_ARBO = 14;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+               
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00080_IMPAYE');
+					POSITION_ARBO = 67;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>
+               
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+                            	
+            </if>
+        </block>
+    </form>
+    
+    <!--###########################################
+                Menu IMPAYE WCB
+        ########################################### -->
+    <menu id="MENU_IMPAYE_WCB">
+        <script><![CDATA[ formCourant = "MENU_IMPAYE_WCB"; ]]></script>
+        <script><![CDATA[ menuCourant = "ABO_MENU_IMPAYE_MOBILE_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_IMPAYE_WCB_IMPAYE_AUDIO)"/>
+        </prompt>        
+
+        <catch event="noinput nomatch" >
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00082_WCB_IMPAYE_CONTINUE');					
+            ]]></script>            
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_AUTRE"); ]]></script>
+            <goto next="#IMPAYE_AUTRE"/>    
+        </catch>
+
+        <choice dtmf="*" next="#VERS_IMPAYE_PAIEMENT_WCB"/>
+    </menu> 
+    
+	<!-- Menu IMPAYE WCB - CHOIX * -->     
+    <form id="VERS_IMPAYE_PAIEMENT_WCB">
+        <script><![CDATA[ formCourant = "VERS_IMPAYE_PAIEMENT_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + "ABO_MENU_IMPAYE_MOBILE_WCB" + ":CHOIX", "*"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("ABO_MENU_IMPAYE_MOBILE_WCB", "*"); ]]></script>
+        <block>  
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00081_WCB_IMPAYE_PAIEMENT');					
+            ]]></script>                   
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_PAIEMENT"); ]]></script>
+            <goto next="#IMPAYE_PAIEMENT"/>                     
+                    
+        </block>
+    </form>      
+    
+
+    <!--###########################################
+                Menu IMPAYE
+        ########################################### -->
+    <menu id="MENU_IMPAYE">
+        <script><![CDATA[ formCourant = "MENU_IMPAYE"; ]]></script>
+        <script><![CDATA[ menuCourant = "MENU_IMPAYE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+        
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_IMPAYE_IMPAYE_AUDIO)"/>
+        </prompt>        
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2 &amp;&amp; nb_passage==0">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <assign name="nb_passage" expr="nb_passage + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"nb_passage", nb_passage); ]]></script>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00089_IMPAYE_NMNI');
+            ]]></script>
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_ACC"); ]]></script>
+            <goto next="#IMPAYE_ACC"/>	
+        </catch>
+        
+        <catch event="noinput nomatch" cond="document.errorCounter == 2 || 0 &lt; nb_passage ">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (menuCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00089_IMPAYE_NMNI_X2');
+            ]]></script>             
+            <prompt>               
+                <audio expr="PlayFile('NMNI_MISE_EN_RELATION')"/>
+            </prompt>            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_AUTRE"); ]]></script>
+            <goto next="#IMPAYE_AUTRE"/> 
+     
+        </catch>
+
+        <choice dtmf="1" next="#Vers_IMPAYE_PAIEMENT"/>
+        <choice dtmf="2" next="#Vers_IMPAYE_AUTRE"/>
+    </menu>
+
+    
+    <!--###########################################
+         Choix 1: SVIPaiement
+    ########################################### -->
+    <form id="Vers_IMPAYE_PAIEMENT">
+        <script><![CDATA[ formCourant = "Vers_IMPAYE_PAIEMENT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + "ABO_MENU_IMPAYE_MOBILE" + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("ABO_MENU_IMPAYE_FIN", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00081_IMPAYE_PAIEMENT'); 
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_PAIEMENT"); ]]></script>
+            <goto next="#IMPAYE_PAIEMENT"/> 
+        </block>
+    </form>  
+ 
+ 	<!--	appel classique et wcb  -->         
+    <form id="IMPAYE_PAIEMENT">
+        <script><![CDATA[ formCourant = "IMPAYE_PAIEMENT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				POSITION_ARBO = 38;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				Service = 'pcb';
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>            
+
+    <!--###########################################
+         Choix 2: Autre - retour entree
+    ########################################### -->    
+    <form id="Vers_IMPAYE_AUTRE">
+        <script><![CDATA[ formCourant = "Vers_IMPAYE_AUTRE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + "ABO_MENU_IMPAYE_MOBILE" + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("ABO_MENU_IMPAYE_FIN", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00082_IMPAYE_CONTINUE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "IMPAYE_AUTRE"); ]]></script>
+            <goto next="#IMPAYE_AUTRE"/>         
+        </block>
+    </form>
+    
+ 	<!--	appel classique et wcb  -->      
+    <form id="IMPAYE_AUTRE">
+        <script><![CDATA[ formCourant = "IMPAYE_AUTRE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+            	POSITION_ARBO = 15;
+            	log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>           
+        </block>
+    </form>    
+    
+
+    <!--###########################################
+           Retour ENTREE GP
+    ########################################### -->
+
+    <form id="Vers_SUITE_ENTREE">
+        <script><![CDATA[ formCourant = "Vers_SUITE_ENTREE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_ENTREE.vxml#AFTER_Filtre_IMPAYE"); ]]></script>
+            <goto next="./ABO_ENTREE.vxml#AFTER_Filtre_IMPAYE"/>
+            
+        </block>
+    </form>    
+
+   
+</vxml>

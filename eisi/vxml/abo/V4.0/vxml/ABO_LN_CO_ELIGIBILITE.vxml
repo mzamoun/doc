@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		15/02/2024
+        Page :                  Application ABO  - LN CO   - CTRL ELIGIBILITE LN_CO
+        Modification        	
+
+														  	                            
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_LN_CO_ELIGIBILITE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+
+    <!--###########################################
+                CTRL filtre LN_COM
+        ########################################### -->    
+    <form id="CTRL_FILTRE_LN_COM">  
+        <script><![CDATA[ formCourant = "CTRL_FILTRE_LN_COM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            
+            <!--	filtre LN_COM activé 		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_COM != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.LN_COM != 'false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_COM != 'false'"); ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_ELIGIBILITE_LN_COM_FLASH"); ]]></script>
+	            <goto next="#CTRL_ELIGIBILITE_LN_COM_FLASH"/>                	            	                         	           
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_CO_LN_OFF');									
+			
+	            ]]></script> 
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_LN_COM_KO"/>		            
+	            	                         
+            </if>             
+
+            
+        </block>
+    </form> 
+        
+    <!--#####################################################################################################
+        CTRL FLASH ABO_COM_LN_ELIGIBILITE
+        ##################################################################################################### -->          
+    <form id="CTRL_ELIGIBILITE_LN_COM_FLASH">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_FLASH"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[								
+				POSITION_ARBO = 137;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+       		<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>  
+            
+        </block>
+    </form>
+    
+    <form id="CTRL_ELIGIBILITE_LN_COM_FLASH_OK">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_FLASH_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[								
+				customNode(applicationName + '_' + '33100_CO_LN_FLASH_OK');				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_ELIGIBILITE_LN_COM_1"); ]]></script>
+            <goto next="#VERS_CTRL_ELIGIBILITE_LN_COM_1"/>
+            
+        </block>
+    </form> 
+    
+    <form id="CTRL_ELIGIBILITE_LN_COM_FLASH_KO">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_FLASH_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[								
+				customNode(applicationName + '_' + '33100_CO_LN_FLASH_NOK');					
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+            <goto next="#ELIGIBILITE_LN_COM_KO"/>           
+                   
+            
+        </block>
+    </form> 
+    
+        
+    <!--###########################################
+        VERS CTRL TRAITEMENT LN -1
+   ########################################### -->
+    <form id="VERS_CTRL_ELIGIBILITE_LN_COM_1">
+        <script><![CDATA[ formCourant = "VERS_CTRL_ELIGIBILITE_LN_COM_1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>         
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_ELIGIBILITE_LN_COM_1"); ]]></script>
+            <goto next="#CTRL_ELIGIBILITE_LN_COM_1"/>
+            
+        </block>
+    </form> 
+    
+   <!--#################################################
+                CTRL ELIGIBILTE - LN-COM - table historique
+        ################################################# -->    
+    <form id="CTRL_ELIGIBILITE_LN_COM_1">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	filtre LN_CLIENT_TABLE activé		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_CLIENT_TABLE == 'true'"); ]]></script>
+            <if cond="CUSTOMER_IHM.LN_CLIENT_TABLE == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_CLIENT_TABLE == 'true'"); ]]></script>            	
+
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_ELIGIBILITE_LN_COM_TABLE"); ]]></script>
+	            <goto next="#CTRL_ELIGIBILITE_LN_COM_TABLE"/>              	            	                         	           
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_TABLE_CO_LN_OFF');									
+			
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_LN_COM_KO"/>  
+	            	                         
+            </if>
+            
+        </block>
+    </form>
+    
+    
+    <!--#####################################################################################################
+        CTRL TABLE HISTORIQUE COM LN (mm table pour tous les LN
+        ##################################################################################################### -->
+    
+    <form id="CTRL_ELIGIBILITE_LN_COM_TABLE">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_TABLE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var ndi  = NDI;
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'CTRL_ELIGIBILITE_LN_COM_TABLE', subdialogEligibilityLn , 'ndi='+ndi ); ]]></script>
+        <subdialog name="ELIGIBILITE_LN_HITORISATION"
+                   srcexpr="subdialogEligibilityLn"
+                   namelist="ndi"
+                   method="post"
+                   fetchtimeout="3s"
+                   fetchaudio="../../../audio/Attente.wav">
+            <catch event="error"> <!-- webapp KO -->
+                <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+             
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_TABLE_HS"); ]]></script>
+                <goto next="#ELIGIBILITE_LN_COM_TABLE_HS"/>
+            </catch>
+        </subdialog>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'ELIGIBILITE_LN_HITORISATION', ELIGIBILITE_LN_HITORISATION); ]]></script>
+            <!--	traitement KO - HS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "ELIGIBILITE_LN_HITORISATION.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="ELIGIBILITE_LN_HITORISATION.APP_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELIGIBILITE_LN_HITORISATION.APP_STATUS == 'NOK' "); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_1_LN_TABLE_HS"); ]]></script>
+                <goto next="#ELIGIBILITE_1_LN_TABLE_HS"/>                             
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_ELIGIBILITE_LN" expr="ELIGIBILITE_LN_HITORISATION"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_ELIGIBILITE_LN", ELIGIBILITE_LN_HITORISATION); ]]></script>                                                            
+                
+            </if>
+                
+ 	 		<!--	traitement OK - et appel eligible LN_COM-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isEligibleLn()"); ]]></script>
+            <if cond="isEligibleLn()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isEligibleLn()"); ]]></script>            		
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_TABLE_CO_LN_OUI');									
+					POSITION_ARBO = 138;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+	            ]]></script>
+           		<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>  
+			
+            <!--	traitement OK - et appel non eligible -->                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_TABLE_CO_LN_NON');				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_LN_COM_KO"/>                
+            </if>
+                      
+        </block>
+    </form>                
+                    	                 
+    <form id="ELIGIBILITE_LN_COM_TABLE_HS">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_LN_COM_TABLE_HS"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>       
+            <script><![CDATA[
+				CUSTOMER_ELIGIBILITE_LN = {};
+				log_debug_assignment(pageCourante,"CUSTOMER_ELIGIBILITE_LN", CUSTOMER_ELIGIBILITE_LN );	            
+				customNode(applicationName + '_' + '33100_TABLE_CO_LN_HS');
+							
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+            <goto next="#ELIGIBILITE_LN_COM_KO"/> 
+        </block>
+    </form>  
+    
+           
+    <!--###########################################
+                CTRL filtre 2 ELIGIBILITE LN_COM 2
+        ########################################### -->    
+    <form id="CTRL_ELIGIBILITE_LN_COM_2">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	filtre LN_VOLUMETRIE_COM activé		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_VOLUMETRIE_COM != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.LN_VOLUMETRIE_COM != 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.LN_VOLUMETRIE_COM != 'false'"); ]]></script>            	
+
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_ELIGIBILITE_LN_COM_2_VOLUMETRIE"); ]]></script>
+	            <goto next="#CTRL_ELIGIBILITE_LN_COM_2_VOLUMETRIE"/>              	            	                         	           
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_VOLUMETRIE_CO_LN_OFF');			
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_LN_COM_KO"/>   
+	            	                         
+            </if>
+            
+        </block>
+    </form>
+    
+    
+    <!--#####################################################################################################
+        CTRL pourcentage appels LN_COM
+        ##################################################################################################### -->
+    
+    <form id="CTRL_ELIGIBILITE_LN_COM_2_VOLUMETRIE">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_LN_COM_2_VOLUMETRIE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var context = 'LN-MOB-CO';
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'ELIGIBILITE_LN_POURCENTAGE', subdialogPileFace , 'context='+context ); ]]></script>
+        <subdialog name="ELIGIBILITE_LN_POURCENTAGE"
+                   srcexpr="subdialogPileFace"
+                   namelist="context"
+                   method="post"
+                   fetchtimeout="3s"
+                   fetchaudio="../../../audio/Attente.wav">
+            <catch event="error"> <!-- webapp KO -->
+                <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+             
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS"); ]]></script>
+                <goto next="#ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS"/>
+            </catch>
+        </subdialog>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'ELIGIBILITE_LN_POURCENTAGE', ELIGIBILITE_LN_POURCENTAGE); ]]></script>
+            <!--	traitement KO - HS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "ELIGIBILITE_LN_POURCENTAGE.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="ELIGIBILITE_LN_POURCENTAGE.APP_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELIGIBILITE_LN_POURCENTAGE.APP_STATUS == 'NOK' "); ]]></script>
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS"); ]]></script>
+                <goto next="#ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS"/>                             
+
+ 	 		<!--	traitement OK - PILE ou Face true -->
+            <elseif cond="ELIGIBILITE_LN_POURCENTAGE.APP_STATUS == 'OK' &amp;&amp; ELIGIBILITE_LN_POURCENTAGE.PILE_OU_FACE == 'true' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELIGIBILITE_LN_POURCENTAGE.APP_STATUS == 'OK' &amp;&amp; ELIGIBILITE_LN_POURCENTAGE.PILE_OU_FACE == 'true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_VOLUMETRIE_CO_LN_OUI');			
+	            ]]></script>	            
+            	<script><![CDATA[ log_debug_next_form(pageCourante, "TRANSFERT_PARCOURS_LN"); ]]></script>
+	            <goto next="#TRANSFERT_PARCOURS_LN"/>  
+			
+            <!--	traitement OK - PILE ou Face false - cas par defaut -->                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33100_VOLUMETRIE_CO_LN_NON');			
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+	            <goto next="#ELIGIBILITE_LN_COM_KO"/>              
+            </if>
+                      
+        </block>
+    </form> 	             
+    
+    <form id="ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_LN_COM_2_VOLUMETRIE_HS"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '33100_VOLUMETRIE_CO_LN_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "ELIGIBILITE_LN_COM_KO"); ]]></script>
+            <goto next="#ELIGIBILITE_LN_COM_KO"/>  
+        </block>
+    </form>
+        
+  
+    
+    <!--###########################################
+                ELIGIBILITE_LN_COM_KO
+        ########################################### -->    
+    <form id="ELIGIBILITE_LN_COM_KO">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_LN_COM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <script><![CDATA[								
+				POSITION_ARBO = 139;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+       		<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>                
+            
+        </block>
+    </form>
+        
+    <!--#######################################################################################################################################################
+        Attention: NON appelé iciCTRL ELIGIBILITE LN OK - sauvegarde contexte puis transfert flux specifique LN (non appelé ici - voir fichier root_transfert.vxml))
+        ####################################################################################################################################################### -->
+    <form id="VERS_TRANSFERT_PARCOURS_LN">
+        <script><![CDATA[ formCourant = "VERS_TRANSFERT_PARCOURS_LN"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        
+        <!--	sauvegarde contexte de l'appel -->
+        <script><![CDATA[
+			
+			var connId = CONN_ID ;
+			var idUnique = ID_UNIQUE ;
+			var dateAppel = (new Date()).getTime() ;
+			var ndi = NDI ;
+			var typeSortieSvi = 'TRF_LN';
+			var MotifSortieSvi = '12'; 
+			var customerData = getcustomerDataMotif12();  
+			var parcoursData =getparcoursDataMotif12() ; 
+			var autreData = getautreDataMotif12();
+			var statSvi = '';   
+        ]]></script>
+        
+       
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'SUBDIALOG_CREATE_CONTEXT', subdialogCreateContext , 'connId=' + connId +'|idUnique=' + idUnique + 'dateAppel=' + dateAppel +'|ndi=' + ndi + 'typeSortieSvi=' + typeSortieSvi +'|MotifSortieSvi=' + MotifSortieSvi + 'customerData=' + customerData +'|parcoursData=' + parcoursData + 'autreData=' + autreData +'|statSvi=' + statSvi  ); ]]></script>
+        <subdialog name="SUBDIALOG_CREATE_CONTEXT"
+                   srcexpr="subdialogCreateContext"
+                   namelist="connId idUnique dateAppel ndi typeSortieSvi MotifSortieSvi customerData parcoursData autreData statSvi"
+                   method="get"
+                   fetchtimeout="5s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+                   
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80000_SUBDIALOG_CRETAE_CONTEXTE_SVI_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "TRANSFERT_PARCOURS_LN"); ]]></script>
+            <goto next="#TRANSFERT_PARCOURS_LN"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_ELIGIBILITE_CLNS', WS_ELIGIBILITE_CLNS ); ]]></script>
+            
+            <!--	Sauvegarde Contexte OK	 -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " SUBDIALOG_CREATE_CONTEXT.APP_STATUS == 'OK'"); ]]></script>
+            <if cond=" SUBDIALOG_CREATE_CONTEXT.APP_STATUS == 'OK'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "SUBDIALOG_CREATE_CONTEXT.APP_STATUS == 'OK'"); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_CREATE_CONTEXTE_SVI_OK');
+	            ]]></script>
+			
+	        <!--	Sauvegarde Contexte KO	 -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '80000_SUBDIALOG_CRETAE_CONTEXTE_SVI_KO');
+	            ]]></script>
+                
+             </if>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "TRANSFERT_PARCOURS_LN"); ]]></script>
+            <goto next="#TRANSFERT_PARCOURS_LN"/>             
+                                                      
+        </block>
+    </form>      
+    
+    
+    <form id="TRANSFERT_PARCOURS_LN">
+        <script><![CDATA[ formCourant = "TRANSFERT_PARCOURS_LN"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>       
+            <!--	FLUX SPECIFIQUE LN - motif 12 =  LN ABO-CO -->
+            <script><![CDATA[
+				ID_FLUX='LANGNAT_12';			
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>
+        </block>
+    </form>           
+
+ 
+	<!--#####################################################################################################
+	    Gestion retour de l appel LN
+	    ##################################################################################################### -->      
+
+  
+
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form>
+
+</vxml>

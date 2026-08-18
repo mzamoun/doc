@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA
+        Date de Creation :		09/10/2013
+        Page :                  Application FIXE - FIXE_REINIT_MDP
+        Modification
+								MRO			15/03/2018	migration v8
+								IMA/CZO		27/08/2020		    Integration des traitements DEXTER									
+								IMA/CZO		25/11/2020		    MAJ NDI d'appel au WS REINIT MDP (utilisation ressource principale)		
+								IMA/CZO		16/12/2020		    Ajout CTRL sur le wav du nom du domaine existant ou pas
+								IMA/CZO 	24/01/2024		    Integration de l identification SEARCH
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_REINIT_MDP.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    <var name="errorCounter1" expr="1"/>
+
+    <script><![CDATA[
+		ndi = NDI;
+		
+	    function Extract_Domaine(email)
+	    {    
+		    var items = email.split("@");
+		    var length = items.length;
+		    if (1 < length ){
+				return items[1];
+	    	}  
+		    else{
+		      	return '';
+		    }
+	    }
+	    
+	      
+    ]]></script>
+    
+        
+    <form id="Vers_FLASH_REINIT_MDP">
+        <script><![CDATA[ formCourant = "Vers_FLASH_REINIT_MDP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12005_REINIT_MDP');
+				POSITION_ARBO = 20;				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="Retour_FLASH_REINIT_MDP">
+        <script><![CDATA[ formCourant = "Retour_FLASH_REINIT_MDP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+        	<!-- determination du ndi à utiliser pour l'appel WS MDP : ressource principale si non NDI  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true' "); ]]></script>
+            <if cond="isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isDEXTER_NDI_FOUND() &amp;&amp; CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE &amp;&amp; controlNdiFixe(CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE)=='true'"); ]]></script>
+                <script><![CDATA[
+					ndi = CUSTOMER_DEXTER.RESSOURCE_PRINCIPALE ;
+                ]]></script>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					ndi = NDI ;
+                ]]></script>
+
+            </if>
+                    	
+        	
+            <!-- Numéro  Mobile   -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "controlNdiMobile(ndi) == 'true' "); ]]></script>
+            <if cond="controlNdiMobile(ndi) == 'true' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "controlNdiMobile(ndi) == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12010_NDI_MOBILE');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                <!-- Numéro  Non Reco sur SEARCH ni DEXTER   -->	
+            <elseif cond="is_client_non_reconu() &amp;&amp; isDEXTER_NDI_FOUND_FALSE() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "is_client_non_reconu() &amp;&amp; isDEXTER_NDI_FOUND_FALSE() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12010_NDI_NON_RECO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "filtre_REINIT_MDP_SFC"); ]]></script>
+                <goto next="#filtre_REINIT_MDP_SFC"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <form id="filtre_REINIT_MDP_SFC">
+        <script><![CDATA[ formCourant = "filtre_REINIT_MDP_SFC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.REINIT_MDP_SFC_ACTIVE != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.REINIT_MDP_SFC_ACTIVE != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.REINIT_MDP_SFC_ACTIVE != 'false' "); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_USER_PROFILE"); ]]></script>
+                <goto next="#VERS_USER_PROFILE"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12010_REINIT_MDP_SFC_DESACTIVE');
+					POSITION_ARBO = 21;		
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+            </if>
+        </block>
+    </form>
+
+    <!--###########################################
+        Appel au WS USER PROFILE UPS
+        ########################################### -->
+    <form id="VERS_USER_PROFILE">
+        <script><![CDATA[ formCourant = "VERS_USER_PROFILE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'FIXE_WS_UserProfil', subdialogWS_UserProfil , 'ndi=' + ndi); ]]></script>
+        <subdialog name="FIXE_WS_UserProfil"
+                   srcexpr="subdialogWS_UserProfil"
+                   namelist="ndi"
+                   method="post"
+                   fetchtimeout="10s"
+                   fetchaudio="../../../audio/Attente.wav">
+        </subdialog>
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12010_UPS_INJOIGNABLE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'FIXE_WS_UserProfil', FIXE_WS_UserProfil ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.APP_STATUS == 'NOK'"); ]]></script>
+            <if cond="FIXE_WS_UserProfil.APP_STATUS == 'NOK'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.APP_STATUS == 'NOK'"); ]]></script>
+                <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'FIXE_WS_UserProfil', subdialogWS_UserProfil , 'ndi=' + ndi); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12010_UPS_INJOIGNABLE');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <assign name="LOGIN" expr="FIXE_WS_UserProfil.LOGIN"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"LOGIN", LOGIN); ]]></script>
+                <assign name="TEL_CONTACT_SECOURS" expr="FIXE_WS_UserProfil.TEL_CONTACT_SECOURS"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"TEL_CONTACT_SECOURS", TEL_CONTACT_SECOURS); ]]></script>
+                <assign name="TEL_CONTACT_MOBILE" expr="FIXE_WS_UserProfil.TEL_CONTACT_MOBILE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"TEL_CONTACT_MOBILE", TEL_CONTACT_MOBILE); ]]></script>
+                <assign name="EMAIL_SECOURS" expr="FIXE_WS_UserProfil.EMAIL_SECOURS"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"EMAIL_SECOURS", EMAIL_SECOURS); ]]></script>
+                <assign name="EMAIL_CONTACT_FIXE" expr="FIXE_WS_UserProfil.EMAIL_CONTACT_FIXE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"EMAIL_CONTACT_FIXE", EMAIL_CONTACT_FIXE); ]]></script>
+                <assign name="EMAIL_CONTACT_MOBILE" expr="FIXE_WS_UserProfil.EMAIL_CONTACT_MOBILE"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"EMAIL_CONTACT_MOBILE", EMAIL_CONTACT_MOBILE); ]]></script>
+            </if>
+
+            <!-- NDI  reconnu par UPS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.CLIENT_FOUND=='true'"); ]]></script>
+            <if cond="FIXE_WS_UserProfil.CLIENT_FOUND=='true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.CLIENT_FOUND=='true'"); ]]></script>
+                <!-- Ctrl TEL_CONTACT -->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "TEL_CONTACT_SECOURS  &amp;&amp; controlNdiMobile(TEL_CONTACT_SECOURS) == 'true' "); ]]></script>
+                <if cond="TEL_CONTACT_SECOURS  &amp;&amp; controlNdiMobile(TEL_CONTACT_SECOURS) == 'true' ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "TEL_CONTACT_SECOURS  &amp;&amp; controlNdiMobile(TEL_CONTACT_SECOURS) == 'true' "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12020_SMS_SECOURS');
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REINIT_SMS_SECOURS"); ]]></script>
+                    <goto next="#MENU_REINIT_SMS_SECOURS"/>
+
+                <else/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_TEL_CONTACT_MOBILE"); ]]></script>
+                    <goto next="#VERS_CTRL_TEL_CONTACT_MOBILE"/>
+
+                </if>
+
+                <!-- NDI non reconnu par UPS -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.LIBELLE_EXCEPTION  &amp;&amp; isObjectInArray(FIXE_WS_UserProfil.LIBELLE_EXCEPTION, ['UpsUserNotFoundException', 'UpsMultipleChoicesException']) "); ]]></script>
+                <if cond="FIXE_WS_UserProfil.LIBELLE_EXCEPTION  &amp;&amp; isObjectInArray(FIXE_WS_UserProfil.LIBELLE_EXCEPTION, ['UpsUserNotFoundException', 'UpsMultipleChoicesException']) ">
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_WS_UserProfil.LIBELLE_EXCEPTION  &amp;&amp; isObjectInArray(FIXE_WS_UserProfil.LIBELLE_EXCEPTION, ['UpsUserNotFoundException', 'UpsMultipleChoicesException']) "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12010_PB_FCT_'+FIXE_WS_UserProfil.LIBELLE_EXCEPTION);
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                <elseif cond=" FIXE_WS_UserProfil.LIBELLE_EXCEPTION  "/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_WS_UserProfil.LIBELLE_EXCEPTION  "); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12010_PB_TECH_'+FIXE_WS_UserProfil.LIBELLE_EXCEPTION);
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+                <else/>
+                    <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                    <script><![CDATA[
+						customNode(applicationName + '_' + '12010_UPS_INJOIGNABLE');
+                    ]]></script>
+                    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                    <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+                </if>
+            </if>
+
+        </block>
+    </form>
+
+    <!-- ==================================== -->
+    <!-- Menu REINIT SMS SECOURS				 -->
+    <!-- ==================================== -->
+
+    <menu id="MENU_REINIT_SMS_SECOURS">
+        <script><![CDATA[ formCourant = "MENU_REINIT_SMS_SECOURS"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_SMS_SECOURS')">
+                <!--
+                      Votre nouveau mot de passe va vous être envoyé par SMS au n°commençant par
+                -->
+            </audio>
+            <foreach item="i" array="[0, 2, 4]">
+                <audio expr="sayasDigitsWav(TEL_CONTACT_SECOURS.substring(i,i+2))"/>
+                <break time="0.4s"/>
+            </foreach>
+        </prompt>
+
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_SMS_SECOURS_SUITE')">
+                <!--
+                    Est-ce bien votre N°de mobile? Si oui, tapez 1, Si non, tapez 2
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12020_NMNI_SECOURS');
+            ]]></script>
+
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+                    <!--
+                        Désolé, nous n’avons pas compris votre choix, de nouveau
+                    -->
+                </audio>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12020_NMNI_SECOURS_X2');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_SECOURS"); ]]></script>
+            <goto next="#VERS_CTRL_MAIL_SECOURS"/>
+        </catch>
+
+        <choice dtmf="1" next="#REINIT_SMS_SECOURS_CHOIX1"/>
+        <choice dtmf="2" next="#REINIT_SMS_SECOURS_CHOIX2"/>
+    </menu>
+
+    <form id="REINIT_SMS_SECOURS_CHOIX1">
+        <script><![CDATA[ formCourant = "REINIT_SMS_SECOURS_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_SMS_SECOURS", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12021_CHOIX_SMS_SECOURS');
+				TEL_CONTACT = TEL_CONTACT_SECOURS ;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'TEL_CONTACT', TEL_CONTACT); ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_SMS.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_SMS.vxml"/>
+
+        </block>
+    </form>
+
+    <form id="REINIT_SMS_SECOURS_CHOIX2">
+        <script><![CDATA[ formCourant = "REINIT_SMS_SECOURS_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_SMS_SECOURS", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12022_AUTRE_SECOURS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_TEL_CONTACT_MOBILE"); ]]></script>
+            <goto next="#VERS_CTRL_TEL_CONTACT_MOBILE"/>
+
+        </block>
+    </form>
+
+    <form id="VERS_CTRL_TEL_CONTACT_MOBILE">
+        <script><![CDATA[ formCourant = "VERS_CTRL_TEL_CONTACT_MOBILE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Ctrl TEL_CONTACT_MOBILE -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "TEL_CONTACT_SECOURS != TEL_CONTACT_MOBILE  &amp;&amp; controlNdiMobile( TEL_CONTACT_MOBILE ) == 'true'"); ]]></script>
+            <if cond="TEL_CONTACT_SECOURS != TEL_CONTACT_MOBILE  &amp;&amp; controlNdiMobile( TEL_CONTACT_MOBILE ) == 'true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "TEL_CONTACT_SECOURS != TEL_CONTACT_MOBILE  &amp;&amp; controlNdiMobile( TEL_CONTACT_MOBILE ) == 'true'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12030_SMS_CONTACT');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REINIT_SMS_CONTACT"); ]]></script>
+                <goto next="#MENU_REINIT_SMS_CONTACT"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_SECOURS"); ]]></script>
+                <goto next="#VERS_CTRL_MAIL_SECOURS"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <!-- ==================================== -->
+    <!-- Menu REINIT SMS CONTACT				 -->
+    <!-- ==================================== -->
+
+    <menu id="MENU_REINIT_SMS_CONTACT">
+        <script><![CDATA[ formCourant = "MENU_REINIT_SMS_CONTACT"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_SMS_CONTACT')">
+                <!--
+                      Votre nouveau mot de passe va vous être envoyé par SMS au n°commençant par
+                -->
+            </audio>
+            <foreach item="i" array="[0, 2, 4]">
+                <audio expr="sayasDigitsWav(TEL_CONTACT_MOBILE.substring(i,i+2))"/>
+                <break time="0.4s"/>
+            </foreach>
+        </prompt>
+
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_SMS_CONTACT_SUITE')">
+                <!--
+                    Est-ce bien votre N°de mobile? Si oui, tapez 1, Si non, tapez 2
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter1 &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter1" expr="document.errorCounter1 + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter1", document.errorCounter1); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12030_NMNI_CONTACT');
+            ]]></script>
+
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+                    <!--
+                        Désolé, nous n’avons pas compris votre choix, de nouveau
+                    -->
+                </audio>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter1 == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12030_NMNI_CONTACT_X2');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_SECOURS"); ]]></script>
+            <goto next="#VERS_CTRL_MAIL_SECOURS"/>
+        </catch>
+
+        <choice dtmf="1" next="#REINIT_SMS_CONTACT_CHOIX1"/>
+        <choice dtmf="2" next="#REINIT_SMS_CONTACT_CHOIX2"/>
+    </menu>
+
+    <form id="REINIT_SMS_CONTACT_CHOIX1">
+        <script><![CDATA[ formCourant = "REINIT_SMS_CONTACT_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_SMS_CONTACT", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12031_CHOIX_SMS_CONTACT');
+				TEL_CONTACT = TEL_CONTACT_MOBILE ;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'TEL_CONTACT', TEL_CONTACT); ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_SMS.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_SMS.vxml"/>
+
+        </block>
+    </form>
+
+    <form id="REINIT_SMS_CONTACT_CHOIX2">
+        <script><![CDATA[ formCourant = "REINIT_SMS_CONTACT_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_SMS_CONTACT", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12032_AUTRE_CONTACT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_SECOURS"); ]]></script>
+            <goto next="#VERS_CTRL_MAIL_SECOURS"/>
+
+        </block>
+    </form>
+
+    <!-- ==================================== -->
+    <!-- Gestion de Reinit MDP par EMAIL		 -->
+    <!-- ==================================== -->
+
+    <form id="VERS_CTRL_MAIL_SECOURS">
+        <script><![CDATA[ formCourant = "VERS_CTRL_MAIL_SECOURS"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Ctrl EMAIL_SECOURS -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "EMAIL_SECOURS  "); ]]></script>
+            <if cond="EMAIL_SECOURS  ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "EMAIL_SECOURS  "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12040_MAIL_SECOURS');
+					errorCounter = 1;
+					errorCounter1 = 1;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REINIT_MAIL_SECOURS"); ]]></script>
+                <goto next="#MENU_REINIT_MAIL_SECOURS"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_CONTACT"); ]]></script>
+                <goto next="#VERS_CTRL_MAIL_CONTACT"/>
+
+            </if>
+        </block>
+    </form>
+
+    <!-- ==================================== -->
+    <!-- Menu REINIT MAIL SECOURS 				 -->
+    <!-- ==================================== -->
+
+    <menu id="MENU_REINIT_MAIL_SECOURS">
+        <script><![CDATA[ formCourant = "MENU_REINIT_MAIL_SECOURS"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_MAIL_SECOURS')">
+                <!--
+                      Un e-mail va vous être envoyé à l’adresse commençant par :
+                -->
+            </audio>
+            <audio expr="sayasLettreWav(EMAIL_SECOURS.substring(0,1))">
+                <!--
+                    <value expr="EMAIL_SECOURS.substring(0,1)"/>
+                -->
+            </audio>
+            <break time="0.4s"/>
+            <audio expr="sayasLettreWav(EMAIL_SECOURS.substring(1,2))">
+                <!--
+                    <value expr="EMAIL_SECOURS.substring(1,2)"/>
+                -->
+            </audio>
+
+            <break time="0.4s"/>
+            <audio expr="PlayFile('REINIT_MAIL_TERMINANT')"/>
+            <break time="0.4s"/>
+            <audio expr="PlayFile('AROBASE')"/>
+            <break time="0.4s"/>
+            
+        </prompt>
+        
+        <prompt cond="isWavDomaineExist(Extract_Domaine(EMAIL_SECOURS)) " bargein="true">
+            <audio expr="sayasDomaineWav(Extract_Domaine(EMAIL_SECOURS))">
+            </audio>
+        </prompt>
+
+        <prompt cond="!isWavDomaineExist(Extract_Domaine(EMAIL_SECOURS)) " bargein="true">
+            <value expr="Extract_Domaine(EMAIL_SECOURS)"/>
+        </prompt>        
+
+        <prompt bargein="true">
+            <break time="0.4s"/>        
+            <audio expr="PlayFile('REINIT_MAIL_SECOURS_SUITE')">
+                <!--
+                    Est-ce bien votre adresse e-mail? Si oui, tapez 1 Si non, tapez 2
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12040_NMNI_SECOURS');
+            ]]></script>
+
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+                    <!--
+                        Désolé, nous n’avons pas compris votre choix, de nouveau
+                    -->
+                </audio>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12040_NMNI_SECOURS_X2');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+        </catch>
+
+        <choice dtmf="1" next="#REINIT_MAIL_SECOURS_CHOIX1"/>
+        <choice dtmf="2" next="#REINIT_MAIL_SECOURS_CHOIX2"/>
+    </menu>
+
+    <form id="REINIT_MAIL_SECOURS_CHOIX1">
+        <script><![CDATA[ formCourant = "REINIT_MAIL_SECOURS_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_MAIL_SECOURS", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12041_CHOIX_MAIL_SECOURS');
+				EMAIL_CONTACT = EMAIL_SECOURS ;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'EMAIL_CONTACT', EMAIL_CONTACT); ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_MAIL.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_MAIL.vxml"/>
+
+        </block>
+    </form>
+
+    <form id="REINIT_MAIL_SECOURS_CHOIX2">
+        <script><![CDATA[ formCourant = "REINIT_MAIL_SECOURS_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_MAIL_SECOURS", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12042_AUTRE_SECOURS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_MAIL_CONTACT"); ]]></script>
+            <goto next="#VERS_CTRL_MAIL_CONTACT"/>
+
+        </block>
+    </form>
+
+    <form id="VERS_CTRL_MAIL_CONTACT">
+        <script><![CDATA[ formCourant = "VERS_CTRL_MAIL_CONTACT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!-- Ctrl EMAIL_CONTACT_FIXE -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "EMAIL_CONTACT_FIXE   &amp;&amp; EMAIL_CONTACT_FIXE != EMAIL_SECOURS "); ]]></script>
+            <if cond="EMAIL_CONTACT_FIXE   &amp;&amp; EMAIL_CONTACT_FIXE != EMAIL_SECOURS ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "EMAIL_CONTACT_FIXE   &amp;&amp; EMAIL_CONTACT_FIXE != EMAIL_SECOURS "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '12050_MAIL_CONTACT');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REINIT_MAIL_CONTACT"); ]]></script>
+                <goto next="#MENU_REINIT_MAIL_CONTACT"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+                <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <!-- ==================================== -->
+    <!-- Menu REINIT MAIL CONTACT				 -->
+    <!-- ==================================== -->
+
+    <menu id="MENU_REINIT_MAIL_CONTACT">
+        <script><![CDATA[ formCourant = "MENU_REINIT_MAIL_CONTACT"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <property name="termchar" value="A"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('REINIT_MAIL_CONTACT')">
+                <!--
+                      Un e-mail va vous être envoyé à l’adresse commençant par :
+                -->
+            </audio>
+            <audio expr="sayasLettreWav(EMAIL_CONTACT_FIXE.substring(0,1))">
+                <!--
+                    <value expr="EMAIL_CONTACT_FIXE.substring(0,1)"/>
+                -->
+            </audio>
+            <break time="0.4s"/>
+            <audio expr="sayasLettreWav(EMAIL_CONTACT_FIXE.substring(1,2))">
+                <!--
+                    <value expr="EMAIL_CONTACT_FIXE.substring(1,2)"/>
+                -->
+            </audio>
+
+            <break time="0.4s"/>
+            <audio expr="PlayFile('REINIT_MAIL_TERMINANT')"/>
+            <break time="0.4s"/>
+            <audio expr="PlayFile('AROBASE')"/>
+            <break time="0.4s"/>
+        </prompt>
+        
+        <prompt cond="isWavDomaineExist(Extract_Domaine(EMAIL_CONTACT_FIXE)) " bargein="true">
+            <audio expr="sayasDomaineWav(Extract_Domaine(EMAIL_CONTACT_FIXE))">
+            </audio>
+        </prompt>
+
+        <prompt cond="!isWavDomaineExist(Extract_Domaine(EMAIL_CONTACT_FIXE)) " bargein="true">
+            <value expr="Extract_Domaine(EMAIL_CONTACT_FIXE)"/>
+        </prompt>         
+
+        <prompt bargein="true">
+            <break time="0.4s"/>        
+            <audio expr="PlayFile('REINIT_MAIL_CONTACT_SUITE')">
+                <!--
+                    Est-ce bien votre adresse e-mail? Si oui, tapez 1 Si non, tapez 2
+                -->
+            </audio>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter1 &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter1" expr="document.errorCounter1 + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter1", document.errorCounter1); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12050_NMNI_CONTACT');
+            ]]></script>
+
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')">
+                    <!--
+                        Désolé, nous n’avons pas compris votre choix, de nouveau
+                    -->
+                </audio>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter1 == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12050_NMNI_CONTACT_X2');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+        </catch>
+
+        <choice dtmf="1" next="#REINIT_MAIL_CONTACT_CHOIX1"/>
+        <choice dtmf="2" next="#REINIT_MAIL_CONTACT_CHOIX2"/>
+    </menu>
+
+    <form id="REINIT_MAIL_CONTACT_CHOIX1">
+        <script><![CDATA[ formCourant = "REINIT_MAIL_CONTACT_CHOIX1"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_MAIL_CONTACT", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12051_CHOIX_MAIL_CONTACT');
+				EMAIL_CONTACT = EMAIL_CONTACT_FIXE ;
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'EMAIL_CONTACT', EMAIL_CONTACT); ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_MAIL.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_MAIL.vxml"/>
+
+        </block>
+    </form>
+
+    <form id="REINIT_MAIL_CONTACT_CHOIX2">
+        <script><![CDATA[ formCourant = "REINIT_MAIL_CONTACT_CHOIX2"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_REINIT_MAIL_CONTACT", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12052_AUTRE_CONTACT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_REINIT_MDP_ROUTAGE.vxml"); ]]></script>
+            <goto next="./FIXE_REINIT_MDP_ROUTAGE.vxml"/>
+
+        </block>
+    </form>
+
+</vxml>

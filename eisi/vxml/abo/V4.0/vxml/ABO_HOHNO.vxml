@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1" application="../../../root.vxml"
+      xml:lang="fr-FR"
+      xmlns="http://www.w3.org/2001/vxml"
+      xsi:schemaLocation="http://www.w3.org/2001/vxml http://www.w3.org/TR/2007/REC-voicexml21-20070619/vxml.xsd">
+
+    <!--
+            Auteur :                CKO
+            Date de Creation :      05/03/2015
+            Page :			        Application ABO : Controle HO/HNO
+            Modification	:		
+            			IMA 	22/05/2012  	 
+						MLA		18/06/2012	Modification filtre PRO ou GP
+						MLA		03/08/2012	Modification catch Erreur -> vers HO au lieu de HNO
+						MLA		04/10/2012	Modification Entree Nuit en HNO GP et HNO PRO
+						IMA		20/11/2013	MAJ du traitement HOHNO PRO		
+						CKO		30/06/2014	Suppression de la branche HNO PRO
+						IMA		14/11/2014	Suppression du traitement BV
+						IMA		18/07/2017	Ajout de la balise de suspicion MOB
+            			MRO		19/02/2018	migration v8
+            			IMA/CZO	15/02/2019	Ajout de l'appel à la web APP FILTRE_IHM
+            			IMA/CZO	02/10/2019	Ajout des positions flahs (refonte flash abo)
+            			IMA/CZO	21/06/2021	Ajout des parametres optionnels d'appels à la web APP FLASH
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_HOHNO.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+    
+    <script><![CDATA[
+    	ndi = NDI;
+    ]]></script>
+    
+	<!-- ####################################
+		Recuperation messages flash
+	###################################### -->
+	
+	<form id="recuperation_flash">		
+		<script><![CDATA[ formCourant = "recuperation_flash"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		
+		<script><![CDATA[
+			var FlashGoToFormAfter_OK = "#form_ABO_SUBDIALOG_IHM";
+			var FlashGoToFormAfter_KO = "#form_ABO_SUBDIALOG_IHM";
+			
+			//Recuperation des parametres optionnels de l'appel FLASH
+			getParamOptionnelFlash();
+			
+		]]></script>
+		<catch event="error">
+			<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+			<script>
+				<![CDATA[
+					LIST_FLASH = ';;;;;';
+					log_debug_assignment(pageCourante, "LIST_FLASH", LIST_FLASH);
+					customNode(applicationName + '_' + '80001_FLASH_HS');
+				]]>
+			</script>
+   			<script><![CDATA[ log_debug_next_form(pageCourante, FlashGoToFormAfter_KO); ]]></script>
+   			<goto expr="FlashGoToFormAfter_KO"/>
+		</catch>
+			
+		<script><![CDATA[ log_debug_appel_module(pageCourante, 'sub_init_flash', srcModuleInitFlash , 'in_appSvi='+appSvi+'|in_ndi=' + ndi+'|in_idCsu=' + idCsuFlash+'|in_idSiebel=' + idSiebelFlash+'|in_idFoncFact=' + idFoncFactFlash+'|in_ressSecond=' + ressSecondFlash+'|in_ressPrinc=' + ressPrincFlash+'|in_trackIdWcb=' + trackIdWcbFlash ); ]]></script>	
+		<subdialog name="sub_init_flash" srcexpr="srcModuleInitFlash" method="post" fetchtimeout="10s" fetchaudio="../../../audio/Attente.wav" >
+		      	<param name="in_appSvi" expr="appSvi"/>
+      			<param name="in_ndi" expr="ndi"/>
+      			<param name="in_idCsu" expr="idCsuFlash"/>
+      			<param name="in_idSiebel" expr="idSiebelFlash"/>
+      			<param name="in_idFoncFact" expr="idFoncFactFlash"/>
+      			<param name="in_ressSecond" expr="ressSecondFlash"/>
+      			<param name="in_ressPrinc" expr="ressPrincFlash"/>
+      			<param name="in_trackIdWcb" expr="trackIdWcbFlash"/>
+	          			      			      			      			      			
+		   <filled>	 
+			   		<script> <![CDATA[
+			   			LIST_FLASH = sub_init_flash.CUSTOMER_FLASH.list_flash;
+			   			log_debug_assignment(pageCourante,'LIST_FLASH', LIST_FLASH);
+			   			customNodeAfterModule (sub_init_flash.STAT_MODULE);
+					]]></script>
+		   			<script><![CDATA[ log_debug_next_form(pageCourante, FlashGoToFormAfter_OK); ]]></script>
+		   			<goto expr="FlashGoToFormAfter_OK"/>
+		   </filled>
+		</subdialog>
+	</form>		
+	
+
+	
+    <!-- ####################################################
+             Recuperation confif filtres /menus synamiques
+         ###################################################### -->
+         	
+    <form id="form_ABO_SUBDIALOG_IHM">
+    	<script><![CDATA[ formCourant = "form_ABO_SUBDIALOG_IHM"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_appel_module(pageCourante, 'ABO_SUBDIALOG_IHM', srcModuleFiltreIhm , 'appSvi='+appSvi ); ]]></script>
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+			<script><![CDATA[
+				CUSTOMER_IHM = {};
+				customNode(applicationName + '_' + '80001_MODULEFILTREIHMHS');
+			]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VersFlashJour"); ]]></script>
+            <goto next="#VersCtrlHoHno"/>
+
+		</catch>
+        <subdialog name="ABO_SUBDIALOG_IHM" srcexpr="srcModuleFiltreIhm" method="post" fetchtimeout="10s" fetchaudio="../../../audio/Attente.wav">
+            <param name="in_appSvi" expr="appSvi"/>
+            <filled>
+                <script><![CDATA[
+					CUSTOMER_IHM = ABO_SUBDIALOG_IHM.CUSTOMER_IHM;
+					customNodeAfterModule (ABO_SUBDIALOG_IHM.STAT_MODULE);
+                ]]></script>
+
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.status == 'HS'"); ]]></script>	
+                <if cond="CUSTOMER_IHM.status == 'HS'">
+                	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.status == 'HS'"); ]]></script>	
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "VersFlashJour"); ]]></script>
+                    <goto next="#VersCtrlHoHno"/>
+
+                <else/>
+                	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                    <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.status != 'OK'"); ]]></script>	
+                    <if cond="CUSTOMER_IHM.status != 'OK'">
+                    	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.status != 'OK'"); ]]></script>	
+                	<else/>
+                		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                	</if>
+                    <script><![CDATA[ log_debug_next_form(pageCourante, "VersFlashJour"); ]]></script>
+                    <goto next="#VersCtrlHoHno"/>
+                </if>
+            </filled>
+        </subdialog>
+    </form>	  
+    
+	<form id="VersCtrlHoHno">
+		<script><![CDATA[ formCourant = "VersCtrlHoHno"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<block>
+			<script><![CDATA[ log_debug_next_form(pageCourante, "CtrlHoHno"); ]]></script>
+			<goto next="#CtrlHoHno"/>
+			
+		</block>
+	</form>	      
+
+    <!-- ####################################
+             Controle des heures d'ouverture
+         ###################################### -->
+    <form id="CtrlHoHno">
+    	<script><![CDATA[ formCourant = "CtrlHoHno"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				GoToAfterHo ='../../../abo/'+ Version_ABO + 'vxml/ABO_HOHNO.vxml#HO';
+				GoToAfterHno ='../../../abo/'+ Version_ABO + 'vxml/ABO_HNO_GP.vxml';
+				BaliseHo ='00001_HO';
+				BaliseHno ='00001_HNO';
+				FlagMsgAfterHno ='true'; 
+				MsgGeneriqueAfterHno ='';  // par defaut SFR_Quit
+				var nextSousApp ='../../../ctrl_ho_hno/'+ Version_CTRL_HO_HNO + 'vxml/CTRL_HO_HNO_STD.vxml';
+				log_debug_hohno_main (nextSousApp);
+            ]]></script>
+
+            <!-- Appel à la sous application CTRL_HO_HNO-->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextSousApp); ]]></script>
+            <goto expr="nextSousApp"/>
+
+        </block>
+    </form>
+    
+	<form id="HO">
+		<script><![CDATA[ formCourant = "HO"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+		<block>
+			<script><![CDATA[
+				 <!--	balise de suspicion MOB -->
+				 customNode(applicationName + '_' + '00002_SUSPICION_MOB');
+			]]></script>
+			
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_SOUS_APPLI"); ]]></script>
+            <goto next="#CTRL_HOHNO_SOUS_APPLI"/>
+		</block>
+	</form>	
+	
+	
+   <!-- ################################################################
+    		Controle des heures d'ouverture des sous appli ABO
+    	################################################################## -->
+    <form id="CTRL_HOHNO_SOUS_APPLI">
+		<script><![CDATA[ formCourant = "CTRL_HOHNO_SOUS_APPLI"; ]]></script>
+		<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+	    
+    	<script><![CDATA[
+	    	var appAllSvi ='true';
+	    ]]></script>
+	    
+	    <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'HOHNO', subdialogHOHNO , 'appSvi='+appSvi+'|appAllSvi=' +appAllSvi ); ]]></script>
+	    
+        <subdialog name="SUBDIALOG_HO_HNO_ALL_SVI"
+        	srcexpr="subdialogHOHNO" 
+        	namelist="appSvi appAllSvi" 
+        	method="post" 
+        	fetchtimeout="10s" 
+        	fetchaudio="../../../audio/Attente.wav"/>
+       
+	
+        <catch event="error">
+        	<script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80000_HO_SOUS_APPLI_HS');
+            ]]></script>
+
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_ENTREE.vxml"); ]]></script>
+			<goto next="./ABO_ENTREE.vxml"/>            
+        </catch>
+        
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'SUBDIALOG_HO_HNO_ALL_SVI', SUBDIALOG_HO_HNO_ALL_SVI ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "SUBDIALOG_HO_HNO_ALL_SVI.APP_STATUS == 'NOK' "); ]]></script>	
+            <if cond=" SUBDIALOG_HO_HNO_ALL_SVI.APP_STATUS == 'NOK' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " SUBDIALOG_HO_HNO_ALL_SVI.APP_STATUS == 'NOK' "); ]]></script>	
+                <script><![CDATA[
+					CUSTOMER_HOHNO = {};													
+                ]]></script>                 
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_HOHNO", CUSTOMER_HOHNO ); ]]></script>          	 	
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <assign name="CUSTOMER_HOHNO" expr="SUBDIALOG_HO_HNO_ALL_SVI"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_HOHNO", SUBDIALOG_HO_HNO_ALL_SVI); ]]></script>
+                 
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_COM_IS_OPEN", CUSTOMER_HOHNO.ABO_COM_IS_OPEN); ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_COM_MSG_TO_PLAY", CUSTOMER_HOHNO.ABO_COM_MSG_TO_PLAY); ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_TECH_IS_OPEN", CUSTOMER_HOHNO.ABO_TECH_IS_OPEN); ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_TECH_MSG_TO_PLAY", CUSTOMER_HOHNO.ABO_TECH_MSG_TO_PLAY); ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_RET_IS_OPEN", CUSTOMER_HOHNO.ABO_RET_IS_OPEN); ]]></script>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"ABO_RET_MSG_TO_PLAY", CUSTOMER_HOHNO.ABO_RET_MSG_TO_PLAY); ]]></script>                                              
+              
+            </if>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_ENTREE.vxml"); ]]></script>
+			<goto next="./ABO_ENTREE.vxml"/>            
+
+        </block>        
+
+    </form>
+    	          
+</vxml>

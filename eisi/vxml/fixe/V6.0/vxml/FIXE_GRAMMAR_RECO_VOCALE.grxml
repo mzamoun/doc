@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xml:lang="fr-FR"  version="1.0" root="r2" tag-format='swi-semantics/1.0' xmlns="http://www.w3.org/2001/06/grammar">
+
+
+			  <rule id="r2" scope="public">
+			    <one-of>
+			      <item>home</item>
+			      <item>non</item>
+
+			    </one-of>
+			  </rule>
+		  </grammar>

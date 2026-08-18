@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :
+        Date de Creation :	15/02/2012
+        Page :				Application ABO - HNO GP
+        Modification :		IMA 	05/02/2013  	Ajout du filtre BV , ajout des branches flashs
+                            CKO		30/06/2014		Suppression du filtre Dimanche entreprise
+                            IMA		14/11/2014		Suppression du traitement BV
+                            CZO		29/09/2015	  	changement Ordre des flash 35 en 7 et 32 en 31
+                            MRO		07/03/2018		migration v8
+                            IMA/CZO	02/10/2019		Ajout des positions flahs (refonte flash abo)
+                            IMA/CZO	10/03/2023		Refonte abo lot1:  MAJ balises	
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_HNO_GP.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+    <var name="errorCounter1" expr="0"/>
+    <var name="errorCounter2" expr="0"/>
+
+
+    <form id="HNO">
+    	<script><![CDATA[ formCourant = "HNO"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+					POSITION_ARBO = 31;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <menu id="MENU_HNO">
+    	<script><![CDATA[ formCourant = "MENU_HNO"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        
+		<!-- Diffusion du menu HNO - msg HNO ABO-->
+		<prompt bargein="true">
+			<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_HNO_MENU_HNO_AUDIO)"/>
+		</prompt>  
+		      
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '90001_HNO_NMNI');
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '90002_HNO_QUIT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RACCROCHER"); ]]></script>
+            <goto next="#RACCROCHER"/>
+        </catch>
+        <choice dtmf="1" next="#HNO_FACT"/>
+        <choice dtmf="2" next="#HNO_SIM"/>        
+    </menu>
+
+    <!--#####################################################################################################
+        MENU HNO : Choix 1
+        ##################################################################################################### -->
+            
+    <form id="HNO_FACT">
+    	<script><![CDATA[ formCourant = "HNO_FACT"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script>
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10000_HNO_FACT');
+				POSITION_ARBO = 4;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				Service = 'pcb';	
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+
+    <!--#####################################################################################################
+        MENU HNO : Choix 2
+        ##################################################################################################### -->
+            
+    <form id="HNO_SIM">
+        <script><![CDATA[ formCourant = "HNO_SIM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_HNO", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20000_HNO_SIM');
+				POSITION_ARBO = 24;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <menu id="MENU_SIM_HNO">
+    	<script><![CDATA[ formCourant = "MENU_SIM_HNO"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_SIM_HNO_MENU_SIM_HNO_AUDIO)"/>
+        </prompt>
+        <catch event="noinput nomatch" cond="document.errorCounter1 &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter1" expr="document.errorCounter1 + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter1", document.errorCounter1); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '29001_HNO_NMNI');
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter1 == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '29002_HNO_QUIT');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RACCROCHER"); ]]></script>
+            <goto next="#RACCROCHER"/>
+        </catch>
+        <choice dtmf="1" next="#HNO_DCS"/>
+        <choice dtmf="2" next="#HNO_ACS"/>
+        <choice dtmf="3" next="#HNO_SDL"/>
+    </menu>
+
+
+    <form id="HNO_DCS">
+    	<script><![CDATA[ formCourant = "HNO_DCS"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '21000_HNO_DCS');
+				Service = 'dcs';
+				POSITION_ARBO = 51;	
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>            
+        </block>
+    </form>
+
+    <form id="HNO_ACS">
+    	<script><![CDATA[ formCourant = "HNO_ACS"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '22000_HNO_ACS');
+				POSITION_ARBO = 7;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);	
+				Service = 'acs';
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="HNO_SDL">
+    	<script><![CDATA[ formCourant = "HNO_SDL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '23000_HNO_SDL');
+				Service = 'sdl';
+				POSITION_ARBO = 52;	
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>              
+        </block>
+    </form> 
+        
+
+    <form id="RACCROCHER">
+    	<script><![CDATA[ formCourant = "RACCROCHER"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <prompt>
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+        </block>
+    </form>
+
+</vxml>

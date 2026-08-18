@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :
+        Date de Creation :	01/12/2012
+        Page :				Application ABO - ABO_MENU_AUTRE
+        Modification        IMA		10/05/2013	Intégration des appels en provenance de RDGU
+                            CKO		18/02/2014		Modification des noms des flux de transfert : ABO_...
+                            IMA/CZO	11/03/2016		MAJ du traitement des appels en provenance de RDGU
+                            IMA/CZO	13/09/2016		Ajout du traitement filtre CHOIX_FLASH
+                            IMA/CZO	30/09/2016		Intégration de l'appel au WS AEM
+                            CZO/IMA 18/01/2017		Evolution S08 2017 MAJ traitement RDGU + emplacement IDENT AEM
+                            IMA/CZO	11/04/2017		Ajout filtre ORIGINE WCBDIGITAL et MOTIF
+                            IMA/CZO	19/04/2017		Suppression des  traitements des appels en provenance de RDGU
+							MRO		08/03/2018		migration v8
+							IMA/CZO	04/10/2019		Ajout des positions flahs (refonte flash abo)+ refonte menu AUTRE
+							IMA/CZO	06/01/2020		MAJ MENU AUTRE dynamique	
+							IMA/CZO	10/03/2023		Refonte abo lot1: MAJ balises		
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_MENU_AUTRE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+    
+    <form id="VersGestionChoixFlash">
+        <script><![CDATA[ formCourant = "VersGestionChoixFlash"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>                    
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH_FCT"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH_FCT"/>
+                    
+        </block>
+    </form>
+    
+
+    <!--###########################################
+                CTRL CHOIX FLASH FCT
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH_FCT">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH_FCT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH_FCT != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_FCT != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30001_CHOIX_FLASH_FCT');
+					POSITION_ARBO = 93;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_FCT"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH2_FCT"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH_FCT_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH_FCT_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30001_CHOIX_FLASH_FCT_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_FCT"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH2_FCT"/>   
+
+        </block>
+    </form>    
+    
+    <!--###########################################
+                CTRL CHOIX FLASH2 FCT
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH2_FCT">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH2_FCT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_FCT != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH2_FCT != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_FCT != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30002_CHOIX_FLASH2_FCT');
+					POSITION_ARBO = 94;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_FCT"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH3_FCT"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH2_FCT_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH2_FCT_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30002_CHOIX_FLASH2_FCT_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_FCT"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH3_FCT"/>   
+
+        </block>
+    </form>     
+    
+    <!--###########################################
+                CTRL CHOIX FLASH3 FCT
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH3_FCT">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH3_FCT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_FCT != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH3_FCT != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_FCT != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '30003_CHOIX_FLASH3_FCT');
+					POSITION_ARBO = 95;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_SUITE_MENU_AUTRE"); ]]></script>
+                <goto next="#Vers_SUITE_MENU_AUTRE"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH3_FCT_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH3_FCT_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '30003_CHOIX_FLASH3_FCT_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Vers_SUITE_MENU_AUTRE"); ]]></script>
+            <goto next="#Vers_SUITE_MENU_AUTRE"/>   
+
+        </block>
+    </form>             
+    
+        
+
+
+    <!--###########################################
+                Menu AUTRE
+        ########################################### -->
+
+    <form id="Vers_SUITE_MENU_AUTRE">
+        <script><![CDATA[ formCourant = "Vers_SUITE_MENU_AUTRE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VersFiltreWCBDIGITAL"); ]]></script>
+            <goto next="#VersFiltreWCBDIGITAL"/>              
+
+        </block>
+    </form>
+        
+
+    <!--#################################################################
+              Filtre WCB_DIGITAL /entree suite gestion choix FLASH
+       ################################################################# -->
+    <form id="VersFiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "VersFiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+		    	customNode(applicationName + '_' + '30000_MENU_AUTRE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "FiltreWCBDIGITAL"); ]]></script>
+            <goto next="#FiltreWCBDIGITAL"/>
+        </block>
+    </form>
+
+    <form id="FiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_WCB_AUTRE');
+					POSITION_ARBO = 21;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+                <goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+			
+				 <!--	Appel en provenance d AB_TEST et activite COM -->
+	            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG == '1' "); ]]></script>
+	            <if cond="AB_TEST_PARCOURS_ELIG == '1' ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG == '1' "); ]]></script>
+			        <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE"); ]]></script>
+			        <goto next="#AUTRE"/>
+	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+			        <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_AUTRE"); ]]></script>
+			        <goto next="#MENU_AUTRE"/> 
+	
+	            </if>                    
+            	
+            </if>
+        </block>
+    </form>
+
+    <!--###########################################
+               MENU AUTRE
+        ########################################### -->
+    <menu id="MENU_AUTRE">
+    	<script><![CDATA[ formCourant = "MENU_AUTRE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+		<prompt bargein="true">
+			<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_AUTRE_MENU_AUTRE_AUDIO)"/>
+		</prompt> 
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_39001_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+           
+            <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE_NMNI"); ]]></script>
+            <goto next="#AUTRE_NMNI"/>
+        </catch>
+        
+        <choice dtmf="1" next="#REGLER_FACT"/>
+        <choice dtmf="2" next="#RESILIER"/>
+        <choice dtmf="3" next="#AUTRE"/>
+    </menu>
+
+    <form id="REGLER_FACT">
+    	<script><![CDATA[ formCourant = "REGLER_FACT"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '31000_PCB');
+				POSITION_ARBO = 8;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				Service = 'pcb';	
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+                                    
+        </block>
+    </form>
+
+    <form id="RESILIER">
+    	<script><![CDATA[ formCourant = "RESILIER"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '32000_RESILIATION');
+				POSITION_ARBO = 9;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <form id="AUTRE">
+    	<script><![CDATA[ formCourant = "AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '33000_AUTRE');
+				POSITION_ARBO = 21;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+
+    <form id="AUTRE_NMNI">
+    	<script><![CDATA[ formCourant = "AUTRE_NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName +'_39002_NMNI_X2');  
+				POSITION_ARBO = 21;	
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>        	
+            <prompt bargein="false">
+                <audio expr="PlayFile('NMNI_MISE_EN_RELATION')"/>
+            </prompt>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>             
+        </block>
+    </form>
+
+</vxml>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	16/06/2020
+        Page :				Application ABO - RESILIE
+        Modification		IMA/CZO	14/06/2021		MAJ filtres RESILIE et SUSPENDU avec les donnees AEM
+        					IMA/CZO 22/01/2024		Integration de l'identification SEARCH							
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_RESILIE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    
+    <form id="CTRL_FILTRE_RESILIE">
+        <script><![CDATA[ formCourant = "CTRL_FILTRE_RESILIE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- STATUT 20-->            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientMobileResilie20()"); ]]></script>
+            <if cond="isClientMobileResilie20() ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientMobileResilie20() "); ]]></script>		               
+	                <script><![CDATA[
+			            customNode(applicationName + '_' + '00012_RESILIE_STATUT20');
+						POSITION_ARBO = 92;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/>		            	                               
+	                
+         	<!-- STATUT 21--> 
+            <elseif cond="isClientMobileResilie21() "/>
+            		<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientMobileResilie21() "); ]]></script>
+	                <script><![CDATA[
+			            customNode(applicationName + '_' + '00022_RESILIE_STATUT21');
+						POSITION_ARBO = 88;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/>         			                
+               	
+			<!-- STATUT 30 - cas defaut--> 
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+		            customNode(applicationName + '_' + '00032_RESILIE_STATUT30');
+					POSITION_ARBO = 72;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/> 
+	
+            </if>
+
+        </block>
+    </form> 
+    
+    <!--#####################################################################################################
+        RESILIE STATUT20
+        ##################################################################################################### -->
+    <form id="RESILIE_STATUT20">
+    	<script><![CDATA[ formCourant = "RESILIE_STATUT20"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT20 != 'false'  &amp;&amp; isClientMobileResilie20() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.STATUT20 != 'false'  &amp;&amp; isClientMobileResilie20()">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT20 != 'false'  &amp;&amp; isClientMobileResilie20()"); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00012_STATUT20_MENU');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_RESILIE"); ]]></script>
+                <goto next="#MENU_RESILIE"/>               
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00012_DISSUASION_STATUT20');
+                ]]></script>            		
+		        <prompt bargein="true">
+		            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_STATUT_20_STATUT_20_AUDIO)"/>
+		        </prompt>            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto expr="pageDisconnect"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <!--#####################################################################################################
+        RESILIE STATUT21
+        ##################################################################################################### -->
+    <form id="RESILIE_STATUT21">
+    	<script><![CDATA[ formCourant = "RESILIE_STATUT21"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT21 != 'false'  &amp;&amp; isClientMobileResilie21() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.STATUT20 != 'false'  &amp;&amp; isClientMobileResilie21()">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT21 != 'false'  &amp;&amp; isClientMobileResilie21()"); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00022_STATUT21_MENU');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_RESILIE"); ]]></script>
+                <goto next="#MENU_RESILIE"/>               
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00022_DISSUASION_STATUT21');
+                ]]></script>            		
+		        <prompt bargein="true">
+		            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_STATUT_21_STATUT_21_AUDIO)"/>
+		        </prompt>            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto expr="pageDisconnect"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <!--#####################################################################################################
+        RESILIE STATUT30
+        ##################################################################################################### -->
+    <form id="RESILIE_STATUT30">
+    	<script><![CDATA[ formCourant = "RESILIE_STATUT30"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT30 != 'false'  &amp;&amp; isClientMobileResilie30() "); ]]></script>	
+            <if cond="CUSTOMER_IHM.STATUT30 != 'false'  &amp;&amp; isClientMobileResilie30()">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.STATUT30 != 'false'  &amp;&amp; isClientMobileResilie30()"); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00032_STATUT30_MENU');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_RESILIE"); ]]></script>
+                <goto next="#MENU_RESILIE"/>               
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00032_DISSUASION_STATUT30');
+                ]]></script>            		
+		        <prompt bargein="true">
+		            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_STATUT_30_STATUT_30_AUDIO)"/>
+		        </prompt>            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+	            <goto expr="pageDisconnect"/>
+
+            </if>
+        </block>
+    </form>    
+    
+                        
+    <!--#####################################################################################################
+        MENU RESILIE
+        ##################################################################################################### -->    
+    <menu id="MENU_RESILIE">
+    	<script><![CDATA[ formCourant = "MENU_RESILIE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('MENU_RESILIE')"/>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_00902_RESILIE_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('SAISI_KO_QUIT')"/>
+            </prompt>
+            <script><![CDATA[
+				customNode(applicationName +'_00902_RESILIE_NMNI2');  
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"); ]]></script>
+            <goto next="./ABO_DISCONNECT.vxml#VERS_MODULE_DISCONNECT_SANS_SFR_QUIT"/>
+        </catch>
+
+        <choice dtmf="1" next="#RESILIE_PCB"/>
+        <choice dtmf="2" next="#RESILIE_AUTRE"/>
+    </menu>
+
+    <form id="RESILIE_PCB">
+    	<script><![CDATA[ formCourant = "RESILIE_PCB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00102_RESILIE_PCB');
+				POSITION_ARBO = 62;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				Service = 'pcb';				
+            ]]></script> 
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>                         
+                      
+        </block>
+    </form>
+
+    <form id="RESILIE_AUTRE">
+    	<script><![CDATA[ formCourant = "RESILIE_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00202_RESILIE_AUTRE');
+            ]]></script>              
+            
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+	            	customNode(applicationName + '_' + '00202_RESILIE_HO_COM');
+					ID_FLUX='ABO_RESILIE_AUTRE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+					POSITION_ARBO = 46;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>  
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00202_RESILIE_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form>
+
+</vxml>

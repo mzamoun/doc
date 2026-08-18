@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	05/02/2020
+        Page :				Application FIXE  - Client HOME - RECO VOVALE
+        Modification        
+        
+        
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_HOME.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    
+    <!-- Cette fonction transforme le retour sémantique d'une grammaire DTMF
+    en objet Ecmascript si celui-ci est une chaîne de caractère.
+    Cette transformation est nécessaire car le moteur de reconnaissance 
+    ne remonte qu'une chaîne de caractère en mode DTMF -->
+    	
+	<script><![CDATA[    
+	    function interpretationToObject( interpretation ) {
+	      if ( interpretation instanceof Object )
+	      {
+	        return interpretation;
+	      }
+	      else {
+	        var regexp_quote = new RegExp( "'", "gi" );
+	        
+	        var dm_root_start_position = interpretation.indexOf( "dm_root=" );
+	        var dm_root_end_position = interpretation.indexOf( ";", dm_root_start_position );
+	        var dm_root_value = interpretation.substring( dm_root_start_position + 8, dm_root_end_position ).replace( regexp_quote, "" );
+	        
+	        var grammar_version_start_position = interpretation.indexOf( "grammar_version=" );
+	        var grammar_version_end_position = interpretation.indexOf( ";", grammar_version_start_position );
+	        var grammar_version_value = interpretation.substring( grammar_version_start_position + 16, grammar_version_end_position ).replace( regexp_quote, "" );
+	        
+	        var meaning_start_position = interpretation.indexOf( "MEANING=" );
+	        var meaning_end_position = interpretation.indexOf( ";", meaning_start_position );
+	        var meaning_value = interpretation.substring( meaning_start_position + 8, meaning_end_position ).replace( regexp_quote, "" );
+	        
+	        return {
+	          dm_root: dm_root_value,
+	          grammar_version: grammar_version_value,
+	          dm_confirm_string: undefined,
+	          dm_confirmation_mode: undefined,
+	          MEANING: meaning_value
+	        };
+	      }
+	    }
+	    
+	    	
+	]]></script>
+
+  <var name="confidence"/>
+  <var name="utterance"/>
+  <var name="interpretation"/>
+  <var name="choix_vocal_interpretation" expr="''"/>
+  <var name="errorCounter" expr="1"/>  
+  
+  <property name="com.genesyslab.asrengine" value="NUANCEASRT2"/>
+    
+  
+  <form id ="VersRecoVocaleHome">
+	<script><![CDATA[ formCourant = "VersRecoVocaleHome"; ]]></script>
+	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+	<block>
+		<script><![CDATA[
+			customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_TEST');
+		]]></script>
+		<script><![CDATA[ log_debug_next_form(pageCourante, "RecoVocaleHome"); ]]></script>
+		<goto next="#RecoVocaleHome"/>
+	</block>
+  </form>
+
+	<!--####################################
+		MENU RECO VOCAL: 1ère tentative
+	######################################## -->	      
+  <form id="RecoVocaleHome">
+		<!-- Voice grammar -->  
+  	<script><![CDATA[ formCourant = "RecoVocaleHome"; ]]></script>
+  	<script><![CDATA[ menuCourant = "MENU_HOME_RECO_VOCALE"; ]]></script>
+  	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+  	<property name="timeout" value="3s" />
+	<property name="inputmodes" value="voice"/>	
+    <field name="inputVoc">
+    	  
+				
+        <prompt bargein="true">
+    		<audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_HOME_RECO_VOCALE_MENU_HOME_RECO_VOCALE_AUDIO)"/>
+        </prompt>
+				
+		<grammar type="application/srgs+xml" mode="voice" src="./FIXE_GRAMMAR_RECO_VOCALE.grxml"/> 
+	  	
+		<catch event="noinput nomatch">
+			<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "NMNI"); ]]></script> 
+			<script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_KO');
+            ]]></script>			
+	                     
+			<script><![CDATA[ log_debug_next_form(pageCourante, "VersRecoVocaleHome2"); ]]></script>
+			<goto next="#VersRecoVocaleHome2"/>				
+		</catch> 	
+           			
+		<filled>				
+			<assign name="document.interpretation" expr="inputVoc$.interpretation"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.interpretation", document.interpretation); ]]></script>
+			<assign name="document.confidence" expr="inputVoc$.confidence"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.confidence", document.confidence); ]]></script>
+			<assign name="document.inputmode" expr="inputVoc$.inputmode"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.inputmode", document.inputmode); ]]></script>
+			<assign name="document.utterance" expr="inputVoc$.utterance"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.utterance", document.utterance); ]]></script>			
+			
+			<assign name="inputVoc$.interpretation" expr="interpretationToObject(inputVoc$.interpretation)" />
+	
+          
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : interpretation ===", inputVoc$.interpretation); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_root ===", inputVoc$.interpretation.dm_root); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_confirm_string ===", inputVoc$.interpretation.dm_confirm_string); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_confirmation_mode ===", inputVoc$.interpretation.dm_confirmation_mode); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : SWI_meaning ===", inputVoc$.interpretation.SWI_meaning); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : MEANING ===", inputVoc$.interpretation.MEANING); ]]></script>
+
+
+          	<assign name="choix_vocal_interpretation" expr="inputVoc$.utterance"/>
+          	<script><![CDATA[ log_debug_assignment(pageCourante,"choix_vocal_interpretation", choix_vocal_interpretation); ]]></script>
+			
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "application.lastresult$[0].confidence &lt; 0.75"); ]]></script>	
+			<if cond="inputVoc$.confidence &lt; 0.75">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "application.lastresult$[0].confidence &lt; 0.75"); ]]></script>	
+				<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", choix_vocal_interpretation); ]]></script> 
+				<script><![CDATA[ track_dtmfList (menuCourant,choix_vocal_interpretation); ]]></script>				
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_KO');
+	            ]]></script>					
+				
+				<script><![CDATA[ log_debug_next_form(pageCourante, "VersRecoVocaleHome2"); ]]></script>
+				<goto next="#VersRecoVocaleHome2"/>	
+				
+			<else/>
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+				<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", choix_vocal_interpretation); ]]></script> 
+				<script><![CDATA[ track_dtmfList (menuCourant,choix_vocal_interpretation); ]]></script>						
+				
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RouteVoice"); ]]></script>
+				<goto next="#RouteVoice"/>					 
+			</if>                           
+		</filled>  
+	</field>
+
+  </form>
+
+	<!--####################################
+		MENU RECO VOCAL: 2eme tentative
+	######################################## -->
+  <form id ="VersRecoVocaleHome2">
+	<script><![CDATA[ formCourant = "VersRecoVocaleHome2"; ]]></script>
+	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+	<block>
+		<script><![CDATA[
+			customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_TEST2');
+		]]></script>
+		<script><![CDATA[ log_debug_next_form(pageCourante, "RecoVocaleHome2"); ]]></script>
+		<goto next="#RecoVocaleHome2"/>
+	</block>
+  </form>
+  		      
+  <form id="RecoVocaleHome2">
+		<!-- Voice grammar -->  
+  	<script><![CDATA[ formCourant = "RecoVocaleHome2"; ]]></script>
+  	<script><![CDATA[ menuCourant = "MENU_HOME_RECO_VOCALE_KO"; ]]></script>
+  	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+  	<property name="timeout" value="3s" />
+	<property name="inputmodes" value="voice"/>	
+    <field name="inputVoc">
+    	  
+				
+        <prompt bargein="true">
+    		<audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_HOME_RECO_VOCALE_KO_MENU_HOME_RECO_VOCALE_KO_AUDIO)"/>
+        </prompt>
+				
+		<grammar type="application/srgs+xml" mode="voice" src="./FIXE_GRAMMAR_RECO_VOCALE.grxml"/> 
+	  	
+		<catch event="noinput nomatch">
+			<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", "NMNI"); ]]></script> 
+			<script><![CDATA[ track_dtmfList (menuCourant,"NMNI"); ]]></script>		
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_KO2');
+            ]]></script>					
+                    
+			<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_HOME_DTMF"); ]]></script>
+			<goto next="#MENU_HOME_DTMF"/>				
+		</catch> 	
+           			
+		<filled>				
+			<assign name="document.interpretation" expr="inputVoc$.interpretation"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.interpretation", document.interpretation); ]]></script>
+			<assign name="document.confidence" expr="inputVoc$.confidence"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.confidence", document.confidence); ]]></script>
+			<assign name="document.inputmode" expr="inputVoc$.inputmode"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.inputmode", document.inputmode); ]]></script>
+			<assign name="document.utterance" expr="inputVoc$.utterance"/>
+			<script><![CDATA[ log_debug_assignment(pageCourante,"document.utterance", document.utterance); ]]></script>			
+			
+			<assign name="inputVoc$.interpretation" expr="interpretationToObject(inputVoc$.interpretation)" />
+	
+          
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : interpretation ===", inputVoc$.interpretation); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_root ===", inputVoc$.interpretation.dm_root); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_confirm_string ===", inputVoc$.interpretation.dm_confirm_string); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : dm_confirmation_mode ===", inputVoc$.interpretation.dm_confirmation_mode); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : SWI_meaning ===", inputVoc$.interpretation.SWI_meaning); ]]></script>
+	        <script><![CDATA[ log_debug_assignment(pageCourante,"filled : MEANING ===", inputVoc$.interpretation.MEANING); ]]></script>
+
+
+          	<assign name="choix_vocal_interpretation" expr="inputVoc$.utterance"/>
+          	<script><![CDATA[ log_debug_assignment(pageCourante,"choix_vocal_interpretation", choix_vocal_interpretation); ]]></script>
+			
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "application.lastresult$[0].confidence &lt; 0.75"); ]]></script>	
+			<if cond="inputVoc$.confidence &lt; 0.75">
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "application.lastresult$[0].confidence &lt; 0.75"); ]]></script>	
+				<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", choix_vocal_interpretation); ]]></script> 
+				<script><![CDATA[ track_dtmfList (menuCourant,choix_vocal_interpretation); ]]></script>
+								
+				<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_HOME_DTMF"); ]]></script>
+				<goto next="#MENU_HOME_DTMF"/>	
+				
+			<else/>
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+				<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + menuCourant + ":CHOIX", choix_vocal_interpretation); ]]></script> 
+				<script><![CDATA[ track_dtmfList (menuCourant,choix_vocal_interpretation); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_KO2');
+	            ]]></script>						
+
+				<script><![CDATA[ log_debug_next_form(pageCourante, "RouteVoice"); ]]></script>
+				<goto next="#RouteVoice"/>					 
+			</if>                           
+		</filled>  
+	</field>
+
+  </form>  
+  
+
+	<!--####################################
+		Traitement reco vocale
+	######################################## -->	
+  <form id ="RouteVoice">			
+    <block>
+        <script><![CDATA[ formCourant = "RouteVoice"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>    
+            
+		 <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "choix_vocal_interpretation == 'home'  "); ]]></script>
+		 <!--	Choix vocal: HOME   -->	
+		 <if cond="choix_vocal_interpretation == 'home' ">
+		 	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "choix_vocal_interpretation == 'home'  "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_REUSSIE');
+	            	customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_OK');
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_HOME_FTT"); ]]></script>
+	            <goto next="#CTRL_HOHNO_HOME_FTT"/> 	
+
+                <!--	Choix vocal: NON   -->
+         <elseif cond="choix_vocal_interpretation == 'non' "/>
+         	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " choix_vocal_interpretation == 'non' "); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_REUSSIE');
+            	customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_NON');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#VersTraitementClns"); ]]></script>
+            <goto next="./FIXE_ENTREE_GP.vxml#VersTraitementClns"/>				
+			
+			<!--	cas par défaut   -->				
+		 <else/>
+			<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_RECOVOCALE_KO2');
+            ]]></script>				
+			<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_HOME_DTMF"); ]]></script>
+			<goto next="#MENU_HOME_DTMF"/>	
+							 
+		 </if> 		
+
+    </block>
+
+  </form>
+  
+      
+ 
+    <!--###########################################
+                MENU HOME DTMF
+        ########################################### -->
+    <menu id="MENU_HOME_DTMF">
+        <script><![CDATA[ formCourant = "MENU_HOME_DTMF"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+
+        
+        <prompt bargein="true">
+    		<audio maxage ="7200" maxstale="7200"  expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_HOME_DTMF_MENU_HOME_DTMF_AUDIO)"/>
+        </prompt>
+                
+        <catch event="noinput nomatch" >
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_DTMF_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#VersTraitementClns"); ]]></script>
+            <goto next="./FIXE_ENTREE_GP.vxml#VersTraitementClns"/>
+        </catch>
+
+        <choice dtmf="0" next="#Vers_HOME_FTT"/>
+        
+    </menu>
+
+    <form id="Vers_HOME_FTT">
+        <script><![CDATA[ formCourant = "Vers_HOME_FTT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + "MENU_HOME_DTMF" + ":CHOIX", "0"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_HOME_DTMF", "0"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00020_HOME_DTMF_OK');
+            ]]></script>
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_HOME_FTT"); ]]></script>
+            <goto next="#CTRL_HOHNO_HOME_FTT"/>            
+                         
+        </block>
+    </form>
+    
+    <form id="CTRL_HOHNO_HOME_FTT">
+        <script><![CDATA[ formCourant = "CTRL_HOHNO_HOME_FTT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            
+            <!--	SOUS APPLI FIXE_TECH HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_TECH_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" FIXE_TECH_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_TECH_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00020_HOME_FTT');
+					POSITION_ARBO = 76;	 
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);           
+					ID_FLUX='FTT_HOME';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <!--	FIXE_TECH HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00021_HOME_HNO_TECH');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_TECH.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_TECH.vxml"/>
+
+            </if> 
+                        
+        </block>
+    </form>
+        
+</vxml>

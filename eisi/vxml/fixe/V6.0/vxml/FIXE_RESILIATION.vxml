@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		23/08/2024
+        Page :                  Application FIXE  - RESILATION
+        Modification        	IMA/CZO		23/08/2024		   Reorganisation de la page admin en page resilation et admin_co
+                                
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_RESILATION.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+
+    <var name="choix" expr="1"/>
+    
+    <!--###########################################
+         TRAITEMENT BEB_FIXE_FASTR_RET
+    ########################################### -->
+    <form id="VERS_CTRL_BEB_FIXE_FASTR_RET">
+        <script><![CDATA[ formCourant = "VERS_CTRL_BEB_FIXE_FASTR_RET"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--FILTRE BEB_FIXE_RET actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_BEB_FIXE_FASTR_RET"); ]]></script>
+	            <goto next="#CTRL_BEB_FIXE_FASTR_RET"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '50100_BEB_RET_FASTR_OFF');					
+	            ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_RET_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_RET_NOK"/>        
+
+            </if>
+
+        </block>
+    </form> 
+            
+    <form id="CTRL_BEB_FIXE_FASTR_RET">
+        <script><![CDATA[ formCourant = "CTRL_BEB_FIXE_FASTR_RET"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--ELIGIBILITE BEB_FIXE_FASTR_RET -->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' &amp;&amp; isBEB_FIXE_FASTR_RET()  "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' &amp;&amp; isBEB_FIXE_FASTR_RET()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_RET != 'false' &amp;&amp; isBEB_FIXE_FASTR_RET() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '50100_BEB_RET_FASTR_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité FASTR-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN =='true' "); ]]></script>
+	            <if cond="CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN =='true' ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_RET_OPEN =='true'"); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_FIXE -->
+	                <script><![CDATA[
+			            BEB_FIXE_FASTR_ORIGINE ='FIXE_GP_BEB_FIXE_FASTR_RET';
+			            customNode(applicationName + '_' + '50200_BEB_RET_FIXE_HO');
+		    			POSITION_ARBO = 185;
+		    			log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);			            										
+               		 ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	                <goto next="./FIXE_FLASH_INC.vxml"/>	                               		              		                		 
+	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '50200_BEB_RET_FIXE_HNO');
+		            ]]></script>    	                
+	                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_RET_NOK"); ]]></script>
+	                <goto next="#VERS_BEB_FIXE_FASTR_RET_NOK"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '50100_BEB_RET_FASTR_NOK');					
+	            ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_RET_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_RET_NOK"/>      
+
+            </if>
+
+        </block>
+    </form>
+    
+    <!--#####################################################################################################
+        BEB_FIXE_RET_FASTR KO
+        ##################################################################################################### -->
+    <form id="VERS_BEB_FIXE_FASTR_RET_NOK">
+        <script><![CDATA[ formCourant = "VERS_BEB_FIXE_FASTR_RET_NOK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>              
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RETENTION"); ]]></script>
+            <goto next="#RETENTION"/>              
+            
+        </block>
+
+    </form>      
+        
+
+    <!--###########################################
+        Suite choix RETENTION
+   ########################################### --> 
+    <form id="RETENTION">
+        <script><![CDATA[ formCourant = "RETENTION"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+          <!--	SOUS APPLI FIXE_RET HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_HOHNO.FIXE_RET_IS_OPEN !='false'"); ]]></script>	
+            <if cond="CUSTOMER_HOHNO.FIXE_RET_IS_OPEN !='false'">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_HOHNO.FIXE_RET_IS_OPEN !='false'"); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RESIL_HO_RET');
+					POSITION_ARBO = 16;		
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <!--	FIXE_DEM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RESIL_HNO_RET');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_RET.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_RET.vxml"/>
+
+            </if> 
+        </block>
+    </form>    
+  
+    <!--###########################################
+         filtre traitement CTRL passage par LN-CO ou LN-FULL
+    ########################################### -->
+ 	<form id="CTRL_LN_FULL_LN_CO">
+	    <script><![CDATA[ formCourant = "CTRL_LN_FULL_LN_CO"; ]]></script>
+	    <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+	    <block>
+	    
+	        <!--	TRT LN FIXE-FULL ou CO	et flux de routage LN existant	-->
+	        <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "IS_LN_QUALIFIE_AND_FLUX_RTG_VALIDE()"); ]]></script>
+	        <if cond="IS_LN_QUALIFIE_AND_FLUX_RTG_VALIDE() ">
+	        	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "IS_LN_QUALIFIE_AND_FLUX_RTG_VALIDE()"); ]]></script>            	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '50300_LN_RET_FIXE_'+ LN_CATEGORY +'_'+ LN_INTENT );
+						<!-- FLUX de routage associe LN - intention/category/techno  -->
+					ID_FLUX=LN_FLUX_ROUTAGE;
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+	            <goto next="#Transfert"/>  
+	            
+	           
+	        <!--	vers transfert des cas en dehors du LN -->
+	        <else/>
+	        	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	            
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ROUTAGE_ADMIN_RESIL"); ]]></script>
+	            <goto next="#ROUTAGE_ADMIN_RESIL"/> 
+	
+	        </if> 
+	
+	    </block>
+	</form>    
+
+    <!--###########################################
+         Traitement ROUTAGE ADMIN RESIL
+    ########################################### -->
+    <form id="ROUTAGE_ADMIN_RESIL">
+        <script><![CDATA[ formCourant = "ROUTAGE_ADMIN_RESIL"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!-- Client MIGNC recent	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC()"); ]]></script>
+            <if cond="isClientFixeMIG_NC()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC()"); ]]></script>
+
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_FTTB_MIG');
+					ID_FLUX='RET_FTTB_MIG';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client voix : ECOTEL ou AUTRE -->
+            <elseif cond="isClientFixeECOTEL() || isClientFixeAUTRE() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeECOTEL() || isClientFixeAUTRE()"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_VOIX');
+					ID_FLUX='RET_VOIX';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client CONV_RISQUE, NON_CONV et RISQUE et FTTB -->
+            <elseif cond="CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; ( isCONV_RISQUE() || isNON_CONV_RISQUE() ) &amp;&amp; isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; ( isCONV_RISQUE() || isNON_CONV_RISQUE() ) &amp;&amp; isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_FTTB_RISQUE');
+					ID_FLUX='RET_FTTB_RISQUE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client FTTB  - ou offre manuelle CABLE	-->
+            <elseif cond=" isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isClientFixeFTTB() || OFFRE_MANUELLE == 'CABLE' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_FTTB');
+					ID_FLUX='RET_FTTB';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!-- Client CONV_RISQUE, NON_CONV et RISQUE   -->                
+            <elseif cond="CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; (isCONV_RISQUE() || isNON_CONV_RISQUE()) "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; (isCONV_RISQUE() || isNON_CONV_RISQUE())  "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_AUTRE_RISQUE');
+					ID_FLUX='RET_AUTRE_RISQUE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '50300_RET_AUTRE');
+					ID_FLUX='RET_AUTRE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+            </if>
+        </block>
+    </form>
+
+  
+    
+<!--###########################################
+         Vers parcours BEB_FIXE
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_FIXE">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_FIXE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				APP_ORIGINE='BEB_FIXE';
+				var nextAPP ="../../../beb_fixe/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_FIXE -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form> 
+    
+    
+  
+        
+    <!--###########################################
+         Vers la page Transfert
+    ########################################### -->
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+    </form>
+    
+    
+    <!--###########################################
+         ENTREE NOS -  RESIL
+    ########################################### -->
+    <!--	ENTREE  à partir de NOS -->
+    <form id="ENTREE_NOS_GP">
+        <script><![CDATA[ formCourant = "ENTREE_NOS_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RETENTION"); ]]></script>
+            <goto next="#RETENTION"/>
+        </block>
+    </form>   
+    
+
+ 
+    
+    <!--###########################################
+         Traitement ENTRE AUTREs PAGES
+    ########################################### -->
+    <!--	ENTREE WCB  -->
+    <form id="ENTREE_GP_ADMIN_WCB">
+        <script><![CDATA[ formCourant = "ENTREE_GP_ADMIN_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '43000_WCB_ADM_AUTRE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CHOIX_AUTRE_SUITE"); ]]></script>
+            <goto next="#CHOIX_AUTRE_SUITE"/>
+        </block>
+    </form>
+
+
+     
+    
+
+</vxml>

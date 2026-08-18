@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Date de Creation :	14/05/2010
+        Page :				Application FIXE  - Routage BOUT EN BOUT CLNS
+        Modification        IMA		15/02/2012	    Mise à jour de l'application dans le cadre de MAC2
+                            IMA		08/03/2013		Refonte du parcours FIXE
+                            IMA		27/03/2015		Ajout du traitement BEB_ACTIVATION
+                            IMA/CZO	15/04/2016		maj des condtions de client eligible au MC_ACTIV
+                            IMA/CZO	22/07/2016		MAJ  filtre BEB_ACTIVATION: exclusion des offres CABLE_RED et ADSL_RED
+                            IMA/CZO	19/06/2017		MAJ traitement MC_ACTIV: appel WS et appel beb_dmgt(etl)
+                            MRO		15/03/2018		migration v8
+                            IMA/CZO	16/01/2019		integration CtrlHoHno sous appli FIXE_TECH  
+                            IMA/CZO	25/03/2019		MAJ balises et message MENU CLNS 
+                            IMA/CZO	05/09/2019		Integration des URLS CLNS sous la web app SUBDIALOG
+                            IMA/CZO	02/03/2020		MAJ suite refonte FIXE
+                            IMA/CZO	27/08/2020		Integration des traitements DEXTER
+                            IMA/CZO	05/10/2021		Integration du traitement BEB_FIXE_ANC
+                            IMA/CZO	11/02/2022		Integration du traitement WS CLNS
+                            IMA/CZO	13/02/2023		Suppression des traintements CLNS_OLD
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_BEB_CLNS.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+    
+    <!--######################################################
+        CTRL FILTRE CLNS ADSL TRT CLNS et et provenance WS CLNS
+        ###################################################### -->            
+    <form id="CTRL_CLNS_ADSL_PROVENANCE">
+        <script><![CDATA[ formCourant = "CTRL_CLNS_ADSL_PROVENANCE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+        	<!--	FILTRE CLNS ADSL TRT CLNS active, techno ADSL et ACTIVITRE Trt CLNS  -->         
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "(CUSTOMER_IHM.CLNS_ADSL != 'false' &amp;&amp; is_clns_adsl_trt_clns()) "); ]]></script>
+            <if cond="(CUSTOMER_IHM.CLNS_ADSL != 'false' &amp;&amp; is_clns_adsl_trt_clns())   ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "(CUSTOMER_IHM.CLNS_ADSL != 'false' &amp;&amp; is_clns_adsl_trt_clns()) "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00030_CLNS_ADSL');
+	            ]]></script>                              
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MenuCLNS"); ]]></script>
+                <goto next="#MenuCLNS"/>	            
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00030_CLNS_AUTRE');
+					POSITION_ARBO = 157;						
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>                  
+
+
+            </if>
+        </block>
+    </form>    
+
+    <!--###########################################
+                Menu CLNS
+        ########################################### -->
+            
+    <menu id="MenuCLNS">
+        <script><![CDATA[ formCourant = "MenuCLNS"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+            <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_CLNS_MENU_CLNS_AUDIO)"/>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00030_CLNS_NMNI2');
+            ]]></script>
+            <prompt bargein="true">
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00030_CLNS_NMNI');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_ANC"); ]]></script>
+            <goto next="#CTRL_HOHNO_ANC"/>
+        </catch>
+
+        <choice dtmf="1" next="#Vers_CLNS_OK"/>
+        <choice dtmf="2" next="#Vers_CLNS_NO"/>
+    </menu>
+
+    <!--###########################################
+           CLNS_OK -  BEB ACTIVATION 
+    ########################################### -->
+    <form id="Vers_CLNS_OK">
+        <script><![CDATA[ formCourant = "Vers_CLNS_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MenuCLNS", "1"); ]]></script>
+        <block name="statistics">
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00031_CLNS_OK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_HOHNO_ANC"); ]]></script>
+            <goto next="#CTRL_HOHNO_ANC"/>
+        </block>
+    </form>
+
+
+    <!--CTRL HOHNO ANC  + entree flash clns_autre -->
+    <form id="CTRL_HOHNO_ANC">
+        <script><![CDATA[ formCourant = "CTRL_HOHNO_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	SOUS APPLI FIXE_ANC HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_ANC_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" FIXE_ANC_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ANC_IS_OPEN =='true' "); ]]></script>	
+
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_BEB_FIXE_FASTR_ANC"); ]]></script>
+	            <goto next="#VERS_CTRL_BEB_FIXE_FASTR_ANC"/>
+
+            <!--	FIXE_ANC HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_HNO_ANC');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_ANC.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_ANC.vxml"/>
+
+            </if> 
+
+        </block>
+    </form>    
+ 
+    <!--###########################################
+         TRAITEMENT BEB_FIXE_ANC
+    ########################################### --> 
+    <form id="VERS_CTRL_BEB_FIXE_FASTR_ANC">
+        <script><![CDATA[ formCourant = "VERS_CTRL_BEB_FIXE_FASTR_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--FILTRE BEB_FIXE_ANC actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_BEB_FIXE_FASTR_ANC"); ]]></script>
+	            <goto next="#CTRL_BEB_FIXE_FASTR_ANC"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_BEB_ANC_OFF');					
+	            ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>        
+
+            </if>
+
+        </block>
+    </form> 
+           
+    <form id="CTRL_BEB_FIXE_FASTR_ANC">
+        <script><![CDATA[ formCourant = "CTRL_BEB_FIXE_FASTR_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--ELIGIBILITE BEB_FIXE_FASTR_ANC -->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_FIXE_FASTR_ANC()  "); ]]></script>
+            <if cond=" isBEB_FIXE_FASTR_ANC()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_FIXE_FASTR_ANC() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '00031_CLNS_BEB_ANC_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité FASTR-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true' "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_FIXE -->
+	                <script><![CDATA[
+			            BEB_FIXE_FASTR_ORIGINE ='FIXE_CLNS_BEB_FIXE_FASTR_ANC';
+			            customNode(applicationName + '_' + '00031_CLNS_BEB_ANC_HO');
+		    			POSITION_ARBO = 129;
+		    			log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);			            										
+               		 ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	                <goto next="./FIXE_FLASH_INC.vxml"/>
+             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '00031_CLNS_BEB_ANC_HNO');
+		            ]]></script>    	                
+	                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+	                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_BEB_ANC_NOK');							            										
+           		 ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>                 
+   
+            </if>
+
+        </block>
+    </form>
+    
+<!--###########################################
+         Vers parcours BEB_FIXE
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_FIXE">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_FIXE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				APP_ORIGINE='BEB_FIXE';
+				var nextAPP ="../../../beb_fixe/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_FIXE -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form> 
+    
+    
+    <!--#####################################################################################################
+        BEB_FIXE_ANC_FASTR KO
+        ##################################################################################################### -->
+    <form id="VERS_BEB_FIXE_FASTR_ANC_NOK">
+        <script><![CDATA[ formCourant = "VERS_BEB_FIXE_FASTR_ANC_NOK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>              
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Beb_ACTIV"); ]]></script>
+            <goto next="#Beb_ACTIV"/>              
+            
+        </block>
+
+    </form> 
+    	     
+    <!-- ==================================== //-->
+    <!-- Contrôle MC_ACTIV 	//-->
+    <!-- ==================================== //-->               
+    <form id="Beb_ACTIV">
+        <script><![CDATA[ formCourant = "Beb_ACTIV"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>                               
+            <!--filtre MC_ACTIV desactivé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION == 'false'  "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_ACTIVATION == 'false'  ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION == 'false'  "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_MC_ACTIV_OFF');
+                ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="#Retour_MC_ACTIV_KO"/>
+			    
+            <!--Pre verification MC_ACTIV: filtre activé et offre ADSL ou CABLE ou THD (DEXTER) -->
+            <elseif cond="CUSTOMER_IHM.BEB_ACTIVATION != 'false' &amp;&amp; isOFFRE_ELIG_MC_ACTIV_DEXTER()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION != 'false' &amp;&amp; isOFFRE_ELIG_MC_ACTIV_DEXTER() "); ]]></script>
+                <!--precision de l'origine de l'appel pour aiguilaage à partir de la page MC_ACTIV -->
+                <script><![CDATA[
+		            FIXE_ORIGINE_MC_ACTIV ='CLNS';
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MC_ACTIV.vxml"); ]]></script>
+                <goto next="./FIXE_MC_ACTIV.vxml"/>		    				               
+
+			<!--Pre verification MC_ACTIV: KO -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00031_CLNS_MC_ACTIV_NOK'); 
+                ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="#Retour_MC_ACTIV_KO"/>
+
+            </if>            
+        </block>
+    </form>
+
+    <!-- ============================================ //-->
+    <!-- MC_ACTIV ko: suite traitement clns 	//-->
+    <!-- ============================================ //-->
+    <form id="Retour_MC_ACTIV_KO">
+        <script><![CDATA[ formCourant = "Retour_MC_ACTIV_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <script><![CDATA[ 
+				customNode(applicationName + '_' + '00031_CLNS_ACTIVATION');
+		    	POSITION_ARBO = 30;		
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);		    	
+            ]]></script>                        
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+
+        </block>
+    </form>
+    
+    <form id="MC_ACTIV_KO_TRF">
+        <script><![CDATA[ formCourant = "MC_ACTIV_KO_TRF"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <script><![CDATA[ 
+				customNode(applicationName + '_' + '00031_CLNS_AUTRE');
+   			 	ID_FLUX=CUSTOMER_CLNS_WS.CLNS_ROUTAGE ;
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);		    	
+            ]]></script>                        
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>  
+
+        </block>
+    </form>    
+
+    <!--###########################################
+           CLNS_NO
+    ########################################### -->
+
+    <form id="Vers_CLNS_NO">
+        <script><![CDATA[ formCourant = "Vers_CLNS_NO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MenuCLNS", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00032_CLNS_NON');
+            ]]></script>         
+            <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script> 
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_ENTREE_GP.vxml#VersTraitementClnsKo"); ]]></script>
+            <goto next="./FIXE_ENTREE_GP.vxml#VersTraitementClnsKo"/>                                  
+                    
+
+        </block>
+    </form>
+
+</vxml>

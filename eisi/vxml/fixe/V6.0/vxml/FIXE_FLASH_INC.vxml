@@ -1,0 +1,1288 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			LLA
+        Date de Creation :	09/09/2008
+        Page :				Application FIXE - Diffusion Flash ou/et Incident selon cas
+        Modification        15/02/2012	IMA	   Mise à jour de l'application dans le cadre de MAC2
+                            06/08/2015  CKO    Ajout les traitement des flashs FIXE_SUSPENDU et FIXE_CLT_RECENT
+                            15/03/2018	MRO		migration v8
+							01/04/2018	IMA/CZO	Prise en compte de la dissuasion orientee   
+							06/05/2021	IMA/CZO	Suppression du traitement INCIDENT-ODIN                           
+    -->
+    
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_FLASH_INC.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="flashMsg" expr="''"/>
+    <var name="gestionFlash" expr="''"/>
+    <var name="idFlash" expr="''"/>
+
+    <var name="LabelTraitement" expr="''"/>
+    <var name="nextPage" expr="''"/>
+
+    <var name="LabelNode" expr="''"/>
+    <var name="MsgFolder" expr="'../../../commun/audio/'"/>
+    <var name="formId" expr="''"/>
+
+    <script><![CDATA[
+    if (LIST_FLASH == '' || LIST_FLASH == 'NULL' ){
+		LIST_FLASH = ";;;;;";
+		log_debug_assignment(pageCourante, "LIST_FLASH", LIST_FLASH);
+    }
+    
+    var items = LIST_FLASH.split(";");
+    var length = items.length;
+    if (POSITION_ARBO < length && items[POSITION_ARBO] !=''){
+        var items_flash = items[POSITION_ARBO].split("|");
+        flashMsg = MsgFolder +  items_flash[0]+".wav";
+	    gestionFlash = items_flash[1];
+	    idFlash = items_flash[2];
+	    log_debug_assignment(pageCourante, "gestionFlash", gestionFlash);
+	    log_debug_assignment(pageCourante, "idFlash", idFlash);
+    }
+    else{
+        flashMsg = "NULL" ;
+    }
+ 	      	
+    /////////////////////////////
+    function LoadData(){
+    	log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	    switch (POSITION_ARBO) {
+			case	0:
+				LabelTraitement = "00002_FIXE_ENTREE";
+				nextPage 		= "ENTREE_GP";
+				break;
+				
+			case	1:
+				LabelTraitement = "20000_TECHNIQUE_HO";
+				nextPage 		= "TECHNIQUE";			    				
+								
+				break;	
+			case	2:
+				LabelTraitement = "30000_DEMENAGEMENT_HO";
+				nextPage 		= "DEMENAGEMENT";
+				break;																	
+			case	3:
+				LabelTraitement = "40000_ADM_CO";
+				nextPage 		= "ADMINISTRATIF";
+				break;
+			case	4:
+				LabelTraitement = "00060_F_PREMIUM";
+				nextPage 		= "PREMIUM";
+				break;	
+			case	5:
+				LabelTraitement = "10000_PREMIUM_TECH_HO";
+				nextPage 		= "PREMIUM_TECH";
+				break;							
+			case	6:
+				LabelTraitement = "20000_PREMIUM_DMGT_HO";
+				nextPage 		= "DEMENAGEMENT";
+				break;					
+			case	7:
+				LabelTraitement = "40000_PREMIUM_AUTRE";
+				nextPage 		= "PREMIUM_AUTRE";			
+				break;		
+			case	8:
+				LabelTraitement = "11000_ADM_PAIEMENT";
+				nextPage 		= "TRANSFERT";
+				break;	
+			case	9:
+				LabelTraitement = "21000_TECH_INTERNET";
+				nextPage 		= "TECHNIQUE";
+        		formId          = "#Retour_AccesInternet";	
+				break;	
+			case	10:
+				LabelTraitement = "22000_TECH_TELEVISION";
+				nextPage 		= "TECHNIQUE";
+        		formId          = "#Retour_TV";	
+				break;	
+			case	11:
+				LabelTraitement = "23000_TECH_AUTRE";
+				nextPage 		= "TECHNIQUE";
+        		formId          = "#Retour_TechAutre";	
+				break;
+			case	12:
+				LabelTraitement = "42000_PREMIUM_RESILIATION";
+				nextPage 		= "PREMIUM_AUTRE";
+				formId          = "#transfert_RESIL";					
+				break;	
+			case	13:
+				LabelTraitement = "43000_WCB_FCT_PREMIUM_NOK";
+				nextPage 		= "PREMIUM_AUTRE";
+				formId          = "#transfert_ADM_AUTRE";					
+				break;					
+			case	14:
+				LabelTraitement = "50000_ADM_RET";
+				nextPage 		= "RESILIATION";					
+				break;
+			case	15:			   
+				LabelTraitement = "00072_SUSPENDU_PREMIUM_COM";
+				nextPage 		= "SUSPENDU";
+				formId          = "#SUSPENDU_TRF_PREMIUM";					
+				break;					
+			case	16:
+				LabelTraitement = "50300_RESIL_HO_RET";
+				nextPage 		= "RESILIATION";
+        		formId          = "#CTRL_LN_FULL_LN_CO";					
+				break;
+			case	17:
+				LabelTraitement = "40000_ADM_AUTRE";
+				nextPage 		= "ADMINISTRATIF";
+        		formId          = "#VERS_CTRL_BEB_FIXE_FASTR_ANC";					
+				break;
+			case	18:
+				LabelTraitement = "30000_REINIT_MDP";
+				nextPage 		= "REINIT_MDP";				
+				break;
+			case	19:
+				LabelTraitement = "30000_PREMIUM_REINIT_MDP";
+				nextPage 		= "REINIT_MDP";							
+				break;
+			case	20:
+				LabelTraitement = "12005_REINIT_MDP";
+				nextPage 		= "REINIT_MDP";
+        		formId          = "#Retour_FLASH_REINIT_MDP";									
+				break;
+			case	21:
+				LabelTraitement = "12010_REINIT_MDP_SFC_DESACTIVE";
+				nextPage 		= "REINIT_MDP_ROUTAGE";				
+				break;								
+			case	22:
+				LabelTraitement = "12080_ROUTAGE_MDP_PREMIUM";
+				nextPage 		= "PREMIUM_AUTRE";
+				formId          = "#ENTREE_REINIT_MDP_PREMIUM";				
+				break;	
+			case	23:
+				LabelTraitement = "00010_ACTIV_PREMIUM_OK";
+				nextPage 		= "ACTIVATION";
+        		formId          = "#ACTIVATION_WCB_DIGITAL_PREMIUM";			
+				break;
+
+			case	24:			   
+				LabelTraitement = "40032_CHOIX_FLASH2_FCT_PREM3";
+				nextPage 		= "CHOIX_FLASH2_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_FCT_PREMIUM_3";					
+				break;
+								
+			case	25:
+				LabelTraitement = "00010_ACTIV_RDGU_NOK";
+				nextPage 		= "ACTIVATION";
+        		formId          = "#VERS_CTRL_BEB_FIXE_FASTR_ANC";									
+				break;
+			case	26:
+				LabelTraitement = "00082_IMPAYE_CONTINUE";
+				nextPage 		= "IMPAYE";
+        		formId          = "#Vers_SUITE_ENTREE_GP";					
+				break;					
+			case	27:
+				LabelTraitement = "20021_CHOIX_FLASH_TECH2"; 
+				nextPage 		= "CHOIX_FLASH_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_TECH_2";					
+				break;
+				break;				
+			case	28:
+				LabelTraitement = "11000_WCB_PREM_TECH_INTERNET";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_TECH_Premium";	        						
+				break;				
+			case	29:       		
+				LabelTraitement = "43000_WCB_FCT_PREMIUM_OK";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_FCT_Premium";	        						
+				break;
+			case	30:
+				LabelTraitement = "00031_CLNS_ACTIVATION";
+				nextPage 		= "BEB_CLNS";
+				formId          = "#MC_ACTIV_KO_TRF";				
+				break;
+			case	31:			   
+				LabelTraitement = "00072_SUSPENDU";
+				nextPage 		= "SUSPENDU";
+				formId          = "#SUSPENDU_CTRL_PREMIUM";					
+				break;	
+
+			<!-- traitement particulier concernant le filtre CHOIX FLASH TECH -->
+			case	32:
+				LabelTraitement = "20001_CHOIX_FLASH_TECH";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH_TECH";
+				}
+        		else
+        		{
+        		     nextPage 		= "TECHNIQUE";
+        		     formId          = "#CHOIX_FLASH_TECH_KO";
+        		}
+        		break;
+        						
+			case	33:
+				LabelTraitement = "00010_ACTIV_PREMIUM_NOK";
+				nextPage 		= "ACTIVATION";
+        		formId          = "#ACTIVATION_WCB_DIGITAL_GP";				
+				break;
+				
+			<!-- DMGT PREMIUM (WCB_DIGITAL ou NON WCB_DIGITAL) -->				
+			case	34:
+				LabelTraitement = "30040_DEM_PREMIUM_OK";
+
+				if(CUSTOMER_IHM.WCB_DIGITAL != 'false' &&  type_appel_wcb_digital == 'FIXE')
+				{
+					nextPage 		= "WCB_DIGITAL";
+	        		formId          = "#Wcb_DMGT_Transfert_PREMIUM";
+				}
+        		else
+        		{
+					nextPage 		= "DEMENAGEMENT";
+	        		formId          = "#Filtre_Offre_PREMIUM";
+        		}       						
+				break;
+			
+			<!-- DMGT GP (WCB_DIGITAL ou NON WCB_DIGITAL) -->										
+			case	35:
+				LabelTraitement = "30040_DEM_PREMIUM_NOK";
+				if(CUSTOMER_IHM.WCB_DIGITAL != 'false' &&  type_appel_wcb_digital == 'FIXE')
+				{
+					nextPage 		= "WCB_DIGITAL";
+	        		formId          = "#Wcb_DMGT_Transfert_GP";
+				}
+        		else
+        		{
+					nextPage 		= "DEMENAGEMENT";
+	        		formId          = "#CTRL_LN_FULL_LN_CO";
+        		}          					
+				break;
+					
+			case	36:
+				LabelTraitement = "43000_ADMIN_ANC";
+				if(CUSTOMER_IHM.WCB_DIGITAL != 'false' &&  type_appel_wcb_digital == 'FIXE')
+				{
+					nextPage 		= "WCB_DIGITAL";
+	        		formId          = "#Transfert_ANC";
+				}
+        		else
+        		{					
+					nextPage 		= "ADMINISTRATIF";
+					formId          = "#Transfert_ANC";	
+        		}          					
+				break;										
+			case	37:
+				LabelTraitement = "42000_ADM_AUTRE_2";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#SUITE_TRT_ADM_CO";					
+				break;						
+			case	38:
+				LabelTraitement = "43000_ADMIN_CO";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#CTRL_LN_FULL_LN_CO";			
+				break;
+			case	39:			   
+				LabelTraitement = "40013_CHOIX_FLASH3_FCT_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+			case	40:
+				LabelTraitement = "00001_HNO";
+				nextPage 		= "HNO_GP";				
+				break;
+				
+			case	41:
+				LabelTraitement = "20043_ELIGIBILITE_PREDIAG_OK";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+				formId          = "#CTRL_APPEL_BOX_CLIENT";			
+				break;
+			case	42:
+				LabelTraitement = "20043_ELIGIBILITE_PREDIAG_OFF";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+        		formId          = "#VERS_MENU_TECHNIQUE_CC";	
+				break;	
+			case	43:
+				LabelTraitement = "20043_APPEL_LIGNE_BOX_NOK";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+        		formId          = "#RECO_HISPEED";	
+				break;	
+			case	44:
+				LabelTraitement = "20043_APPEL_LIGNE_BOX_OK";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+        		formId          = "#VERS_MENU_TECHNIQUE_CC";	
+				break;
+			case	45:
+				LabelTraitement = "20044_WS_BOX_UP";
+				nextPage 		= "REBOOT_BOX";	
+				break;
+																		
+			case	46:
+				LabelTraitement = "21000_WCB_TECH_INTERNET";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_Technique_GP_Transfert";	
+				break;
+			case	47:
+				LabelTraitement = "22000_WCB_TECH_TV";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_Technique_GP_Transfert";	
+				break;
+			case	48:
+				LabelTraitement = "23000_WCB_TECH_AUTRE";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_Technique_GP_Transfert";	
+				break;											
+			case	49:
+				LabelTraitement = "00202_RESILIE_HO_COM";
+				nextPage 		= "TRANSFERT";
+				break;				
+			case	50:
+				LabelTraitement = "43000_WCB_FCT_CONV_FIXE";
+				nextPage 		= "TRANSFERT";				
+				break;
+			case	51:
+				LabelTraitement = "00102_RESILIE_PCB";
+				nextPage 		= "TRANSFERT";
+				break;								
+			case	52:
+				LabelTraitement = "00032_RESILIE_DEXTER";
+				nextPage 		= "RESILIE";
+				formId 			= "#CTRL_FILTRE_RESILIE_SANS_OFFRES";
+				break;				
+			case	53:			   
+				LabelTraitement = "00080_F_IMPAYE_SAP";
+				nextPage 		= "IMPAYE";					
+				break;				
+			case	54:			   
+				LabelTraitement = "00080_F_IMPAYE_SAP_KO";
+				nextPage 		= "ENTREE_GP";
+				formId          = "#RETOUR_IMPAYE_SAP_RMCA";					
+				break;									
+			case	55:
+				LabelTraitement = "00002_RESILIE_OK";
+				nextPage 		= "RESILIE";				
+				break;
+			case	56:			   
+				LabelTraitement = "40023_CHOIX_FLASH3_FCT_PREM2";
+				nextPage 		= "CHOIX_FLASH3_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_FCT_PREMIUM_2";					
+				break;
+			case	57:			   
+				LabelTraitement = "40033_CHOIX_FLASH3_FCT_PREM3";
+				nextPage 		= "CHOIX_FLASH3_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_FCT_PREMIUM_3";					
+				break;	
+											
+			<!-- traitement particulier concernant le filtre CHOIX FLASH TECH PREMIUM -->
+			case	58:
+				LabelTraitement = "10002_CHOIX_FLASH2_TECH_PREM";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH2_TECH_PREMIUM";
+				}
+        		else
+        		{
+        		     nextPage 		= "PREMIUM_TECH";
+        		     formId          = "#CHOIX_FLASH2_TECH_PREMIUM_KO";
+        		}
+        		break;	
+			
+			case	59:
+				LabelTraitement = "10001_CHOIX_FLASH_TECH_PREM";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH_TECH_PREMIUM";
+				}
+        		else
+        		{
+        		     nextPage 		= "PREMIUM_TECH";
+        		     formId          = "#CHOIX_FLASH_TECH_PREMIUM_KO";
+        		}
+        		break;
+        												
+			case	60:
+				LabelTraitement = "13000_PREM_TECH_AUTRE";
+				nextPage 		= "PREMIUM_TECH";
+        		formId          = "#PREMIUM_Tech_Type_Client";	
+				break;
+			case	61:
+				LabelTraitement = "12000_PREM_TECH_TV";
+				nextPage 		= "PREMIUM_TECH";
+        		formId          = "#PREMIUM_Tech_Type_Client";	
+				break;	
+			case	62:
+				LabelTraitement = "11000_PREM_TECH_INTERNET";
+				nextPage 		= "PREMIUM_TECH";
+        		formId          = "#PREMIUM_Tech_Type_Client";	
+				break;
+			case	63:
+				LabelTraitement = "13000_WCB_PREM_TECH_AUTRE";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_TECH_Premium";	        						
+				break;
+			case	64:
+				LabelTraitement = "00032_RESILIE_DEXTER_AUTRE";
+				nextPage 		= "RESILIE";
+				formId 			= "#SUITE_TRT_RESIL_SANS_OFFRES";
+				break;	
+			case	65:
+				LabelTraitement = "00072_WCB_FCT_CONV_SUSP";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_SUSPENDU";			
+				break;
+			case	66:			   
+				LabelTraitement = "00072_SUSPENDU_HO_COM";
+				nextPage 		= "SUSPENDU";
+				formId          = "#CTRL_BEB_FIXE_FASTR_COM";					
+				break;
+			case	67:			   
+				LabelTraitement = "00072_SUSPENDU_COM";
+				nextPage 		= "SUSPENDU";
+				formId          = "#SUSPENDU_TRF";					
+				break;
+			case	68:			   
+				LabelTraitement = "00072_SUSPENDU_COM";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#WCB_SUSPENDU_CTRL_PREMIUM";					
+				break;
+			case	69:			   
+				LabelTraitement = "00072_WCB_SUSPENDU_PREMIUM_COM";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_SUSPENDU_PREMIUM";					
+				break;
+			case	70:			   
+				LabelTraitement = "43000_PREMIUM_BEB_COM_HO";
+				nextPage 		= "PREMIUM_AUTRE";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;
+			case	71:			   
+				LabelTraitement = "43000_BEB_COM_PREMIUM_FASTR_NOK";
+				nextPage 		= "PREMIUM_AUTRE";
+				formId          = "#VersTransfert_ADM_AUTRE";					
+				break;
+			case	72:			   
+				LabelTraitement = "00072_SUSPENDU_BEB_COM_HO";
+				nextPage 		= "SUSPENDU";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;
+			case	73:			   
+				LabelTraitement = "00072_SUSP_BEB_COM_FASTR_NOK";
+				nextPage 		= "SUSPENDU";
+				formId          = "#Filtre_Wcb_Digital_TRF";					
+				break;
+			case	74:			   
+				LabelTraitement = "00020_F_HOME";
+				nextPage 		= "ENTREE_GP";
+				formId          = "#SuiteGestionCasHOME";					
+				break;	
+			case	75:			   
+				LabelTraitement = "00020_HOME";
+				nextPage 		= "HOME";					
+				break;	
+			case	76:			   
+				LabelTraitement = "00020_HOME_FTT";
+				nextPage 		= "TRANSFERT";					
+				break;
+			case	77:			   
+				LabelTraitement = BaliseFlashIncident ;
+				nextPage 		= "DISCONNECT";					
+				break;
+			case	78:			   
+				LabelTraitement = "00010_F_ACTIVATION";
+				nextPage 		= "ACTIVATION";					
+				break;
+			case	79:			   
+				LabelTraitement = "00030_F_CLNS";
+				nextPage 		= "BEB_CLNS";				
+				break;
+			case	80:			   
+				LabelTraitement = "00040_F_NOS";
+				nextPage 		= "BEB_CLNS_NOS";				
+				break;
+			case	81:			   
+				LabelTraitement = "00070_F_SUSPENDU";
+				nextPage 		= "SUSPENDU";				
+				break;
+			case	82:			   
+				LabelTraitement = "00080_F_IMPAYE";
+				nextPage 		= "IMPAYE";				
+				break;
+			case	83:			   
+				LabelTraitement = "00090_F_WCB";
+				nextPage 		= "WCB_DIGITAL";				
+				break;
+			case	84:
+				LabelTraitement = "12000_WCB_PREM_TECH_TV";
+				nextPage 		= "WCB_DIGITAL";
+        		formId          = "#Wcb_TECH_Premium";	        						
+				break;
+			case	85:
+				LabelTraitement = "20040_TECHNIQUE_FTT";
+				nextPage 		= "TECHNIQUE";
+        		formId          = "#Filtre_Wcb_Digital_MENU_TECH";	
+				break;
+				
+			<!--cas particuliers: le traitement à faire dépend si un msg flash est configuré ou pas   -->	
+			case	86:
+				LabelTraitement = "40001_CHOIX_FLASH_FCT";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH_FCT";					
+			    }
+			    else{
+			        nextPage 		= "ADMINISTRATIF";
+			        formId          = "#CHOIX_FLASH_FCT_KO";
+			    }				
+				break;	
+				
+			case	87:
+				LabelTraitement = "40002_CHOIX_FLASH2_FCT";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH2_FCT";					
+			    }
+			    else{
+			        nextPage 		= "ADMINISTRATIF";
+			        formId          = "#CHOIX_FLASH2_FCT_KO";
+			    }				
+				break;
+				
+			case	88:
+				LabelTraitement = "40003_CHOIX_FLASH3_FCT";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH3_FCT";					
+			    }
+			    else{
+			        nextPage 		= "ADMINISTRATIF";
+			        formId          = "#CHOIX_FLASH3_FCT_KO";
+			    }				
+				break;
+				
+			case	89:			   
+				LabelTraitement = "40011_CHOIX_FLASH_FCT1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+				
+			case	90:			   
+				LabelTraitement = "40021_CHOIX_FLASH_FCT2";
+				nextPage 		= "CHOIX_FLASH_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_FCT_2";					
+				break;
+					
+			case	91:			   
+				LabelTraitement = "40031_CHOIX_FLASH_FCT3";
+				nextPage 		= "CHOIX_FLASH_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_FCT_3";					
+				break;
+				
+			case	92:			   
+				LabelTraitement = "40012_CHOIX_FLASH2_FCT1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+				
+			case	93:			   
+				LabelTraitement = "40022_CHOIX_FLASH2_FCT2";
+				nextPage 		= "CHOIX_FLASH2_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_FCT_2";					
+				break;
+					
+			case	94:			   
+				LabelTraitement = "40032_CHOIX_FLASH2_FCT3";
+				nextPage 		= "CHOIX_FLASH2_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_FCT_3";					
+				break;
+				
+			case	95:			   
+				LabelTraitement = "40013_CHOIX_FLASH3_FCT1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+				
+			case	96:			   
+				LabelTraitement = "40023_CHOIX_FLASH3_FCT2";
+				nextPage 		= "CHOIX_FLASH3_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_FCT_2";					
+				break;
+					
+			case	97:			   
+				LabelTraitement = "40033_CHOIX_FLASH3_FCT3";
+				nextPage 		= "CHOIX_FLASH3_FCT";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_FCT_3";					
+				break;
+				
+			<!--cas particuliers: le traitement à faire dépend si un msg flash est configuré ou pas   -->	
+			case	98:
+				LabelTraitement = "40001_CHOIX_FLASH_FCT_PREM";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH_FCT_PREMIUM";					
+			    }
+			    else{
+			        nextPage 		= "PREMIUM_AUTRE";
+			        formId          = "#CHOIX_FLASH_FCT_PREMIUM_KO";
+			    }				
+				break;	
+				
+			case	99:
+				LabelTraitement = "40002_CHOIX_FLASH2_FCT_PREM";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH2_FCT_PREMIUM";					
+			    }
+			    else{
+			        nextPage 		= "PREMIUM_AUTRE";
+			        formId          = "#CHOIX_FLASH2_FCT_PREMIUM_KO";
+			    }				
+				break;
+				
+			case	100:
+				LabelTraitement = "40003_CHOIX_FLASH3_FCT_PREM";
+			    if (flashMsg != 'NULL'){
+					nextPage 		= "CHOIX_FLASH3_FCT_PREMIUM";					
+			    }
+			    else{
+			        nextPage 		= "PREMIUM_AUTRE";
+			        formId          = "#CHOIX_FLASH3_FCT_PREMIUM_KO";
+			    }				
+				break;	
+
+			case	101:			   
+				LabelTraitement = "40011_CHOIX_FLASH_FCT_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+				
+			case	102:			   
+				LabelTraitement = "40021_CHOIX_FLASH_FCT_PREM2";
+				nextPage 		= "CHOIX_FLASH_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_2";					
+				break;
+					
+			case	103:			   
+				LabelTraitement = "40031_CHOIX_FLASH_FCT_PREM3";
+				nextPage 		= "CHOIX_FLASH_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_FCT_PREMIUM_3";					
+				break;
+				
+			case	104:			   
+				LabelTraitement = "40012_CHOIX_FLASH2_FCT_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;					
+				
+			case	105:			   
+				LabelTraitement = "40022_CHOIX_FLASH2_FCT_PREM2";
+				nextPage 		= "CHOIX_FLASH2_FCT_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_FCT_PREMIUM_2";					
+				break;
+				
+			case	106:			   
+				LabelTraitement = "10000_MC_PREMIUM_OK";
+				nextPage 		= "PREMIUM_TECH";
+				formId          = "#Vers_Parcours_Mc";					
+				break;													
+
+			case	107:			   
+				LabelTraitement = "20041_MC_OK";
+				nextPage 		= "TECHNIQUE";
+				formId          = "#Vers_Parcours_Mc";					
+				break;
+				
+			<!-- traitement particulier concernant le filtre CHOIX FLASH TECH -->
+			case	108:
+				LabelTraitement = "20002_CHOIX_FLASH2_TECH";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH2_TECH";
+				}
+        		else
+        		{
+        		     nextPage 		= "TECHNIQUE";
+        		     formId          = "#CHOIX_FLASH2_TECH_KO";
+        		}
+        		break;	
+        		
+			case	109:
+				LabelTraitement = "20003_CHOIX_FLASH3_TECH";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH3_TECH";
+				}
+        		else
+        		{
+        		     nextPage 		= "TECHNIQUE";
+        		     formId          = "#CHOIX_FLASH3_TECH_KO";
+        		}
+        		break;
+        		 
+			case	110:			   
+				LabelTraitement = "20011_CHOIX_FLASH_TECH1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	111:			   
+				LabelTraitement = "20031_CHOIX_FLASH_TECH3";
+				nextPage 		= "CHOIX_FLASH_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_TECH_3";					
+				break;
+				
+			case	112:			   
+				LabelTraitement = "20012_CHOIX_FLASH2_TECH1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	113:			   
+				LabelTraitement = "20022_CHOIX_FLASH2_TECH2";
+				nextPage 		= "CHOIX_FLASH2_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_TECH_2";					
+				break; 
+				
+			case	114:			   
+				LabelTraitement = "20032_CHOIX_FLASH2_TECH3";
+				nextPage 		= "CHOIX_FLASH2_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_TECH_3";					
+				break; 	
+				
+			case	115:			   
+				LabelTraitement = "20013_CHOIX_FLASH3_TECH1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	116:			   
+				LabelTraitement = "20023_CHOIX_FLASH3_TECH2";
+				nextPage 		= "CHOIX_FLASH3_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_TECH_2";					
+				break; 
+				
+			case	117:			   
+				LabelTraitement = "20033_CHOIX_FLASH3_TECH3";
+				nextPage 		= "CHOIX_FLASH3_TECH";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_TECH_3";					
+				break;
+				
+			case	118:				
+				LabelTraitement = "10003_CHOIX_FLASH3_TECH_PREM";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "CHOIX_FLASH3_TECH_PREMIUM";
+				}
+        		else
+        		{
+        		     nextPage 		= "PREMIUM_TECH";
+        		     formId          = "#CHOIX_FLASH3_TECH_PREMIUM_KO";
+        		}
+        		break;	
+        		
+			case	119:			   
+				LabelTraitement = "10011_CHOIX_FLASH_TECH_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	120:			   
+				LabelTraitement = "10021_CHOIX_FLASH_TECH_PREM2";
+				nextPage 		= "CHOIX_FLASH_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_TECH_PREMIUM_2";					
+				break; 
+				
+			case	121:			   
+				LabelTraitement = "10031_CHOIX_FLASH_TECH_PREM3";
+				nextPage 		= "CHOIX_FLASH_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH_TECH_PREMIUM_3";					
+				break; 
+
+			case	122:			   
+				LabelTraitement = "10012_CHOIX_FLASH2_TECH_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	123:			   
+				LabelTraitement = "10022_CHOIX_FLASH2_TECH_PREM2";
+				nextPage 		= "CHOIX_FLASH2_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_TECH_PREMIUM_2";					
+				break; 
+				
+			case	124:			   
+				LabelTraitement = "10032_CHOIX_FLASH2_TECH_PREM3";
+				nextPage 		= "CHOIX_FLASH2_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH2_TECH_PREMIUM_3";					
+				break; 
+				
+			case	125:			   
+				LabelTraitement = "10013_CHOIX_FLASH3_TECH_PREM1";
+				nextPage 		= "TRANSFERT";					
+				break;								
+					
+			case	126:			   
+				LabelTraitement = "10023_CHOIX_FLASH3_TECH_PREM2";
+				nextPage 		= "CHOIX_FLASH3_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_TECH_PREMIUM_2";					
+				break;				
+			case	127:			   
+				LabelTraitement = "10033_CHOIX_FLASH3_TECH_PREM3";
+				nextPage 		= "CHOIX_FLASH3_TECH_PREMIUM";
+				formId          = "#SUITE_MENU_CHOIX_FLASH3_TECH_PREMIUM_3";					
+				break; 					
+			case	128:			   
+				LabelTraitement = "00010_ACTIVATION_BEB_ANC_HO";
+				nextPage 		= "ACTIVATION";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;					
+			case	129:			   
+				LabelTraitement = "00031_CLNS_BEB_ANC_HO";
+				nextPage 		= "BEB_CLNS";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;
+			case	130:			   
+				LabelTraitement = "00042_NOS_BEB_ANC_HO";
+				nextPage 		= "BEB_CLNS_NOS";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;	
+			case	131:			   
+				LabelTraitement = "30010_DEM_BEB_ANC_HO";
+				nextPage 		= "DEMENAGEMENT";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;	
+			case	132:			   
+				LabelTraitement = "40200_ADMIN_AUTRE_BEB_ANC_HO";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;
+			case	133:			   
+				LabelTraitement = "10000_MC_PREMIUM_NOK";
+				nextPage 		= "PREMIUM_TECH";
+				formId          = "#CTRL_PREMIUM_TECH_WCB";					
+				break;
+			case	134:			   
+				LabelTraitement = "11000_WCB_PREM_TECH_FTT";
+				nextPage 		= "PREMIUM_TECH";
+				formId          = "#PREMIUM_TECH_WCB";					
+				break;
+			case	135:			   
+				LabelTraitement = "10000_PREMIUM_TECH_FTT";
+				nextPage 		= "PREMIUM_TECH";
+				formId          = "#CTRL_FILTRE_FTT_PREMIUM";					
+				break;
+			case	136:			   
+				LabelTraitement = "20040_TECHNIQUE_MC_NOK";
+				nextPage 		= "TECHNIQUE";
+				formId          = "#CTRL_CLIENT_CARE";					
+				break;
+			case	137:			   
+				LabelTraitement = "20040_WCB_TECHNIQUE_PRIMO";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_Technique_GP";					
+				break;
+			case	138:			   
+				LabelTraitement = "20040_TECHNIQUE_MENU_CHOIX";
+				nextPage 		= "TECHNIQUE";
+				formId          = "#CTRL_FILTRE_FTT_TECH";					
+				break;
+			case	139:			   
+				LabelTraitement = "20040_CARE_TECH_OKsss";
+				nextPage 		= "TECHNIQUE_CARE";			
+				break;
+			case	140:			   
+				LabelTraitement = "20000_CARE_TECH_MENU_CHOIX";
+				nextPage 		= "TECHNIQUE_CARE";
+				formId          = "#MENU_TECH_CARE";					
+				break;
+			case	141:			   
+				LabelTraitement = "21000_CARE_TECH_INTERNET";
+				nextPage 		= "TECHNIQUE_CARE";
+				formId          = "#TransfertCareTech";					
+				break;	
+			case	142:			   
+				LabelTraitement = "22000_CARE_TECH_TELEVISION";
+				nextPage 		= "TECHNIQUE_CARE";
+				formId          = "#TransfertCareTech";					
+				break;	
+			case	143:			   
+				LabelTraitement = "23000_CARE_TECH_AUTRE";
+				nextPage 		= "TECHNIQUE_CARE";
+				formId          = "#TransfertCareTech";					
+				break;
+			case	144:			   
+				LabelTraitement = "20000_WCB_CARE_TECH_MENU_CHOIX";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_Technique_CARE";					
+				break;	
+			case	145:			   
+				LabelTraitement = "21000_WCB_CARE_TECH_INTERNET";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_Technique_CARE_Transfert";					
+				break;	
+			case	146:			   
+				LabelTraitement = "22000_WCB_CARE_TECH_TV";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_Technique_CARE_Transfert";					
+				break;	
+			case	147:			   
+				LabelTraitement = "23000_WCB_CARE_TECH_AUTRE";
+				nextPage 		= "WCB_DIGITAL";
+				formId          = "#Wcb_Technique_CARE_Transfert";					
+				break;
+			case	148:			   
+				LabelTraitement = "10041_MC_DO_OK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#VERS_PARCOURS_MC";					
+				break;					
+			case	149:			   
+				LabelTraitement = "10000_MC_DO_NOK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#CTRL_CLIENT_CARE";					
+				break;
+			case	150:			   
+				LabelTraitement = "10000_FTT_DO_CARE_OK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#FiltreClientCare";					
+				break;
+			case	151:			   
+				LabelTraitement = "10000_FTT_DO_CARE_NOK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#FiltreClientGP";					
+				break;								
+			case	152:			   
+				LabelTraitement = "10000_MC_DO_PREMIUM_OK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#VERS_PARCOURS_MC";					
+				break;									
+			case	153:			   
+				LabelTraitement = "10000_MC_DO_PREMIUM_NOK";
+				nextPage 		= "DISSUASION_ORIENTEE";
+				formId          = "#FiltreClientPremium";					
+				break;								
+			case	154:			   
+				LabelTraitement = "41000_MC_OK_HO_TECH";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#Vers_Parcours_Mc";					
+				break;
+			case	155:			   
+				LabelTraitement = "10000_RDGU_TECH_OK";
+				nextPage 		= "RDGU_TECH";
+				formId          = "#TRANSFERT_RDGU_TECH";					
+				break;
+			case	156:			   
+				LabelTraitement = "20000_CARE_TECH_OK";
+				nextPage 		= "TECHNIQUE_CARE";
+				formId          = "#TransfertCareTech";						
+				break;					
+			case	157:			   
+				LabelTraitement = "00030_CLNS_AUTRE";
+				nextPage 		= "BEB_CLNS";
+				formId          = "#CTRL_HOHNO_ANC";				
+				break;
+			case	158:			   
+				LabelTraitement = "00050_F_RDGU";
+				nextPage 		= "RDGU";			
+				break;
+			case	159:
+				LabelTraitement = "10000_FTT_PREMIUM_OK";
+				nextPage 		= "PREMIUM_TECH";
+        		formId          = "#PREMIUM_Tech_Type_Client";	
+				break;
+				
+			case	160:			   
+				LabelTraitement = "10000_SELFCARE";
+				nextPage 		= "MENU_SELFCARE";					
+				break;			
+				
+			case	161:			   
+				LabelTraitement = "13000_SELFCARE_CHOIX3";
+				nextPage 		= "MENU_SELFCARE";
+				formId          = "#SUITE_CHOIX_3";					
+				break;
+								
+			<!-- traitement particulier concernant le flash FIXE_LN_FULL_ENTREE - ELIGIBILITE -->
+			case	162:
+				LabelTraitement = "00002_F_ENTREE_LN_FULL";
+				if(flashMsg != 'NULL')
+				{
+        		     nextPage 		= "LN_FULL_ELIGIBILITE";
+				}
+        		else
+        		{
+        		     nextPage 		= "MENU_PRINCIPAL";
+        		     formId          = "#RETOUR_LN_FULL_KO";
+        		}
+        		break;
+        		
+			case	163:			   
+				LabelTraitement = "10040_TABLE_LN_NON";
+				nextPage 		= "MENU_PRINCIPAL";
+				formId          = "#RETOUR_LN_FULL_KO";					
+				break;
+				
+			<!-- traitement particulier concernant le flash FIXE_CO_LN_ELIGIBILITE -->
+			case	164:
+				LabelTraitement = "43200_FIXE_CO_LN_FLASH_OK";
+				if(flashMsg != 'NULL')
+				{
+        		     nextPage 		= "LN_CO";
+        		     formId          = "#CTRL_ELIGIBILITE_LN_COM_FLASH_OK";
+				}
+        		else
+        		{
+        		     nextPage 		= "LN_CO";
+        		     formId          = "#CTRL_ELIGIBILITE_LN_COM_FLASH_KO";
+        		}
+        		break;
+        													
+			case	165:			   
+				LabelTraitement = "10040_TABLE_LN_OUI";
+				nextPage 		= "LN_FULL_ELIGIBILITE";
+				formId          = "#CTRL_ELIGIBILITE_2_LN";					
+				break;				
+			case	166:			   
+				LabelTraitement = "43200_TABLE_CO_LN_OUI";
+				nextPage 		= "LN_CO";
+				formId          = "#CTRL_ELIGIBILITE_LN_COM_2";					
+				break;				
+			case	167:			   
+				LabelTraitement = "43200_FIXE_CO_LN_OFF";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#ENTREE_ELIGIBILITE_LN_COM_KO";					
+				break;				
+			case	168:			   
+				LabelTraitement = "43000_FCT_LN_Tech_FIXE_"+ LN_INTENT +"_" +GET_TECHNO_FIXE();   
+				nextPage 		= "LN_ROUTAGE_CO";
+				formId          = "#LN_CO_VERS_TECHNIQUE";					
+				break;
+			case	169:			   
+				LabelTraitement = "43000_FCT_LN_Retention_"+ LN_INTENT +"_" +GET_TECHNO_FIXE();
+				nextPage 		= "LN_ROUTAGE_CO";
+				formId          = "#LN_CO_VERS_RETENTION";					
+				break;
+				
+			case	170:			   
+				LabelTraitement = "14000_SELFCARE_CHOIX4";
+				nextPage 		= "MENU_SELFCARE";
+				formId          = "#SUITE_CHOIX_4";					
+				break;
+																					
+			case	171:			   
+				LabelTraitement = "73000_HNO_AUTODIAG";
+				nextPage 		= "HNO_GP";
+				formId          = "#SUITE_CHOIX_AUTODIAG";					
+				break;				
+			case	172:			   
+				LabelTraitement = "00030_F_CLNS_WS_KO";
+				nextPage 		= "ENTREE_GP";
+				formId          = "#VersTraitementClnsNos";					
+				break;	
+			case	173:			   
+				LabelTraitement = "00040_F_NOS_WS_KO";
+				nextPage 		= "ENTREE_GP";
+				formId          = "#VersPreTraitementRisque";					
+				break;
+				
+			case	174:			   
+				LabelTraitement = "74000_HNO_CHOIX_4";
+				nextPage 		= "HNO_GP";
+				formId          = "#SUITE_CHOIX_4";					
+				break;
+				
+			case	175:			   
+				LabelTraitement = "75000_HNO_CHOIX_5";
+				nextPage 		= "HNO_GP";
+				formId          = "#SUITE_CHOIX_5";					
+				break;				
+			case	176:			   
+				LabelTraitement = "00002_F_ENTREE_MENU";
+				nextPage 		= "MENU_PRINCIPAL";
+				formId          = "#initMenuPrincipal";					
+				break;					
+			case	177:			   
+				LabelTraitement = "20044_PREDIAG_SUSPICION_IG_TRANSFERT";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+				formId          = "#VERS_MENU_TECHNIQUE_CC";					
+				break;
+			case	178:			   
+				LabelTraitement = "20044_PREDIAG_SUSPICION_IG_DISSUASION";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+				formId          = "#SUSPICION_IG_DISSUASION";					
+				break;
+			case	179:			   
+				LabelTraitement = "20046_ELIGIBILITE_REBOOT_BOX_OUI";
+				nextPage 		= "REBOOT_BOX";
+				formId          = "#VERS_MENU_CHOIX_REBOOT_BOX";					
+				break;	
+			case	180:			   
+				LabelTraitement = "20046_ELIGIBILITE_REBOOT_BOX_NON";   
+				nextPage 		= "REBOOT_BOX";
+				formId          = "#ELIGIBILITE_REBOOT_BOX_NON";					
+				break;
+			case	181:			   
+				LabelTraitement = "20043_WS_HISPEED_KO";
+				nextPage 		= "PREDIAG_SUSPICION_IG";
+				formId          = "#VERS_MENU_TECHNIQUE_CC";					
+				break;				
+			case	182:			   
+				LabelTraitement = "20046_REBOOT_BOX_KO";
+				nextPage 		= "REBOOT_BOX";
+				formId          = "#VERS_MENU_TECHNIQUE_CC";					
+				break;											
+			case	183:			   
+				LabelTraitement = "20046_REBOOT_BOX_NON"+ "_" + CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL;
+				nextPage 		= "REBOOT_BOX";
+				formId          = "#TRAITEMENT_REBOOT_BOX_NON";					
+				break;
+			case	184:			   
+				LabelTraitement = "20046_REBOOT_BOX_OUI"+ "_" + CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL;
+				nextPage 		= "REBOOT_BOX";
+				formId          = "#VERS_MENU_TECHNIQUE_CC";					
+				break;
+				
+			case	185:			   
+				LabelTraitement = "50200_BEB_RET_FIXE_HO";
+				nextPage 		= "RESILIATION";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;
+				
+			case	186:			   
+				LabelTraitement = "40300_ADMIN_AUTRE_MC_ACTIV_OK";
+				nextPage 		= "MC_ACTIV";
+				formId          = "#MC_ACTIV_WS_OK";					
+				break;				
+				
+			case	187:			   
+				LabelTraitement = "40400_BEB_COM_FIXE_HO";
+				nextPage 		= "ADMINISTRATIF";
+				formId          = "#Vers_Parcours_BEB_FIXE";					
+				break;	
+				
+			case	188:			   
+				LabelTraitement = "20040_MULTI_APPELANT_OK";
+				nextPage 		= "TRANSFERT";					
+				break;																																																												 								       																		       		       					
+				
+			<!-- traitement particulier concernant le filtre CHOIX FLASH TECH -->
+			case	189:
+				LabelTraitement = "00002_F_ENTREE_MENU_ABTEST";
+				if(flashMsg != 'NULL')
+				{
+				    nextPage 		= "MENU_PRINCIPAL_AB_TEST";
+				}
+        		else
+        		{
+        		     nextPage 		= "MENU_PRINCIPAL";
+        		     formId          = "#RETOUR_CTRL_MENU_PRINCIPAL_AB_TEST";
+        		}
+        		break;
+        						
+			case	190:			   
+				LabelTraitement = "50000_A_DEFINIR";
+				nextPage 		= "DISCONNECT";					
+				break;	
+				
+			case	191:			   
+				LabelTraitement = "13000_AUTRE_3";
+				nextPage 		= "DISCONNECT";					
+				break;
+				
+			case	192:			   
+				LabelTraitement = "14000_AUTRE_4";
+				nextPage 		= "DISCONNECT";					
+				break;
+				
+			case	193:
+				LabelTraitement = "00032_MENU_RESILIE_DEXTER";
+				nextPage 		= "RESILIE";
+				formId 			= "#SUITE_TRT_RESIL";
+				break;					
+																																							
+									
+			default:
+				LabelTraitement = "00000";
+				break;							    
+		}
+	}
+
+
+    ]]></script>
+
+    <form id="main">
+    	<script><![CDATA[ formCourant = "main"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			LoadData();
+        ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"LabelTraitement", LabelTraitement); ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"POSITION_ARBO", POSITION_ARBO); ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"FLASH", LIST_FLASH); ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Flash"); ]]></script>
+            <goto next="#Flash"/>
+        </block>
+    </form>
+    
+    
+    <!--###########################################
+                Controle si presence Flash
+            ########################################### -->
+    <form id="Flash">
+    	<script><![CDATA[ formCourant = "Flash"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <!--	Cas: Pas de Flash	-->
+        <block name="FlashTest" cond="flashMsg == 'NULL'">
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+        </block>
+
+        <!--	Cas: Flash présent	-->
+        <block name="ExecuteFlash" cond="flashMsg != 'NULL'">
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitement +'_F');				
+            ]]></script>
+            <prompt bargein="false">
+                <audio  maxage ="7200" maxstale="7200"  expr="flashMsg"/>
+            </prompt>
+        </block>
+
+        <!-- On continu le traitement  -->
+        <block name="AfterFlash" cond="gestionFlash == 'Continuer' ">
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitement +'_FC');	 	
+				customNode(applicationName + '_' + LabelTraitement +'_FC_'+ idFlash);		
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+        </block>
+        
+        <!-- Dissuasion  -->
+        <block name="DissuasionAfterFlash" cond="gestionFlash == 'Dissuader'">
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitement +'_FD');	
+				customNode(applicationName + '_' + LabelTraitement +'_FD_'+ idFlash);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+        
+        <!-- Transfert  -->
+        <block name="TransfertAfterFlash">
+            <script><![CDATA[
+				customNode(applicationName + '_' + LabelTraitement +'_FT');
+				customNode(applicationName + '_' + LabelTraitement +'_FT_'+ idFlash);
+				ID_FLUX = gestionFlash;				
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+        
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "defineNext"); ]]></script>
+            <goto next="#defineNext"/>
+        </block>     
+           
+    </form>
+    
+    <!--###########################################
+            Gestion de la page à traiter apres le flash
+        ########################################### -->
+    <form id="defineNext">
+    	<script><![CDATA[ formCourant = "defineNext"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				var followingPage = "./FIXE_" + nextPage + ".vxml"+formId;
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, followingPage); ]]></script>
+            <goto expr="followingPage"/>
+        </block>
+    </form>        
+
+</vxml>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :
+        Date de Creation :	15/02/2012
+        Page :				Application ABO -	 PREMIUM_AUTRE
+        Modification :		IMA 	22/05/2012  	 Ajout du menu Sous MENU_PRO_MOB
+                            MLA		18/06/2012		Changement PRO_SIRENE en PRO_MOBILE
+                            IMA		05/02/2013		MAJ balises de stat
+                            IMA		24/07/2013		Ajout du flash ABO_ADMIN_DESIM et balises de statistiques
+                            IMA		20/11/2013		suppression des filtres TYPO
+                            CKO		18/02/2014		Modification des noms des flux de transfert : ABO_...
+                            IMA		01/04/2015		Suppression des messages flash Desimlock
+                            IMA/CZO	09/12/2016		Refonte traitements PRO: MAJ des traitements premium (ancien PRO, JOYA et collab)
+                            IMA/CZO	17/04/2017		Ajout filtre WCBDIGITAL  && MOTIF 01
+                            IMA/CZO	28/09/2017		Gestion des appels en provenance de RDGU
+							MRO		08/03/2018		migration v8
+	    					IMA/CZO	28/09/2017		Gestion des appels en provenance de RDGU 
+							IMA/CZO 05/05/2018		Prise en compte des données LDCCSU	
+							IMA/CZO	05/07/2018		Menage des traitements SAFIR - full LDCCSU
+							EISI	09/11/2018		MAJ du traitement PREMIUM - Ajout du traitement du marker CELL_PREM
+							EISI	15/01/2019		MAJ du traitement PREMIUM - PLATINE + inetgartion ctrl HOHNO specifique
+							EISI	14/02/2019		MAJ emplacement flash ABO_PREMIUM_ADM_AUTRE
+							IMA/CZO	20/03/2019		Traitement PACKPRO
+							IMA/CZO	07/08/2019		Ajout des traitements BEB_MOB
+							IMA/CZO	03/10/2019		MAJ PREMIUM AUTRE + Ajout des positions flahs (refonte flash abo)
+							IMA/CZO	06/01/2020		MAJ MENU PREMIUM AUTRE dynamique
+        					IMA/CZO	24/02/2022		Menage du filtre RDGU	
+        					IMA/CZO	10/03/2023		Refonte abo lot1:  MAJ balises							
+    -->
+    <script><![CDATA[
+	applicationName = "ABO"; appSvi = applicationName;
+	var pageCourante = "ABO_PREMIUM_AUTRE.vxml";
+	log_info_start_page(pageCourante);
+	var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+	var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+	var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+        
+    <form id="FiltreWCBDIGITAL">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif ==  '01' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif ==  '01' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif ==  '01' "); ]]></script>	
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '33000_WCB_PREMIUM_AUTRE');               
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE_DEMANDE"); ]]></script>
+                <goto next="#AUTRE_DEMANDE"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+			    	customNode(applicationName + '_' + '30000_SOUS_MENU_PREMIUM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_PREMIUM_AUTRE"); ]]></script>
+                <goto next="#MENU_PREMIUM_AUTRE"/>
+            </if>
+        </block>
+    </form>
+
+
+    <!--###########################################
+         PREMIUM SOUS MENU
+    ########################################### -->
+    <menu id="MENU_PREMIUM_AUTRE">
+    	<script><![CDATA[ formCourant = "MENU_PREMIUM_AUTRE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+		<prompt bargein="true">
+			<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_MENU_PREMIUM_AUTRE_MENU_PREMIUM_AUTRE_AUDIO)"/>
+		</prompt>         
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '39001_PRO_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+                        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "NMNI"); ]]></script>
+            <goto next="#NMNI"/>
+        </catch>
+        <choice dtmf="1" next="#VersPaiement"/>
+        <choice dtmf="2" next="#VersResil"/>
+        <choice dtmf="3" next="#Vers_AUTRE_DEMANDE"/>      
+    </menu>
+
+    <!--###########################################
+         Choix 1: regler facture
+    ########################################### -->
+    <form id="VersPaiement">
+    	<script><![CDATA[ formCourant = "VersPaiement"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '31000_PREMIUM_FACTURE');
+				Service = 'pcb';
+				POSITION_ARBO = 18;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+        </block>
+    </form>
+
+    <!--###########################################
+         Choix 2: RESIL
+    ########################################### -->
+
+    <form id="VersResil">
+    	<script><![CDATA[ formCourant = "VersResil"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '32000_PREMIUM_RESILIATION');
+				POSITION_ARBO = 82;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>         
+            
+        </block>
+    </form>
+    
+    <form id="CTRL_HOHNO_RESIL">
+    	<script><![CDATA[ formCourant = "CTRL_HOHNO_RESIL"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            
+            <!--	SOUS APPLI ABO_RET HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_RET_IS_OPEN =='true' "); ]]></script>	            
+	            <script><![CDATA[
+	            	customNode(applicationName + '_' + '32000_PREM_RESIL_HO_RET');
+					POSITION_ARBO = 28;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>	            
+
+            <!--	ABO_RET HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '32000_PREM_RESIL_HNO_RET');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_RET.vxml"); ]]></script>
+                <goto next="./ABO_HNO_RET.vxml"/>
+
+            </if>            
+        </block>
+    </form>     
+    
+
+    <!--###########################################################
+         Choix 3: RESIL / NMNI /suite appel à partir de RDGU
+    ########################################################### -->
+
+    <form id="Vers_AUTRE_DEMANDE">
+    	<script><![CDATA[ formCourant = "Vers_AUTRE_DEMANDE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "3"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '33000_PREMIUM_AUTRE');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE_DEMANDE"); ]]></script>
+            <goto next="#AUTRE_DEMANDE"/>
+        </block>
+    </form>
+
+    <form id="AUTRE_DEMANDE">
+    	<script><![CDATA[ formCourant = "AUTRE_DEMANDE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33001_PREM_AUTRE_HO_COM');
+					POSITION_ARBO = 87;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+                ]]></script>	            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>                       	
+	            
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33001_PREM_AUTRE_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>
+        </block>
+    </form>
+    
+    
+    <form id="NMNI">
+    	<script><![CDATA[ formCourant = "NMNI"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '39002_PREMIUM_NMNI_X2');
+            ]]></script>
+            <prompt bargein="false">
+                <audio expr="PlayFile('NMNI_MISE_EN_RELATION')"/>
+            </prompt>
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "AUTRE_DEMANDE"); ]]></script>
+            <goto next="#AUTRE_DEMANDE"/>            
+            
+        </block>
+    </form>        
+       
+
+</vxml>

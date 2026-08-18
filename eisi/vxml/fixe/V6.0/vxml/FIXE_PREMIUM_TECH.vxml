@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	02/03/2020
+        Page :				Application FIXE  - PREMIUM_TECH (separation de la page PREMIUM et PREMIUM_TECH)
+        Modification: 		IMA/CZO	03/03/2020		    MAJ suite refonte FIXE
+        					IMA/CZO	27/08/2020		    Integration des traitements DEXTER
+        					IMA/CZO	07/05/2021		    Suppression traitement INCIDENT-ODIN - menage traitement ARAMIS
+        					IMA/CZO	07/01/2022			Integration des traitements PACKPRO	
+        					IMA/CZO	02/03/2022			Menage traitement RDGU
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_PREMIUM_TECH.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+    <var name="errorCounter1" expr="1"/>
+
+
+	<!--###########################################
+	    Menu PREMIUM - Choix 1: PREMIUM Technique 
+	 ############################################### -->
+
+    <!--###########################################
+       CONTROLE CHOIX FLASH PREMIUM TECH
+  ########################################### -->
+    <form id="CTRL_CHOIX_FLASH_TECH_PREMIUM">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH_TECH_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_TECH_PREMIUM != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH_TECH_PREMIUM != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH_TECH_PREMIUM != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10001_CHOIX_FLASH_TECH_PREM');
+					POSITION_ARBO = 59;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_TECH_PREMIUM"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH2_TECH_PREMIUM"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH_TECH_PREMIUM_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH_TECH_PREMIUM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10001_CHOIX_FLASH_TECH_PREM_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH2_TECH_PREMIUM"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH2_TECH_PREMIUM"/>   
+
+        </block>
+    </form>    
+    
+    <!--###########################################
+                CTRL CHOIX FLASH2 TECH
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH2_TECH_PREMIUM">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH2_TECH_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_TECH_PREMIUM != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH2_TECH_PREMIUM != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH2_TECH_PREMIUM != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10002_CHOIX_FLASH2_TECH_PREM');
+					POSITION_ARBO = 58;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_TECH_PREMIUM"); ]]></script>
+                <goto next="#CTRL_CHOIX_FLASH3_TECH_PREMIUM"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH2_TECH_PREMIUM_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH2_TECH_PREMIUM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10002_CHOIX_FLASH2_TECH_PREM_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_CHOIX_FLASH3_TECH_PREMIUM"); ]]></script>
+            <goto next="#CTRL_CHOIX_FLASH3_TECH_PREMIUM"/>   
+
+        </block>
+    </form>     
+    
+    <!--###########################################
+                CTRL CHOIX FLASH3 TECH
+        ########################################### -->
+    <form id="CTRL_CHOIX_FLASH3_TECH_PREMIUM">
+        <script><![CDATA[ formCourant = "CTRL_CHOIX_FLASH3_TECH_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!--	Filtre CHOIX_FLASH activé -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_TECH_PREMIUM != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_FLASH3_TECH_PREMIUM != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_FLASH3_TECH_PREMIUM != 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10003_CHOIX_FLASH3_TECH_PREM');
+					POSITION_ARBO = 118;
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VersSuitePremiumTech"); ]]></script>
+                <goto next="#VersSuitePremiumTech"/>
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="CHOIX_FLASH3_TECH_PREMIUM_KO">
+        <script><![CDATA[ formCourant = "CHOIX_FLASH3_TECH_PREMIUM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10003_CHOIX_FLASH3_TECH_PREM_NOK');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VersSuitePremiumTech"); ]]></script>
+            <goto next="#VersSuitePremiumTech"/>   
+
+        </block>
+    </form> 
+    
+    	 
+    <!--###########################################
+       CONTROLE MC_TECH
+  ########################################### -->
+    <form id="VersSuitePremiumTech">
+        <script><![CDATA[ formCourant = "VersSuitePremiumTech"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Ctrl_STC_PREMIUM"); ]]></script>
+            <goto next="#Ctrl_STC_PREMIUM"/>        
+            
+        </block>
+    </form>
+          
+    <form id="Ctrl_STC_PREMIUM">
+        <script><![CDATA[ formCourant = "Ctrl_STC_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- Client MC via WS MC_TECH 	 -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.MC_TECH != 'false' &amp;&amp; isSTC_WS_MC()"); ]]></script>
+            <if cond="CUSTOMER_IHM.MC_TECH != 'false' &amp;&amp; isSTC_WS_MC ()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.MC_TECH != 'false' &amp;&amp; isSTC_WS_MC()"); ]]></script>
+
+                <script><![CDATA[ 
+					customNode(applicationName + '_' + '10000_MC_PREMIUM_OK');
+                ]]></script>
+	            <script><![CDATA[	             	                					
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '2|10000_MC_PREMIUM_OK|INCIDENT_INC|;3|10000_MC_PREMIUM_OK|INCIDENT_INC|;4|10000_MC_PREMIUM_OK|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);
+					
+					<!-- Position  flash --> 
+	                POSITION_ARBO = 106;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);											
+				]]></script> 				            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>                
+           
+                                
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_PREMIUM_TECH_WCB"); ]]></script>
+                <goto next="#VERS_CTRL_PREMIUM_TECH_WCB"/>
+
+            </if>
+        </block>
+    </form>
+       
+    
+    <!--###########################################
+     Vers Parcours MC
+    ########################################### -->
+    <form id="Vers_Parcours_Mc">
+        <script><![CDATA[ formCourant = "Vers_Parcours_Mc"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ 
+				MC_APP_ORIGINE='FIXE_PRO_WS';
+				var nextAPP ="../../../mc/index.vxml";
+            ]]></script>
+            <script><![CDATA[ log_debug_assignment(pageCourante,'MC_APP_ORIGINE', MC_APP_ORIGINE); ]]></script>
+            <!-- Transfert vers le parcours MC -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+  
+        </block>
+    </form>    
+
+    <!--###########################################
+         MC KO et retour du parcours MC
+    ########################################### -->
+
+    <form id="STC_PREMIUM_KO">
+        <script><![CDATA[ formCourant = "STC_PREMIUM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_CTRL_PREMIUM_TECH_WCB"); ]]></script>
+            <goto next="#VERS_CTRL_PREMIUM_TECH_WCB"/>
+        </block>
+    </form>
+    
+    <!--###########################################
+         PREMIUM : CTRL + gestion cas appel WCB 
+    ########################################### -->
+    <form id="VERS_CTRL_PREMIUM_TECH_WCB">
+        <script><![CDATA[ formCourant = "VERS_CTRL_PREMIUM_TECH_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10000_MC_PREMIUM_NOK');		
+				POSITION_ARBO = 133;										
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+            
+    <form id="CTRL_PREMIUM_TECH_WCB">
+        <script><![CDATA[ formCourant = "CTRL_PREMIUM_TECH_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	Client en provenance de WCB_DIGITAL		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>            	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '11000_WCB_PREM_TECH_FTT');		
+					POSITION_ARBO = 134;										
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>              	           
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_PREMIUM_TECHNIQUE"); ]]></script>
+	            <goto next="#VERS_MENU_PREMIUM_TECHNIQUE"/>                
+            </if>
+            
+        </block>
+    </form>
+    
+    
+    <form id="PREMIUM_TECH_WCB">
+        <script><![CDATA[ formCourant = "PREMIUM_TECH_WCB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+            <if cond="wcb_digital_codeMotif == '01'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '01'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '11000_WCB_PREM_TECH_INTERNET');		
+	
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '2|11000_WCB_PREM_TECH_INTERNET|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            		
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 28;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>                
+
+            <elseif cond="wcb_digital_codeMotif == '02'"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "wcb_digital_codeMotif == '02'"); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '12000_WCB_PREM_TECH_TV');	
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '3|12000_WCB_PREM_TECH_TV|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>            		
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 84;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>   
+
+                <!--	motif=03 - cas par défaut  -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '13000_WCB_PREM_TECH_AUTRE');
+                ]]></script>
+	            <script><![CDATA[				
+					<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+					POSITION_INCIDENT_HEIMDALL = '4|13000_WCB_PREM_TECH_AUTRE|FLASH_INC|;';
+					log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+				]]></script>		
+				<!-- Position  flash -->          		
+	            <script><![CDATA[
+	                POSITION_ARBO = 63;				
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+				<goto next="./FIXE_INCIDENT_INC.vxml"/>
+
+            </if>
+            
+        </block>
+    </form>    
+    
+
+    <!--###########################################
+                Menu PREMIUM TECHNIQUE
+        ########################################### -->
+    <form id="VERS_MENU_PREMIUM_TECHNIQUE">
+        <script><![CDATA[ formCourant = "VERS_MENU_PREMIUM_TECHNIQUE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10000_PREMIUM_TECH_FTT');		
+				POSITION_ARBO = 135;										
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>  
+        </block>
+    </form>
+    
+    <form id="CTRL_FILTRE_FTT_PREMIUM">
+        <script><![CDATA[ formCourant = "CTRL_FILTRE_FTT_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	filtre FTT_PREMIUM activé		-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_PREMIUM != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.FTT_PREMIUM != 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.FTT_PREMIUM != 'false'"); ]]></script>            	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '10000_FTT_PREMIUM_OK');		
+					POSITION_ARBO = 159;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);										
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>	                         	           
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '10000_FTT_PREMIUM_MENU_CHOIX');									
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_PREMIUM_TECHNIQUE"); ]]></script>
+	            <goto next="#MENU_PREMIUM_TECHNIQUE"/>                
+            </if>
+            
+        </block>
+    </form>    
+            
+
+    <menu id="MENU_PREMIUM_TECHNIQUE">
+        <script><![CDATA[ formCourant = "MENU_PREMIUM_TECHNIQUE"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+
+        <prompt bargein="true">
+    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_MENU_PREMIUM_TECHNIQUE_MENU_PREMIUM_TECHNIQUE_AUDIO)"/>
+        </prompt>        											
+	
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10040_PREMIUM_TECH_NMNI');				
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+        <catch event="noinput nomatch" cond="document.errorCounter == 2">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '10040_PREMIUM_TECH_NMNI_X2');
+				POSITION_ARBO = 60;					
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+        </catch>
+
+        <choice dtmf="1" next="#VersPremInternet"/>
+        <choice dtmf="2" next="#VersPremTV"/>
+        <choice dtmf="3" next="#VersPremTechAutre"/>
+
+    </menu>
+
+    <!--###########################################
+        Choix 1: Acces PREMIUM Internet
+   ########################################### -->
+    <form id="VersPremInternet">
+        <script><![CDATA[ formCourant = "VersPremInternet"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "1"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_PREMIUM_TECHNIQUE", "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '11000_PREM_TECH_INTERNET');			
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '2|11000_PREM_TECH_INTERNET|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->          		
+            <script><![CDATA[
+				POSITION_ARBO = 62;						
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+
+    <!--###########################################
+        Choix 2: Tech PREMIUM TV
+   ########################################### -->
+    <form id="VersPremTV">
+        <script><![CDATA[ formCourant = "VersPremTV"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "2"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_PREMIUM_TECHNIQUE", "2"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '12000_PREM_TECH_TV');			
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '3|12000_PREM_TECH_TV|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->          		
+            <script><![CDATA[
+				POSITION_ARBO = 61;						
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+    <!--###########################################
+    Choix 3: Tech PREMIUM AUTRE
+    ########################################### -->
+    <form id="VersPremTechAutre">
+        <script><![CDATA[ formCourant = "VersPremTechAutre"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "3"); ]]></script>
+        <script><![CDATA[ track_dtmfList ("MENU_PREMIUM_TECHNIQUE", "3"); ]]></script>
+        <block>
+            <script><![CDATA[
+					customNode(applicationName + '_' + '13000_PREM_TECH_AUTRE');
+            ]]></script>
+            <script><![CDATA[				
+				<!--POSITION_INCIDENT_HEIMDALL = liste ('position|balise|page_suivante|form suivant') -->				
+				POSITION_INCIDENT_HEIMDALL = '4|13000_PREM_TECH_AUTRE|FLASH_INC|;';
+				log_debug_assignment(pageCourante, "POSITION_INCIDENT_HEIMDALL", POSITION_INCIDENT_HEIMDALL);						
+			]]></script>            
+
+			<!-- Position  flash -->          		
+            <script><![CDATA[
+				POSITION_ARBO = 60;					
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            
+			<script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_INCIDENT_INC.vxml"); ]]></script>
+			<goto next="./FIXE_INCIDENT_INC.vxml"/>
+        </block>
+    </form>
+
+
+
+       
+    <!--###########################################
+    PREMIUM TYPE CLIENT
+    ########################################### -->
+    <form id="PREMIUM_Tech_Type_Client">
+        <script><![CDATA[ formCourant = "PREMIUM_Tech_Type_Client"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!-- CABLE et PACKPRO					  //-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>
+            <if cond="isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true'  ">            
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB()  &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>      
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_FTT_PACKPRO_FTTB');
+					ID_FLUX='FTT_PACKPRO_FTTB';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+
+            <!-- FTTH et PACKPRO					  //-->
+            <elseif cond="isClientFixeFTTH() &amp;&amp; FIXE_PACKPRO == 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() &amp;&amp; FIXE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_FTT_PACKPRO_FTTH');
+					ID_FLUX='FTT_PACKPRO_FTTH';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                
+                                 
+            <!-- AUTRE	et PACKPRO					  //-->
+            <elseif cond="FIXE_PACKPRO == 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '10000_FTT_PREMIUM_AUTRE');
+					ID_FLUX='FTT_PACKPRO_AUTRE';					
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>         
+                                        
+               <!--	FIDE et CABLE		-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_FTT_PREMIUM_FTTB_FIDE');
+					   ID_FLUX='FTT_PREMIUM_FTTB_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+               <!--	FIDE et FTTH		-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTH()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' &amp;&amp; isClientFixeFTTH()"); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_FTT_PREMIUM_FTTH_FIDE');
+					   ID_FLUX='FTT_PREMIUM_FTTH_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+               <!--	FIDE - AUTRE		-->
+            <elseif cond="FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "FIXE_CELL_PREM_FIDE == 'true' &amp;&amp; FIXE_CELL_PREM_PLATINE != 'true' "); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_FTT_PREMIUM_AUTRE_FIDE');
+					   ID_FLUX='FTT_PREMIUM_AUTRE_FIDE';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>      
+
+                <!--	CABLE		-->
+            <elseif cond="isClientFixeFTTB()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB()"); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_FTT_PREMIUM_FTTB');
+					   ID_FLUX='FTT_PREMIUM_FTTB';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+                <!--	 FTTH		-->
+                <!-- <elseif cond="(CUSTOMER_ARAMIS &amp;&amp; isTHD(CUSTOMER_ARAMIS.OFFRE) == 'true')" /> -->
+            <elseif cond="isClientFixeFTTH()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH()"); ]]></script>
+                <script><![CDATA[
+					   customNode(applicationName + '_' + '10000_FTT_PREMIUM_FTTH');
+					   ID_FLUX='FTT_PREMIUM_FTTH';		
+					   log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+						customNode(applicationName + '_' + '10000_FTT_PREMIUM_AUTRE');
+						ID_FLUX='FTT_PREMIUM_AUTRE';	
+						log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>
+
+            <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+            <goto next="#Transfert"/>
+        </block>
+    </form>
+    
+   
+    <!--###########################################
+         Transfert: vers la page transfert
+    ########################################### -->     
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+    </form> 
+    
+        
+        
+</vxml>

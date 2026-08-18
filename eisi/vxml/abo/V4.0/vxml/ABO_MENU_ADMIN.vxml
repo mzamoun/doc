@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Date de Creation :	01/12/2012
+        Page :				Application ABO - ABO_MENU RESILIATION
+        Modification        IMA			05/02/2013	Suppression des filtres valoprev et valovente + ajout des flashs
+                            IMA			24/07/2013	MAJ Choix DESIM
+                            IMA			20/11/2013	suppression des filtres TYPO
+                            CKO			18/02/2014	Modification des noms des flux de transfert : ABO_...
+                            CKO			09/09/2014	Ajout filtre pourcentage multiequipe
+                            IMA			01/04/2015	Suppression des messages flash Desimlock
+                            CZO			29/09/2015	surpression de flashs ABO_AUTRE_ADMIN_RED
+                            IMA/CZO		30/09/2016	Intégration des  ttraitements MIGBIOS (suite ident AEM)
+                            IMA/CZO		25/01/2017	MAJ traitemlent AEM + RDGU
+                            IMA/CZO		19/04/2017	Suppression des  traitements des appels en provenance de RDGU
+                            IMA/CZO		12/09/2017	Menage traitement MIGBIOS
+                            IMA/CZO 	16/10/2017  Prise en compte des traitements CONV et RISQUE
+							MRO			08/03/2018	migration v8
+							IMA/CZO		15/01/2019	integration CtrlHoHno sous appli ABO_COM
+							IMA/CZO		11/06/2019	MAJ traitement WCB
+							IMA/CZO		25/07/2019	Ajout du menu dynamqique  ABO_DESIMLOCK
+							IMA/CZO		07/08/2019	Ajout des traitements BEB_MOB_RET_COM et BEB_MOB_COM
+							IMA/CZO		04/10/2019	Ajout des positions flahs (refonte flash abo)+ refonte menu ADMIN
+							IMA/CZO		12/11/2020	Menage traitement BEB_MOB_RET_COM
+							IMA/CZO		06/09/2021	Integration CTRL HOHNO dans le traitement BEB_MOB
+							IMA/CZO		10/03/2023	Refonte abo lot1: MAJ balises
+							IMA/CZO		23/05/2023	Ajout des filtres C2OL (CONV/RISQUE)
+							IMA/CZO		20/02/2024	Integration du traitement LN-COM
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_MENU_ADMIN.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+        
+    <!--######################################################
+         CTRL HOHNO
+    ###################################################### -->       
+    <form id="CtrlHoHnoCom">
+    	<script><![CDATA[ formCourant = "CtrlHoHnoCom"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	
+        <block>
+          
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	            
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_COM_HO');
+	            	POSITION_ARBO = 3;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>	            
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_COM_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form> 
+    
+    
+    <!--###########################################
+         CTRL BEB_MOB
+    ########################################### -->
+  
+    <form id="VERS_CTRL_BEB_MOB">
+    	<script><![CDATA[ formCourant = "VERS_CTRL_BEB_MOB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--FILTRE BEB_MOB_COM actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_COM != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_MOB_COM != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_COM != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_BEB_MOB"); ]]></script>
+	            <goto next="#CTRL_BEB_MOB"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_BEB_COM_OFF'); 					
+	            ]]></script>                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+	            <goto next="#BEB_MOB_KO"/>
+	       	</if>
+	       		                                   
+        </block>
+    </form>
+        
+    <form id="CTRL_BEB_MOB">
+        <script><![CDATA[ formCourant = "CTRL_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- CTRL ELIGIBILITE BEB_MOB_COM -->           
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_MOB_COM()  "); ]]></script>
+            <if cond=" isBEB_MOB_COM()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_MOB_COM() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '33000_ADMIN_BEB_COM_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité BEB_MOB COM	-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_COM_OPEN =='true'  "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_MOB -->
+	                <script><![CDATA[
+			            BEB_MOB_ORIGINE ='BEB_MOB_CO_ADMIN';
+			            customNode(applicationName + '_' + '33000_ADMIN_BEB_COM_HO');
+		            	POSITION_ARBO = 39;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>	                	            
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/>	
+	                             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '33000_ADMIN_BEB_COM_HNO');
+		            ]]></script>    	                
+		            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+		            <goto next="#BEB_MOB_KO"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_BEB_COM_NOK');		            										
+           		 ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_KO"); ]]></script>
+	            <goto next="#BEB_MOB_KO"/>             
+   
+            </if>            
+
+        </block>
+    </form> 
+
+	<!--###########################################
+        BEB_MOB COM KO
+    ########################################### -->           
+    <form id="BEB_MOB_KO">
+        <script><![CDATA[ formCourant = "BEB_MOB_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+            	POSITION_ARBO = 20;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);						
+            ]]></script> 
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>	
+
+        </block>
+    </form>     
+    
+	<!--###########################################
+         Vers parcours BEB_MOB
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_MOB">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				var nextAPP ="../../../beb_mob/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_MOB -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>
+    
+	<!--###########################################
+         CTRL WCB
+    ########################################### -->            
+    
+    <form id="FiltreWCBDIGITAL_AVANT_TRF_ADMIN">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL_AVANT_TRF_ADMIN"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '01' "); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "transfert_AUTRE_WCB"); ]]></script>
+                <goto next="#transfert_AUTRE_WCB"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN');
+	            	POSITION_ARBO = 10;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);							
+                ]]></script>  
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>   
+	                                      	               
+            </if>
+        </block>
+    </form>
+    
+    
+    <!--###########################################################
+                CTRL AB_TEST
+        ########################################################### -->    
+    <form id="CTRL_AB_TEST">  
+        <script><![CDATA[ formCourant = "CTRL_AB_TEST"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- MENU AB_TEST diffuse dans le parcours -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG =='1'"); ]]></script>
+            <if cond="AB_TEST_PARCOURS_ELIG =='1' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "AB_TEST_PARCOURS_ELIG =='1'"); ]]></script>  
+            	<!-- TRF vers ELIGIBILITE LN_CO -->          	
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_LN_CO_ELIGIBILITE.vxml"); ]]></script>
+                <goto next="./ABO_LN_CO_ELIGIBILITE.vxml"/>	                         	           
+
+                	            
+			<!--	Suite traitement		-->	            
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "transfert_AUTRE"); ]]></script>
+	            <goto next="#transfert_AUTRE"/>    
+          
+            </if>
+            
+        </block>
+    </form>         
+
+	<!--###########################################
+         Transfert
+    ########################################### -->      
+    <form id="transfert_AUTRE">
+    	<script><![CDATA[ formCourant = "transfert_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	CONV RISQUE  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV_RISQUE == 'true' &amp;&amp; MOBILE_CONV_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_FCT_CONV_RISQUE');
+					ID_FLUX='ABO_FCT_CONV_RISQUE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!--	CONV NON RISQUE  -->
+            <elseif cond="CUSTOMER_IHM.C2OL_CONV == 'true' &amp;&amp; MOBILE_CONV_NON_RISQUE =='true' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_CONV == 'true' &amp;&amp; MOBILE_CONV_NON_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_FCT_CONV');
+					ID_FLUX='ABO_FCT_CONV';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!--	NON_CONV  RISQUE  -->
+            <elseif cond="CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.C2OL_RISQUE == 'true' &amp;&amp; MOBILE_NON_CONV_RISQUE =='true' "); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_RISQUE');
+					ID_FLUX='ABO_FCT_RISQUE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+
+                <!--	AUTRE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_AUTRE');
+					ID_FLUX='ABO_FCT';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>
+            </if>
+        </block>
+    </form>
+
+    <!--################################################################
+               Transfert ADMIN - WCB
+        ############################################################### -->
+
+     <form id="transfert_AUTRE_WCB">
+    	<script><![CDATA[ formCourant = "transfert_AUTRE_WCB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>       
+            <script><![CDATA[
+				customNode(applicationName + '_' + '33000_WCB_ADMIN_FCT_ABO');
+				POSITION_ARBO = 44;
+				ID_FLUX='ABO_WCB_FCT_ABO';
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>
+                        
+        </block>
+    </form>
+    
+    <form id="Transfert">
+    	<script><![CDATA[ formCourant = "Transfert"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form> 
+    
+    
+    <!--###########################################
+         ENTREE à partir de ELIGIBILITY_LN_CO KO
+    ########################################### -->
+    <!--	ENTREE  à partir de LN -->
+    <form id="ENTREE_ELIGIBILITE_LN_COM_KO">
+        <script><![CDATA[ formCourant = "ENTREE_ELIGIBILITE_LN_COM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "transfert_AUTRE"); ]]></script>
+            <goto next="#transfert_AUTRE"/>
+        </block>
+    </form>         
+
+</vxml>

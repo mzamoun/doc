@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA/CZO
+        Date de Creation :	16/06/2020
+        Page :				Application FIXE - RESILIE
+        Modification		IMA/CZO	25/08/2020		Prise en charge des clients resilies ; reconnu sur DEXTER sans lignes (offres)
+        					IMA/CZO 27/09/2024		MAJ traitement  RESILIE (nouvelles definitions DEXTER +  suppression definition search resilie)		
+                            MZA     03/10/2024      add hohno et filtre_rdgu				
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_RESILIE.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="0"/>
+
+    <!--######################################################
+         CTRL HOHNO
+    ###################################################### -->       
+    <form id="CtrlHoHnoCom">
+    	<script><![CDATA[ formCourant = "CtrlHoHnoCom"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	
+        <block>
+          
+            <!--	SOUS APPLI ABO_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " CUSTOMER_HOHNO.ABO_COM_IS_OPEN =='true' "); ]]></script>	            
+	            
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+	            <goto next="#Filtre_RDGU"/>             
+
+            <!--	ABO_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '33000_ADMIN_COM_HNO');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_HNO_COM.vxml"); ]]></script>
+                <goto next="./ABO_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form> 
+
+    <!--CTRL filtre RDGU -->   
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00202_RDGU_RESILIE_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "RESILIE_GP"); ]]></script>
+	            <goto next="#RESILIE_GP"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="appel_rdgu == 'true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "appel_rdgu == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00202_RDGU_RESILIE_OK');
+                ]]></script> 
+                								
+		        <prompt bargein="true">
+		             <audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.ABO_SUSPENSION_RDGU_SUSPENDU_AUDIO)"/>
+		        </prompt> 
+		                         
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00072_SUSP_RDGU');
+                ]]></script>                 
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Choix_Transfert"); ]]></script>
+	            <goto next="#Choix_Transfert"/>                  
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00202_RDGU_RESILIE_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "ENTREE_FIXE_RESILIE"); ]]></script>
+	            <goto next="#ENTREE_FIXE_RESILIE"/>                
+            </if>                                   
+                                         
+        </block>
+    </form>    
+
+    <!--  -->
+
+    <form id="ENTREE_FIXE_RESILIE">
+        <script><![CDATA[ formCourant = "ENTREE_FIXE_RESILIE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+	            customNode(applicationName + '_' + '00032_RESILIE_DEXTER');
+				POSITION_ARBO = 52;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>
+            
+        </block>
+    </form> 
+    
+        
+    <form id="CTRL_FILTRE_RESILIE_SANS_OFFRES">
+        <script><![CDATA[ formCourant = "CTRL_FILTRE_RESILIE_SANS_OFFRES"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- RESILIE DEXTER SANS OFFRES-->            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientResilieFixeSansOffre()"); ]]></script>
+            <if cond="isClientResilieFixeSansOffre() ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientResilieFixeSansOffre() "); ]]></script>		               
+	                <script><![CDATA[
+			            customNode(applicationName + '_' + '00032_RESILIE_DEXTER_AUTRE');
+						POSITION_ARBO = 64;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./FIXE_FLASH_INC.vxml"/>		            	                               
+	         
+			<!-- Autres cas RESILIE DEXTER--> 		                   
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '00032_MENU_RESILIE_DEXTER');
+					POSITION_ARBO = 193;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/> 
+	
+            </if>
+
+        </block>
+    </form> 
+
+
+    
+    <form id="SUITE_TRT_RESIL_SANS_OFFRES">
+        <script><![CDATA[ formCourant = "SUITE_TRT_RESIL_SANS_OFFRES"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <script><![CDATA[ log_debug_next_form(pageCourante, "RESILIE_AUTRE"); ]]></script>
+	        <goto next="#RESILIE_AUTRE"/>
+
+        </block>
+    </form>  
+    
+    <form id="SUITE_TRT_RESIL">
+        <script><![CDATA[ formCourant = "SUITE_TRT_RESIL"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <script><![CDATA[ log_debug_next_form(pageCourante, "MENU_RESILIE"); ]]></script>
+	        <goto next="#MENU_RESILIE"/>
+
+        </block>
+    </form>   
+    
+        
+
+    
+                        
+    <!--#####################################################################################################
+        MENU RESILIE
+        ##################################################################################################### -->    
+    <menu id="MENU_RESILIE">
+    	<script><![CDATA[ formCourant = "MENU_RESILIE"; ]]></script>
+    	<script><![CDATA[ menuCourant = formCourant; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="3s"/>
+        <prompt bargein="true">
+            <audio expr="PlayFile('MENU_RESILIE')"/>
+        </prompt>
+
+        <catch event="noinput nomatch" cond="document.errorCounter &lt; 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+            <assign name="document.errorCounter" expr="document.errorCounter + 1"/>
+            <script><![CDATA[ log_debug_assignment(pageCourante,"document.errorCounter", document.errorCounter); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName +'_00902_RESILIE_NMNI');  
+            ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE_NOUVEAU')"/>
+            </prompt>
+            <reprompt/>
+        </catch>
+
+        <catch event="noinput nomatch" cond="document.errorCounter == 1">
+        	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "noinput_nomatch"); ]]></script> 
+        	<script><![CDATA[ track_dtmfList (formCourant,"NMNI2"); ]]></script>
+            <prompt>
+                <audio expr="PlayGenericAudio('ERREUR_SAISIE')"/>
+            </prompt>
+            <script><![CDATA[
+				customNode(applicationName +'_00902_RESILIE_NMNI2');  
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </catch>
+
+        <choice dtmf="1" next="#RESILIE_PCB"/>
+        <choice dtmf="2" next="#VERS_RESILIE_AUTRE"/>
+    </menu>
+
+    <form id="RESILIE_PCB">
+    	<script><![CDATA[ formCourant = "RESILIE_PCB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "1"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "1"); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00102_RESILIE_PCB');
+				POSITION_ARBO = 51;
+				ID_FLUX='SVI_PAIEMENT';					
+				log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>                       
+                      
+        </block>
+    </form>
+
+    <form id="VERS_RESILIE_AUTRE">
+    	<script><![CDATA[ formCourant = "VERS_RESILIE_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+    	<script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant, formCourant + ":CHOIX", "2"); ]]></script> 
+    	<script><![CDATA[ track_dtmfList (menuCourant, "2"); ]]></script>
+        <block>            
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00202_RESILIE_AUTRE');
+            ]]></script>
+            
+            <script><![CDATA[ log_debug_next_form(pageCourante, "RESILIE_AUTRE"); ]]></script>
+            <goto next="#RESILIE_AUTRE"/>                           
+                        
+        </block>
+    </form>
+        
+    <form id="RESILIE_AUTRE">
+    	<script><![CDATA[ formCourant = "RESILIE_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>            
+        <block>            
+            <!--	SOUS APPLI FIXE_COM HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_COM_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" FIXE_COM_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_COM_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+	            	customNode(applicationName + '_' + '00202_RESILIE_HO_COM');
+					ID_FLUX='FIXE_RESILIE_AUTRE';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+					POSITION_ARBO = 49;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+  	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>  
+
+            <!--	FIXE_COM HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00202_RESILIE_HNO_COM');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_COM.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_COM.vxml"/>
+
+            </if>             
+        </block>
+    </form>
+
+</vxml>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :
+        Date de Creation :	01/12/2012
+        Page :				Application ABO - ABO_PREMIUM_TECH
+        Modification        IMA		10/05/2013	Intégration des appels en provenance de RDGU
+                            CKO		18/02/2014		Modification des noms des flux de transfert : ABO_...
+                            IMA		01/04/2015		Suppression des messages flash Desimlock
+                            IMA/CZO	09/12/2016		Refonte traitements PRO: MAJ des traitements premium (ancien PRO, JOYA et collab)
+							MRO		08/03/2018		migration v8
+							EISI	09/11/2018		MAJ du traitement PREMIUM - Ajout du traitement du marker CELL_PREM
+							EISI	15/01/2019		MAJ du traitement PREMIUM - PLATINE + inetgartion ctrl HOHNO specifique
+							IMA/CZO	20/03/2019		Traitement PACKPRO
+							IMA/CZO	25/07/2019		Ajout du menu dynamqique  ABO_DESIMLOCK
+							IMA/CZO	07/08/2019		Ajout des traitements BEB_MOB_TECH
+							IMA/CZO	03/10/2019		MAJ PREMIUM TECHNIQUE + Ajout des positions flahs (refonte flash abo)
+							IMA/CZO	12/11/2020		Menage packpro
+							IMA/CZO	06/09/2021		Integration CTRL HOHNO dans le traitement BEB_MOB
+							IMA/CZO	24/02/2022		Menage du filtre RDGU
+							IMA/CZO	10/03/2023		Refonte abo lot1:  MAJ balises
+    -->
+    <script><![CDATA[
+		applicationName = "ABO"; appSvi = applicationName;
+		var pageCourante = "ABO_PREMIUM_TECH.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+        
+    
+    <!--###########################################
+         CTRL BEB_MOB TECH PREMIUM
+    ########################################### -->
+  
+    <form id="VERS_PREMIUM_TECH_CTRL_BEB_MOB">
+    	<script><![CDATA[ formCourant = "VERS_PREMIUM_TECH_CTRL_BEB_MOB"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--FILTRE BEB_MOB_TECH actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_TECH != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_MOB_TECH != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_MOB_TECH != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "PREMIUM_TECH_CTRL_BEB_MOB"); ]]></script>
+	            <goto next="#PREMIUM_TECH_CTRL_BEB_MOB"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_BEB_TECH_PREMIUM_OFF'); 					
+	            ]]></script>                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_TECH_PREMIUM_KO"); ]]></script>
+	            <goto next="#BEB_MOB_TECH_PREMIUM_KO"/>
+	       	</if>
+	       		                                   
+        </block>
+    </form>
+        
+    <form id="PREMIUM_TECH_CTRL_BEB_MOB">
+        <script><![CDATA[ formCourant = "PREMIUM_TECH_CTRL_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- CTRL ELIGIBILITE BEB_MOB_TECH -->           
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_MOB_TECH()  "); ]]></script>
+            <if cond=" isBEB_MOB_TECH()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_MOB_TECH() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '20000_BEB_TECH_PREMIUM_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité BEB_MOB TECH	-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN &amp;&amp; CUSTOMER_BEB_MOB.BEB_MOB_TECH_OPEN =='true'  "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_MOB -->
+	                <script><![CDATA[
+			            BEB_MOB_ORIGINE ='BEB_MOB_TECH_PREMIUM';
+			            customNode(applicationName + '_' + '20000_BEB_TECH_PREMIUM_HO');
+		            	POSITION_ARBO = 80;
+						log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				            
+	                ]]></script>
+		            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+		            <goto next="./ABO_FLASH_INC.vxml"/>	
+	                             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '20000_BEB_TECH_PREMIUM_HNO');
+		            ]]></script>    	                
+		            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_TECH_PREMIUM_KO"); ]]></script>
+		            <goto next="#BEB_MOB_TECH_PREMIUM_KO"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_BEB_TECH_PREMIUM_NOK');		            										
+           		 ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_MOB_TECH_PREMIUM_KO"); ]]></script>
+	            <goto next="#BEB_MOB_TECH_PREMIUM_KO"/>             
+   
+            </if>            
+
+        </block>
+    </form> 
+
+	<!--###########################################
+        BEB_MOB COM_TECH PREMIUM KO
+    ########################################### -->           
+    <form id="BEB_MOB_TECH_PREMIUM_KO">
+        <script><![CDATA[ formCourant = "BEB_MOB_TECH_PREMIUM_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+            	POSITION_ARBO = 22;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);					
+            ]]></script>  
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+            <goto next="./ABO_FLASH_INC.vxml"/>  
+
+        </block>
+    </form>        
+    
+	<!--###########################################
+         Vers parcours BEB_MOB
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_MOB">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_MOB"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				var nextAPP ="../../../beb_mob/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_MOB -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form>     
+    
+    
+	<!--###########################################
+         Transfert
+    ########################################### -->  
+        
+    <form id="FiltreWCBDIGITAL_AVANT_TRF_PREMIUM_TECH">
+    	<script><![CDATA[ formCourant = "FiltreWCBDIGITAL_AVANT_TRF_PREMIUM_TECH"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '02' "); ]]></script>	
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '02' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital =='MOBILE' &amp;&amp; wcb_digital_codeMotif == '02' "); ]]></script>	
+				<script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_PREMIUM_TECH_PRIMO');
+					POSITION_ARBO = 40;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+				]]></script>
+				<script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+				<goto next="./ABO_FLASH_INC.vxml"/>
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '20000_PREMIUM_TECH_PRIMO');
+	            	POSITION_ARBO = 26;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./ABO_FLASH_INC.vxml"/>
+            </if>
+        </block>
+    </form> 
+        
+    
+    <form id="transfert_AUTRE">
+    	<script><![CDATA[ formCourant = "transfert_AUTRE"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	PREMIUM PACKPRO -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true'"); ]]></script>	            
+            <if cond="MOBILE_PACKPRO == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " MOBILE_PACKPRO == 'true' "); ]]></script>           	            
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_FTT_PACKPRO');
+					ID_FLUX='ABO_FTT_PACKPRO';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                 
+            
+            <!--	PREMIUM FIDE  autre que PLATINE --> 
+            <elseif cond="MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true' "); ]]></script>            	            
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_FTT_PREMIUM_FIDE');
+					ID_FLUX='ABO_FTT_PREMIUM_FIDE';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                
+			<!--	PREMIUM -AUTRE  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_FTT_PREMIUM');
+					ID_FLUX='ABO_FTT_PREMIUM';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>       
+                
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form>    
+
+    
+    <!--	transfert appel en provenance de WCB_DIGITAL - motif 02		-->
+
+    <form id="transfert_WCB_TECH">
+    	<script><![CDATA[ formCourant = "transfert_WCB_TECH"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>           
+            <!--	PREMIUM PACKPRO -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true'"); ]]></script>	            
+            <if cond="MOBILE_PACKPRO == 'true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_PACKPRO == 'true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_FTT_PACKPRO');
+					ID_FLUX='ABO_WCB_FTT_PACKPRO';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>  
+                
+           <!--	PREMIUM FIDE  autre que Platine --> 
+            <elseif cond="MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true'"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "MOBILE_CELL_PREM_FIDE == 'true' &amp;&amp; MOBILE_CELL_PREM_PLATINE !='true' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_FTT_PREMIUM_FIDE');
+					ID_FLUX='ABO_WCB_FTT_PREMIUM_FIDE';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>                              
+
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20000_WCB_FTT_PREMIUM');
+					ID_FLUX='ABO_WCB_FTT_PREMIUM';	
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+            </if>
+
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./ABO_TRANSFERT.vxml"); ]]></script>
+            <goto next="./ABO_TRANSFERT.vxml"/>
+        </block>
+    </form> 
+        
+</vxml>

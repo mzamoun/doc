@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :				IMA/CZO
+        Date de Creation :		22/12/2022
+        Page :                  Application FIXE - FIXE_REBOOT_BOX -appel au WS reboot BOX
+        Modification
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_REBOOT_BOX.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <!--########################################################################
+         Ctrl filtre REBOOT_BOX
+    ######################################################################## -->
+
+    <form id="CTRL_ELIGIBILITE_REBOOT_BOX">
+        <script><![CDATA[ formCourant = "CTRL_ELIGIBILITE_REBOOT_BOX"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20046_REBOOT_BOX');
+            ]]></script>
+
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isBoxEligibleReboot() "); ]]></script>
+            <if cond="isBoxEligibleReboot() ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxEligibleReboot()"); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20046_ELIGIBILITE_REBOOT_BOX_OUI');
+					POSITION_ARBO = 179;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '20046_ELIGIBILITE_REBOOT_BOX_NON');			
+					POSITION_ARBO = 180;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	            <goto next="./FIXE_FLASH_INC.vxml"/>          
+
+            </if>
+
+        </block>
+    </form>
+    
+    <form id="ELIGIBILITE_REBOOT_BOX_NON">
+        <script><![CDATA[ formCourant = "ELIGIBILITE_REBOOT_BOX_NON"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_REBOOT_ELIGIBILTE_BOX_NON_AUDIO)"/>
+	        </prompt>	        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+            <goto next="#VERS_MENU_TECHNIQUE_CC"/>
+
+        </block>
+    </form>    
+    
+    <!--###########################################
+                Menu CHOIX REBOOT_BOX
+        ########################################### -->        
+    <form id="VERS_MENU_CHOIX_REBOOT_BOX">
+        <script><![CDATA[ formCourant = "VERS_MENU_CHOIX_REBOOT_BOX"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>            
+            <!-- filtre choix ETOILE activé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_REBOOT_BOX_ETOILE == 'true'"); ]]></script>
+            <if cond="CUSTOMER_IHM.CHOIX_REBOOT_BOX_ETOILE == 'true'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.CHOIX_REBOOT_BOX_ETOILE == 'true'"); ]]></script>
+				<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REBOOT_BOX_INVERSE"); ]]></script>
+				<goto next="#MENU_REBOOT_BOX_INVERSE"/>
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+				<script><![CDATA[ log_debug_next_form(pageCourante, "MENU_REBOOT_BOX"); ]]></script>
+				<goto next="#MENU_REBOOT_BOX"/>
+
+            </if>
+        </block>
+    </form>
+            
+    <menu id="MENU_REBOOT_BOX">
+        <script><![CDATA[ formCourant = "MENU_REBOOT_BOX"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+        <prompt bargein="true">
+    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_CHOIX_REBOOT_BOX_AUDIO)"/>
+        </prompt>         
+
+        <catch event="noinput nomatch">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+			<script><![CDATA[ log_debug_next_form(pageCourante, "CHOIX_REBOOT_BOX_OUI"); ]]></script>
+			<goto next="#CHOIX_REBOOT_BOX_OUI"/>
+        </catch>
+
+        <choice dtmf="*" next="#CHOIX_REBOOT_BOX_NON"/>
+
+    </menu> 
+    
+    
+    <menu id="MENU_REBOOT_BOX_INVERSE">
+        <script><![CDATA[ formCourant = "MENU_REBOOT_BOX_INVERSE"; ]]></script>
+        <script><![CDATA[ menuCourant = formCourant; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <property name="timeout" value="5s"/>
+        <prompt bargein="true">
+    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_CHOIX_REBOOT_BOX_AUDIO)"/>
+        </prompt>         
+
+        <catch event="noinput nomatch">
+            <script><![CDATA[ log_debug_saisie_dtmf(pageCourante, "CHOIX " + formCourant + ", " + formCourant + ":CHOIX", "noinput_nomatch"); ]]></script>
+            <script><![CDATA[ track_dtmfList (formCourant,"NMNI"); ]]></script>
+			<script><![CDATA[ log_debug_next_form(pageCourante, "CHOIX_REBOOT_BOX_NON"); ]]></script>
+			<goto next="#CHOIX_REBOOT_BOX_NON"/>
+        </catch>
+
+        <choice dtmf="*" next="#CHOIX_REBOOT_BOX_OUI"/>
+
+    </menu>           
+    
+    <!--###########################################
+        CHOIX REBOOT_BOX_OUI
+    ########################################### -->
+    <form id="CHOIX_REBOOT_BOX_OUI">
+        <script><![CDATA[ formCourant = "CHOIX_REBOOT_BOX_OUI"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>	        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_TRAITEMENT_REBOOT_BOX_OUI"); ]]></script>
+            <goto next="#VERS_TRAITEMENT_REBOOT_BOX_OUI"/>
+
+        </block>
+    </form>
+    
+    <!--###########################################
+        CHOIX REBOOT_BOX_NON
+    ########################################### -->
+    <form id="CHOIX_REBOOT_BOX_NON">
+        <script><![CDATA[ formCourant = "CHOIX_REBOOT_BOX_NON"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20046_REBOOT_BOX_NON'+ '_' + CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL);			
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_TRAITEMENT_REBOOT_BOX_NON"); ]]></script>
+            <goto next="#VERS_TRAITEMENT_REBOOT_BOX_NON"/>
+
+        </block>
+    </form>
+            
+    
+    
+    
+    <!--###########################################
+        REBOOT_BOX_OUI
+    ########################################### -->
+    <form id="VERS_TRAITEMENT_REBOOT_BOX_OUI">
+        <script><![CDATA[ formCourant = "VERS_TRAITEMENT_REBOOT_BOX_OUI"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!-- filtre actif-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.REBOOT_MODEM != 'false'"); ]]></script>
+            <if cond="CUSTOMER_IHM.REBOOT_MODEM != 'false'">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.REBOOT_MODEM != 'false'"); ]]></script>
+				<script><![CDATA[ log_debug_next_form(pageCourante, "APPEL_WS_REBOOT_MODEM"); ]]></script>
+				<goto next="#APPEL_WS_REBOOT_MODEM"/>
+
+                <!-- filtre descative-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+				<script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_REBOOT_BOX_OUI_KO"); ]]></script>
+				<goto next="#AFTER_REBOOT_BOX_OUI_KO"/>
+
+            </if>        
+
+        </block>
+    </form>
+    
+    <!--###########################################
+         APPEL WS REBOOT_MODEM
+    ########################################### -->
+
+    <form id="APPEL_WS_REBOOT_MODEM">
+        <script><![CDATA[ formCourant = "APPEL_WS_REBOOT_MODEM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <script><![CDATA[
+			var iadModel = CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL;
+			var ip = CUSTOMER_BOX_STATUS_MODEM.IP_ADDRESSE;
+			var serial = CUSTOMER_BOX_STATUS_MODEM.SERIAL;	    
+        ]]></script>
+        <script><![CDATA[ log_debug_appel_web_app(pageCourante, 'WS_BOX_REBOOT_MODEM', subdialogWS_BOX_REBOOT_MODEM , 'iadModel=' + iadModel +'|ip=' + ip +'|serial=' + serial ); ]]></script>
+        <subdialog name="WS_BOX_REBOOT_MODEM"
+                   srcexpr="subdialogWS_BOX_REBOOT_MODEM"
+                   namelist="iadModel ip serial"
+                   method="get"
+                   fetchtimeout="10s"
+                   fetchaudio="../../../audio/Attente.wav"/>
+
+        <catch event="error">
+            <script><![CDATA[ log_error_parcours(pageCourante, formCourant + "_catch_error_HS", _event, _message); ]]></script>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '80000_REBOOT_BOX_HS');
+            ]]></script>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_REBOOT_BOX_OUI_KO"); ]]></script>
+            <goto next="#AFTER_REBOOT_BOX_OUI_KO"/>
+        </catch>
+
+        <block>
+            <script><![CDATA[ log_debug_result_web_app(pageCourante, 'WS_BOX_REBOOT_MODEM', WS_BOX_REBOOT_MODEM ); ]]></script>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " WS_BOX_REBOOT_MODEM.APP_STATUS == 'NOK' || WS_BOX_REBOOT_MODEM.WS_REBOOT_MODEM_STATUS == 'NOK' "); ]]></script>
+            <if cond=" WS_BOX_REBOOT_MODEM.APP_STATUS == 'NOK' || WS_BOX_REBOOT_MODEM.WS_REBOOT_MODEM_STATUS == 'NOK' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " WS_BOX_REBOOT_MODEM.APP_STATUS == 'NOK' || WS_BOX_REBOOT_MODEM.WS_REBOOT_MODEM_STATUS == 'NOK' "); ]]></script>
+                <script><![CDATA[ log_appel_web_app_nok(pageCourante, 'WS_BOX_REBOOT_MODEM', subdialogWS_BOX_REBOOT_MODEM , 'iadModel=' + iadModel +'|ip=' + ip +'|serial=' + serial); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '80000_REBOOT_BOX_HS');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_REBOOT_BOX_OUI_KO"); ]]></script>
+                <goto next="#AFTER_REBOOT_BOX_OUI_KO"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <assign name="CUSTOMER_REBOOT_MODEM" expr="WS_BOX_REBOOT_MODEM"/>
+                <script><![CDATA[ log_debug_assignment(pageCourante,"CUSTOMER_REBOOT_MODEM", CUSTOMER_REBOOT_MODEM); ]]></script>             
+
+            </if>
+            
+      		<!--	reboot modem OK-->	
+			<script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isBoxReboot_OK() "); ]]></script>	
+			<if cond="isBoxReboot_OK() ">     
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isBoxReboot_OK() "); ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_REBOOT_BOX_OUI_OK"); ]]></script>
+                <goto next="#AFTER_REBOOT_BOX_OUI_OK"/> 
+	            								            				
+			<!--	reboot modem KO-->									
+			<else />
+				<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+
+                <script><![CDATA[ log_debug_next_form(pageCourante, "AFTER_REBOOT_BOX_OUI_KO"); ]]></script>
+                <goto next="#AFTER_REBOOT_BOX_OUI_KO"/> 
+            </if>             
+
+        </block>
+    </form>    
+        
+    <form id="AFTER_REBOOT_BOX_OUI_OK">
+        <script><![CDATA[ formCourant = "AFTER_REBOOT_BOX_OUI_OK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_REBOOT_BOX_OUI_AUDIO)"/>
+	        </prompt>	        
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20046_REBOOT_BOX_OUI'+ '_' + CUSTOMER_BOX_STATUS_MODEM.IAD_MODEL );	
+				POSITION_ARBO = 184;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+        </block>
+    </form>
+    
+    <form id="AFTER_REBOOT_BOX_OUI_KO">
+        <script><![CDATA[ formCourant = "AFTER_REBOOT_BOX_OUI_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>        
+            <script><![CDATA[
+				customNode(applicationName + '_' + '20046_REBOOT_BOX_KO');	
+				POSITION_ARBO = 182;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/> 
+
+        </block>
+    </form>    
+    
+        
+    <!--###########################################
+        REBOOT_BOX_NON
+    ########################################### -->
+    <form id="VERS_TRAITEMENT_REBOOT_BOX_NON">
+        <script><![CDATA[ formCourant = "VERS_TRAITEMENT_REBOOT_BOX_NON"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[
+				POSITION_ARBO = 183;
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);				
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/> 
+        </block>
+    </form>
+        
+    <form id="TRAITEMENT_REBOOT_BOX_NON">
+        <script><![CDATA[ formCourant = "TRAITEMENT_REBOOT_BOX_NON"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+	        <prompt bargein="true">
+	    		<audio maxage="7200" maxstale="7200" expr="PlayFileCommun(CUSTOMER_IHM.FIXE_PREDIAG_REBOOT_BOX_NON_AUDIO)"/>
+	        </prompt>	        
+            <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_MENU_TECHNIQUE_CC"); ]]></script>
+            <goto next="#VERS_MENU_TECHNIQUE_CC"/>
+
+        </block>
+    </form>
+    
+    
+    <!--#################################################################################################
+         Vers MENU TECH CC
+    ################################################################################################# -->
+    <form id="VERS_MENU_TECHNIQUE_CC">
+        <script><![CDATA[ formCourant = "VERS_MENU_TECHNIQUE_CC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TECHNIQUE.vxml#RETOUR_ELIG_PREDIAG_SUSPICION_IG"); ]]></script>
+            <goto next="./FIXE_TECHNIQUE.vxml#RETOUR_ELIG_PREDIAG_SUSPICION_IG"/>
+            
+        </block>
+    </form>     
+
+
+    <form id="QUIT">
+        <script><![CDATA[ formCourant = "QUIT"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, pageDisconnect); ]]></script>
+            <goto expr="pageDisconnect"/>
+        </block>
+    </form>
+
+</vxml>

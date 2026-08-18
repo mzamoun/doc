@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml" application="../../../root.vxml" xml:lang="fr-FR">
+
+    <!--
+        Auteur :			IMA
+        Date de Creation :	25/08/2020
+        Page :				Application FIXE - ACTIVATION
+        Modification: 		IMA/CZO		25/08/2020		   Creation nouvelle page à partir du traitement FIXE_ACTIVATION
+        					IMA/CZO		06/05/2021		   Suppression des traitements ARAMIS + INCIDENT(ODIN)
+        					IMA/CZO		05/10/2021		   Integration du traitement BEB_FIXE_ANC
+
+    -->
+    <script><![CDATA[
+		applicationName = "FIXE"; appSvi = applicationName;
+		var pageCourante = "FIXE_ACTIVATION.vxml";
+		log_info_start_page(pageCourante);
+		var pageDisconnect = "./" + applicationName + "_DISCONNECT.vxml";
+		var pageTransfert = "./" + applicationName + "_TRANSFERT.vxml";
+		var formCourant, menuCourant;
+    ]]></script>
+
+    <var name="errorCounter" expr="1"/>
+
+    <script><![CDATA[
+    	POSITION_ARBO = 1;
+   		applicationName = "FIXE";
+    ]]></script>
+
+
+    <!--###########################################
+        Gestion des différents cas client
+    ########################################### -->
+
+    <!--###########################################
+        Traitement ACTIVATION
+    ########################################### -->       
+    <form id="FiltreActivation">
+        <script><![CDATA[ formCourant = "FiltreActivation"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--	SOUS APPLI FIXE_ANC HO  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " FIXE_ANC_IS_OPEN =='true' "); ]]></script>	
+            <if cond=" FIXE_ANC_IS_OPEN =='true' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " FIXE_ANC_IS_OPEN =='true' "); ]]></script>	
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_HO_ANC');
+	            ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "Filtre_RDGU"); ]]></script>
+	            <goto next="#Filtre_RDGU"/>  
+
+            <!--	FIXE_ANC HNO  -->
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_HNO_ANC');
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_HNO_ANC.vxml"); ]]></script>
+                <goto next="./FIXE_HNO_ANC.vxml"/>
+
+            </if> 
+        </block>
+    </form>
+    
+    <!--###########################################
+                FILTRE RDGU
+        ########################################### -->       
+    <form id="Filtre_RDGU">
+    	<script><![CDATA[ formCourant = "Filtre_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!--	Filtre RDGU desactive -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false'"); ]]></script>	            
+            <if cond="CUSTOMER_IHM.RDGU == 'false' ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.RDGU == 'false' "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_OFF');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "SUITE_APPEL_NON_RDGU"); ]]></script>
+	            <goto next="#SUITE_APPEL_NON_RDGU"/>                
+                  
+                
+           <!--	Appel en provenance de RDGU  -->
+            <elseif cond="is_provenance_rdgu()"/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "is_provenance_rdgu() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_OK');
+                ]]></script> 
+                
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "SUITE_APPEL_RDGU"); ]]></script>
+	            <goto next="#SUITE_APPEL_RDGU"/>                 
+                                                                
+               
+            <else/>
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>	
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_NOK');
+                ]]></script>
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "SUITE_APPEL_NON_RDGU"); ]]></script>
+	            <goto next="#SUITE_APPEL_NON_RDGU"/>                
+            </if>                                   
+                                         
+        </block>
+    </form> 
+    
+    
+    <form id="SUITE_APPEL_RDGU">
+    	<script><![CDATA[ formCourant = "SUITE_APPEL_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <!-- Client RDGU -  FTTB - APPORTEUR= MIG_NC	-->                
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>
+            <if cond="isClientFixeMIG_NC() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>                                                                    
+            
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_FTTB_MIG');
+					ID_FLUX='ACTIV_RDGU_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+            <!-- Client RDGU  - FTTB -->
+            <elseif cond="isClientFixeFTTB()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_FTTB');
+					ID_FLUX='ACTIV_RDGU_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+                <!-- Client RDGU  - FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_RDGU_FTTH');
+					ID_FLUX='ACTIV_RDGU_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+                <!-- Client RDGU  - AUTRE-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '00010_ACTIV_RDGU_AUTRE');
+					ID_FLUX='ACTIV_RDGU_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+            </if>                           
+                                         
+        </block>
+    </form> 
+    
+        
+    <form id="SUITE_APPEL_NON_RDGU">
+    	<script><![CDATA[ formCourant = "SUITE_APPEL_NON_RDGU"; ]]></script>
+    	<script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				customNode(applicationName + '_' + '00010_ACTIV_RDGU_NOK');					
+            	POSITION_ARBO = 25;						
+				log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+            ]]></script>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+            <goto next="./FIXE_FLASH_INC.vxml"/>                                  
+                                         
+        </block>
+    </form>         
+    
+    <!--###########################################
+         TRAITEMENT BEB_FIXE_ANC
+    ########################################### --> 
+    <form id="VERS_CTRL_BEB_FIXE_FASTR_ANC">
+        <script><![CDATA[ formCourant = "VERS_CTRL_BEB_FIXE_FASTR_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--FILTRE BEB_FIXE_ANC actif-->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_FIXE_FASTR_ANC != 'false' "); ]]></script>               	
+	            <script><![CDATA[ log_debug_next_form(pageCourante, "CTRL_BEB_FIXE_FASTR_ANC"); ]]></script>
+	            <goto next="#CTRL_BEB_FIXE_FASTR_ANC"/>
+	            	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_BEB_ANC_OFF');					
+	            ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>        
+
+            </if>
+
+        </block>
+    </form> 
+           
+    <form id="CTRL_BEB_FIXE_FASTR_ANC">
+        <script><![CDATA[ formCourant = "CTRL_BEB_FIXE_FASTR_ANC"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--ELIGIBILITE BEB_FIXE_FASTR_ANC -->
+            
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, " isBEB_FIXE_FASTR_ANC()  "); ]]></script>
+            <if cond=" isBEB_FIXE_FASTR_ANC()">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, " isBEB_FIXE_FASTR_ANC() "); ]]></script>               	
+	            <script><![CDATA[
+		            customNode(applicationName + '_' + '00010_ACTIVATION_BEB_ANC_OK');			            
+	            ]]></script>
+	            
+                <!--CTRL HO HNO de l'activité FASTR-->
+                <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true'  "); ]]></script>
+	            <if cond="CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true'  ">
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN &amp;&amp; CUSTOMER_BEB_FIXE_FASTR.BEB_FIXE_FASTR_ANC_OPEN =='true' "); ]]></script>
+	                <!--precision de l'origine de l'appel pour aiguillage sur le parcours BEB_FIXE -->
+	                <script><![CDATA[
+			            BEB_FIXE_FASTR_ORIGINE ='FIXE_ACTIVATION_BEB_FIXE_FASTR_ANC';
+			            customNode(applicationName + '_' + '00010_ACTIVATION_BEB_ANC_HO');
+		    			POSITION_ARBO = 128;
+		    			log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);			            										
+               		 ]]></script>
+	                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+	                <goto next="./FIXE_FLASH_INC.vxml"/>
+             		              		                		 	                               		 	
+	            <else/>
+	                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+		            <script><![CDATA[
+						customNode(applicationName + '_' + '00010_ACTIVATION_BEB_ANC_HNO');
+		            ]]></script>    	                
+	                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+	                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>
+	
+	            </if> 
+	             	            	                                                                    
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_BEB_ANC_NOK');							            										
+           		 ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "VERS_BEB_FIXE_FASTR_ANC_NOK"); ]]></script>
+                <goto next="#VERS_BEB_FIXE_FASTR_ANC_NOK"/>                 
+   
+            </if>
+
+        </block>
+    </form>
+    
+<!--###########################################
+         Vers parcours BEB_FIXE
+    ########################################### -->
+    <form id="Vers_Parcours_BEB_FIXE">
+        <script><![CDATA[ formCourant = "Vers_Parcours_BEB_FIXE"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+
+        <block>
+            <script><![CDATA[
+				APP_ORIGINE='BEB_FIXE';
+				var nextAPP ="../../../beb_fixe/index.vxml";
+            ]]></script>
+            <!-- Transfert vers le parcours BEB_FIXE -->
+            <script><![CDATA[ log_debug_next_page(pageCourante, nextAPP); ]]></script>
+            <goto expr="nextAPP"/>
+        </block>
+    </form> 
+    
+    
+    <!--#####################################################################################################
+        BEB_FIXE_ANC_FASTR KO
+        ##################################################################################################### -->
+    <form id="VERS_BEB_FIXE_FASTR_ANC_NOK">
+        <script><![CDATA[ formCourant = "VERS_BEB_FIXE_FASTR_ANC_NOK"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>              
+            <script><![CDATA[ log_debug_next_form(pageCourante, "BEB_ACTIVATION"); ]]></script>
+            <goto next="#BEB_ACTIVATION"/>              
+            
+        </block>
+
+    </form>     
+
+    <!-- ==================================== //-->
+    <!-- Contrôle MC_ACTIV 	//-->
+    <!-- ==================================== //-->
+    <!--Client en Beb_ACTIV  -->
+    <form id="BEB_ACTIVATION">
+        <script><![CDATA[ formCourant = "BEB_ACTIVATION"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <!--filtre MC_ACTIV desactivé-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION == 'false'  "); ]]></script>
+            <if cond="CUSTOMER_IHM.BEB_ACTIVATION == 'false'  ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION == 'false'  "); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_MC_ACTIV_OFF');
+                ]]></script>	
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="#Retour_MC_ACTIV_KO"/>
+			    
+            <!--Pre verification MC_ACTIV: filtre activé et offre ADSL ou CABLE ou THD (DEXTER) -->
+            <elseif cond="CUSTOMER_IHM.BEB_ACTIVATION != 'false' &amp;&amp; isOFFRE_ELIG_MC_ACTIV_DEXTER()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.BEB_ACTIVATION != 'false' &amp;&amp; isOFFRE_ELIG_MC_ACTIV_DEXTER() "); ]]></script>
+                <!--precision de l'origine de l'appel pour aiguilaage à partir de la page MC_ACTIV -->
+			    <script><![CDATA[
+			        FIXE_ORIGINE_MC_ACTIV ='ACTIVATION';
+			    ]]></script>
+			    <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_MC_ACTIV.vxml"); ]]></script>
+			    <goto next="./FIXE_MC_ACTIV.vxml"/>			    				               
+
+			<!--Pre verification MC_ACTIV: KO -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIVATION_MC_ACTIV_NOK');
+                ]]></script>                
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Retour_MC_ACTIV_KO"); ]]></script>
+                <goto next="#Retour_MC_ACTIV_KO"/>
+
+            </if>
+
+        </block>
+    </form>
+
+    <!-- ============================================ //-->
+    <!-- MC_ACTIV ko: suite traitement ACTIVATION 	//-->
+    <!-- ============================================ //-->
+    <form id="Retour_MC_ACTIV_KO">
+        <script><![CDATA[ formCourant = "Retour_MC_ACTIV_KO"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_form(pageCourante, "CtrlClientPremium"); ]]></script>
+            <goto next="#CtrlClientPremium"/>
+
+        </block>
+    </form>
+
+    
+    <!-- ============================================ //-->
+    <!-- CTRL CLIENT PREMIUM 	//-->
+    <!-- ============================================ //-->
+    <form id="CtrlClientPremium">
+        <script><![CDATA[ formCourant = "CtrlClientPremium"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+      
+            <!-- Client PREMIUM  -->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium()"); ]]></script>
+            <if cond="CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium()">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.PREMIUM != 'false' &amp;&amp; is_premium() "); ]]></script>                                    
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_OK');
+					POSITION_ARBO = 23;	
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+
+
+			<!-- Client GP  -->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_NOK');
+					POSITION_ARBO = 33;
+					log_debug_assignment(pageCourante, "POSITION_ARBO", POSITION_ARBO);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_FLASH_INC.vxml"); ]]></script>
+                <goto next="./FIXE_FLASH_INC.vxml"/>
+
+            </if>
+
+        </block>
+    </form>
+        
+    <!-- ============================================================ //-->
+    <!-- Traitement WCB_DIGITAL	 - retour PREMIUM et GP		 	//-->
+    <!-- ============================================================ //-->
+
+    <form id="ACTIVATION_WCB_DIGITAL_PREMIUM">
+        <script><![CDATA[ formCourant = "ACTIVATION_WCB_DIGITAL_PREMIUM"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <!--	Client en provenance de WCB_DIGITAL		-->
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_WCB_DIGITAL.vxml#Wcb_Activation_PREMIUM"); ]]></script>
+                <goto next="./FIXE_WCB_DIGITAL.vxml#Wcb_Activation_PREMIUM"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GestionTypeClientPremium"); ]]></script>
+                <goto next="#GestionTypeClientPremium"/>
+
+            </if>
+        </block>
+    </form>
+    
+    <form id="ACTIVATION_WCB_DIGITAL_GP">
+        <script><![CDATA[ formCourant = "ACTIVATION_WCB_DIGITAL_GP"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <!--	Client en provenance de WCB_DIGITAL		-->
+        <block>
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>
+            <if cond="CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' ">
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "CUSTOMER_IHM.WCB_DIGITAL != 'false' &amp;&amp; type_appel_wcb_digital == 'FIXE' "); ]]></script>
+                <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_WCB_DIGITAL.vxml#Wcb_Activation_GP"); ]]></script>
+                <goto next="./FIXE_WCB_DIGITAL.vxml#Wcb_Activation_GP"/>
+
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "GestionTypeClient"); ]]></script>
+                <goto next="#GestionTypeClient"/>
+
+            </if>
+        </block>
+    </form>
+        
+
+    <!--Client ACTIVATION - Type Client PREMIUM  -->
+    <form id="GestionTypeClientPremium">
+        <script><![CDATA[ formCourant = "GestionTypeClientPremium"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+
+            <!-- Client PREMIUM -  FTTB - APPORTEUR= MIG_NC	-->                
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>
+            <if cond="isClientFixeMIG_NC() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>                                                                    
+            
+	            <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_FTTB_MIG');
+					ID_FLUX='ACTIV_PREMIUM_FTTB_MIG';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+            <!-- Client PREMIUM  - FTTB -->
+            <elseif cond="isClientFixeFTTB()"/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_FTTB');
+					ID_FLUX='ACTIV_PREMIUM_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+
+                <!-- Client PREMIUM  - FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_FTTH');
+					ID_FLUX='ACTIV_PREMIUM_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/> 
+
+                <!-- Client PREMIUM  - AUTRE-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '00010_ACTIV_PREMIUM_AUTRE');
+					ID_FLUX='ACTIV_PREMIUM_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+            </if>                
+
+        </block>
+    </form>
+    
+        
+    <!--Client ACTIVATION - Type Client GP  -->
+    <form id="GestionTypeClient">
+        <script><![CDATA[ formCourant = "GestionTypeClient"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+               
+			<!-- Client GP -->                      
+            <!-- Client CABLE - APPORTEUR= MIG_NC	-->
+            <script><![CDATA[ log_debug_start_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>
+            <if cond="isClientFixeMIG_NC() ">
+            	<script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeMIG_NC() "); ]]></script>                                                                                 
+	            <script><![CDATA[
+						customNode(applicationName + '_' + '00010_ACTIV_FTTB_MIG');
+						ID_FLUX='ACTIV_FTTB_MIG';			
+						log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+	            ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+
+            <!-- Client CABLE* -->
+            <elseif cond="isClientFixeFTTB() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTB() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_FTTB');
+					ID_FLUX='ACTIV_FTTB';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+
+                <!-- Client FTTH -->
+            <elseif cond="isClientFixeFTTH() "/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "isClientFixeFTTH() "); ]]></script>
+                <script><![CDATA[
+					customNode(applicationName + '_' + '00010_ACTIV_FTTH');
+					ID_FLUX='ACTIV_FTTH';			
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+
+
+                <!-- cas par défaut	-->
+            <else/>
+                <script><![CDATA[ log_debug_in_condition(pageCourante, formCourant, "ELSE" ); ]]></script>
+                <script><![CDATA[
+	                customNode(applicationName + '_' + '00010_ACTIV_AUTRE');
+					ID_FLUX='ACTIV_ADSL';
+					log_debug_assignment(pageCourante, "ID_FLUX", ID_FLUX);
+                ]]></script>
+                <script><![CDATA[ log_debug_next_form(pageCourante, "Transfert"); ]]></script>
+                <goto next="#Transfert"/>  
+            </if>
+
+        </block>
+    </form>
+
+    <form id="Transfert">
+        <script><![CDATA[ formCourant = "Transfert"; ]]></script>
+        <script><![CDATA[ log_debug_start_form(pageCourante, formCourant); ]]></script>
+        <block>
+            <script><![CDATA[ log_debug_next_page(pageCourante, "./FIXE_TRANSFERT.vxml"); ]]></script>
+            <goto next="./FIXE_TRANSFERT.vxml"/>
+        </block>
+    </form>       
+
+</vxml>
