@@ -1,0 +1,25 @@
+
+
+<script>
+
+fetch("https://mawaqit.net/fr/mosquee-al-niya-romainville")
+  .then(response => response.text())
+  .then(html => {
+    // Créer un élément temporaire pour parser le HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    // Trouver les horaires (remplacez ces sélecteurs par les bons)
+    const fajr = doc.querySelector(".fajr-time")?.innerText;
+    const dhuhr = doc.querySelector(".dhuhr-time")?.innerText;
+    const asr = doc.querySelector(".asr-time")?.innerText;
+    const maghrib = doc.querySelector(".maghrib-time")?.innerText;
+    const isha = doc.querySelector(".isha-time")?.innerText;
+
+    console.log({ fajr, dhuhr, asr, maghrib, isha });
+  })
+  .catch(error => console.error("Erreur :", error));
+
+
+
+</script>
